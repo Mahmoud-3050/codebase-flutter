@@ -1,0 +1,17 @@
+[
+  {
+    "feature": "products",
+    "screen": "productscreen",
+    "route": "products",
+    "delete": true
+  },
+  {
+    "feature": "products",
+    "screen": "productdetailsscreen",
+    "route": "productdetails",
+    "delete": true,
+    "args": {
+      "product_id": 23
+    }
+  }
+]

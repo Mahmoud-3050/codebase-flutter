@@ -1,0 +1,208 @@
+---
+trigger: always_on
+---
+
+## 1. Clean Code Guidelines
+
+### 1.1 Keep Functions Small and Single-Purpose
+A function should do one thing. If you need "and" to describe it ("validates *and*
+saves *and* formats"), split it.
+
+```dart
+// ❌ BAD: validates, transforms, and persists all in one function
+Future<void> processAndSaveUser(Map<String, dynamic> json) async {
+  if (json['name'] == null || json['email'] == null) {
+    throw Exception('Invalid data');
+  }
+  final name = (json['name'] as String).trim().toUpperCase();
+  final email = (json['email'] as String).toLowerCase();
+  final db = await Database.connect();
+  await db.query('INSERT INTO users VALUES (?, ?)', [name, email]);
+}
+
+// ✅ GOOD: each responsibility is its own unit
+class UserValidator {
+  static void validate(Map<String, dynamic> json) {
+    if (json['name'] == null || json['email'] == null) {
+      throw const FormatException('Missing required user fields');
+    }
+  }
+}
+
+class UserMapper {
+  static User fromJson(Map<String, dynamic> json) {
+    UserValidator.validate(json);
+    return User(
+      name: (json['name'] as String).trim().toUpperCase(),
+      email: (json['email'] as String).toLowerCase(),
+    );
+  }
+}
+```
+
+### 1.2 Use Intention-Revealing Names
+A name should explain *why* something exists and *what* it holds, without needing a
+comment to clarify it.
+
+```dart
+// ❌ BAD
+final d = DateTime.now();
+void p(List<int> l) {}
+var flag1 = true;
+
+// ✅ GOOD
+final currentTimestamp = DateTime.now();
+void processOrderIdentifiers(List<int> orderIds) {}
+var isEmailVerified = true;
+```
+
+### 1.3 Avoid Magic Numbers and Strings
+Unexplained literals scattered through code are a maintenance trap — give them names.
+
+```dart
+// ❌ BAD
+if (user.age > 17 && cart.total < 500) {
+  applyDiscount(cart, 0.15);
+}
+
+// ✅ GOOD
+const int legalAdultAge = 18;
+const double freeShippingThreshold = 500.0;
+const double loyaltyDiscountRate = 0.15;
+
+if (user.age >= legalAdultAge && cart.total < freeShippingThreshold) {
+  applyDiscount(cart, loyaltyDiscountRate);
+}
+```
+
+### 1.4 Use Guard Clauses Instead of Deep Nesting
+Return/throw early so the "happy path" isn't buried three indents deep.
+
+```dart
+// ❌ BAD: pyramid of doom
+double calculateShippingCost(Order? order) {
+  if (order != null) {
+    if (order.items.isNotEmpty) {
+      if (order.destination != null) {
+        return order.weight * 2.5;
+      } else {
+        throw ArgumentError('Missing destination');
+      }
+    } else {
+      throw ArgumentError('Order has no items');
+    }
+  } else {
+    throw ArgumentError('Order is null');
+  }
+}
+
+// ✅ GOOD: guard clauses flatten the logic
+double calculateShippingCost(Order? order) {
+  if (order == null) throw ArgumentError('Order is null');
+  if (order.items.isEmpty) throw ArgumentError('Order has no items');
+  if (order.destination == null) throw ArgumentError('Missing destination');
+
+  return order.weight * 2.5;
+}
+```
+
+### 1.5 DRY — Don't Repeat Yourself
+Duplicated logic means every future change has to be made in multiple places (and
+usually one gets missed).
+
+```dart
+// ❌ BAD: same validation copy-pasted
+class LoginForm {
+  bool validateEmail(String email) =>
+      RegExp(r'^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+}
+
+class SignupForm {
+  bool validateEmail(String email) =>
+      RegExp(r'^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email);
+}
+
+// ✅ GOOD: single source of truth, reused via extension (see 4.5)
+extension EmailValidation on String {
+  bool get isValidEmail =>
+      RegExp(r'^[\w.-]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(this);
+}
+
+// Used identically in LoginForm and SignupForm: email.isValidEmail
+```
+
+### 1.6 One Level of Abstraction per Function
+Don't mix high-level orchestration with low-level detail in the same function — it
+forces the reader to context-switch mid-read.
+
+```dart
+// ❌ BAD: mixes "what" (business steps) with "how" (raw string/byte manipulation)
+Future<void> checkout(Cart cart) async {
+  final subtotal = cart.items.fold<double>(0, (sum, i) => sum + i.price * i.qty);
+  final tax = subtotal * 0.08;
+  final total = subtotal + tax;
+  final payload = jsonEncode({'total': total, 'items': cart.items.length});
+  await http.post(Uri.parse('https://api.shop.com/checkout'), body: payload);
+}
+
+// ✅ GOOD: one level of abstraction; details are pushed down into named steps
+Future<void> checkout(Cart cart) async {
+  final total = _calculateTotalWithTax(cart);
+  await _submitOrder(cart, total);
+}
+
+double _calculateTotalWithTax(Cart cart) { /* ... */ throw UnimplementedError(); }
+Future<void> _submitOrder(Cart cart, double total) async { /* ... */ }
+```
+
+### 1.7 Prefer Named Parameters Over Long Positional Lists
+More than 2–3 positional parameters becomes error-prone (easy to swap two `String`s by
+accident) and unreadable at the call site.
+
+```dart
+// ❌ BAD: what do these booleans and strings even mean at the call site?
+Widget buildButton(String text, bool isEnabled, bool isLoading, Color color) {
+  /* ... */
+  throw UnimplementedError();
+}
+buildButton('Submit', true, false, Colors.blue); // unreadable call site
+
+// ✅ GOOD: self-documenting call site
+Widget buildButton({
+  required String text,
+  required bool isEnabled,
+  bool isLoading = false,
+  Color color = Colors.blue,
+}) {
+  /* ... */
+  throw UnimplementedError();
+}
+buildButton(text: 'Submit', isEnabled: true, color: Colors.blue);
+```
+
+### 1.8 Throw Specific Exceptions, Not Generic Ones
+`Exception('error')` tells a caller nothing about what to do next. Model failure cases
+as real types.
+
+```dart
+// ❌ BAD
+if (balance < amount) {
+  throw Exception('error');
+}
+
+// ✅ GOOD
+class InsufficientFundsException implements Exception {
+  final double shortfall;
+  const InsufficientFundsException(this.shortfall);
+
+  @override
+  String toString() => 'Insufficient funds: short by \$${shortfall.toStringAsFixed(2)}';
+}
+
+if (balance < amount) {
+  throw InsufficientFundsException(amount - balance);
+}
+```
+
+---
+

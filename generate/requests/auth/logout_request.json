@@ -1,0 +1,13 @@
+{
+  "name": "logout",
+  "model_class": null,
+  "endpoint": "/common/logout",
+  "type": "POST",
+  "params": null,
+  "response": {
+    "status": "success",
+    "message": "logged out successfully!",
+    "data": null
+  },
+  "mode": 0
+}

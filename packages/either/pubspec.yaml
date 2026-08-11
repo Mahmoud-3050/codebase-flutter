@@ -1,0 +1,12 @@
+name: either
+description: Lightweight, zero-dependency Dart 3 sealed class Either type for clean architecture.
+version: 1.0.0
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  meta:
+
+dev_dependencies:
+  test:

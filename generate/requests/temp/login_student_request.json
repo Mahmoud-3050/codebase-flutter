@@ -1,0 +1,40 @@
+{
+  "name": "loginStudent",
+  "model_class": "Student",
+  "endpoint": "/common/login",
+  "type": "POST",
+  "params": {
+    "login": "123456789",
+    "password": "1111",
+    "fcm_token": "",
+    "device_type": ""
+  },
+  "response": {
+    "status": "success",
+    "data": {
+      "id": 97,
+      "first_name": "Alice",
+      "second_name": "Marie",
+      "last_name": "Smith",
+      "full_name": "Alice Marie Smith",
+      "dialing_code": "+44",
+      "phone": "441234567890",
+      "email": "rsh.rsh.tw@gmail.com",
+      "birthdate": "1995-08-24",
+      "city_id": 1,
+      "institute": "University of Example",
+      "major": "Computer Science",
+      "graduation_date": "2023-06-15",
+      "degree_id": 2,
+      "gpa_file": "http://127.0.0.1:8000/uploads/students/gpa/671292a2404653.71155244.png",
+      "cv_file": "http://127.0.0.1:8000/uploads/students/cv/67126aea1a8d06.22785205.jpeg",
+      "image": "",
+      "created_at": "2024-10-18 10:48:37",
+      "guard": "student",
+      "verified_at": "2024-10-18 16:04:28",
+      "accessToken": "218|idF8v0rLi8aEF7N5yeVKtgB0wh9RQR2BJWWiSDjF2018499c"
+    },
+    "message": "api.login successfully"
+  },
+  "mode": 0
+}

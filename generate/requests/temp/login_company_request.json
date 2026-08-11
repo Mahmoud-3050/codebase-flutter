@@ -1,0 +1,38 @@
+{
+  "name": "loginCompany",
+  "model_class": "Company",
+  "endpoint": "/common/login",
+  "type": "POST",
+  "params": {
+    "login": "123456789",
+    "password": "1111",
+    "fcm_token": "",
+    "device_type": ""
+  },
+  "response": {
+    "status": "success",
+    "data": {
+      "id": 95,
+      "first_name": "John",
+      "second_name": "Michael",
+      "last_name": "Doe",
+      "full_name": "John Michael Doe",
+      "dialing_code": "+1",
+      "phone": "1234597890",
+      "email": "alielbialy44r@gmail.com",
+      "birthdate": "1990-05-15",
+      "city_id": 1,
+      "verified_at": "2024-10-18 18:36:05",
+      "image": "http://127.0.0.1:8000/uploads/companies/images/67128f35df64e3.08655091.jpeg",
+      "company_name": "Doe Industries",
+      "industry": "Manufacturing",
+      "about": "Leading manufacturer of electronics.",
+      "description": "A well-established company specializing in consumer electronics.",
+      "guard": "company",
+      "created_at": "2024-10-18 10:39:30",
+      "accessToken": "219|LYOFRybL1VJBQhCTNaBdIfhWkVJolu4kb7prjQDDc236db56"
+    },
+    "message": "api.login successfully"
+  },
+  "mode": 0
+}

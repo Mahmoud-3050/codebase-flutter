@@ -1,0 +1,13 @@
+{
+  "name": "deleteMyAccount",
+  "model_class": null,
+  "endpoint": "/common/delete/account",
+  "type": "DELETE",
+  "params": null,
+  "response": {
+    "status": "success",
+    "message": "logged out successfully!",
+    "data": null
+  },
+  "mode": 0
+}

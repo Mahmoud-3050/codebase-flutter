@@ -1,0 +1,13 @@
+{
+  "name": "resendVerifyOtp",
+  "model_class": null,
+  "endpoint": "/common/resend/otp",
+  "type": "POST",
+  "params": null,
+  "response": {
+    "status": "success",
+    "data": null,
+    "message": "OTP sent to your email"
+  },
+  "mode": 0
+}

@@ -1,0 +1,17 @@
+{
+  "error_field_required": "Field is required",
+  "error_valid_email": "Please enter a valid email address",
+  "error_valid_phone_number": "Please enter a valid phone number",
+  "error_valid_text": "Please enter valid text only",
+  "error_valid_numbers": "Please enter valid numbers only",
+  "error_valid_password": "Password must be at least 8 characters",
+  "error_valid_password_confirm": "Passwords do not match",
+  "password_uppercase_requirement": "Password must contain at least one uppercase letter",
+  "password_lowercase_requirement": "Password must contain at least one lowercase letter",
+  "password_number_requirement": "Password must contain at least one number",
+  "password_special_character_requirement": "Password must contain at least one special character",
+  "zero_not_allowed": "Zero is not allowed",
+  "maximum_decimal_placesAllowed": "Maximum decimal places allowed exceeded",
+  "must_be_digits_count": "Digits count must be",
+  "maximum_digits_allowed": "Maximum digits allowed exceeded"
+}

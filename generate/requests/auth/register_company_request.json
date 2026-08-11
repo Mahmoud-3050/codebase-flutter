@@ -1,0 +1,52 @@
+{
+  "name": "registerCompany",
+  "model_class": "Company",
+  "endpoint": "/company/register",
+  "type": "POST",
+  "params": {
+    "first_name": "John",
+    "second_name": "Michael",
+    "last_name": "Doe",
+    "dialing_code": "+1",
+    "phone": "1234597890",
+    "email": "alielbialy44r@gmail.com",
+    "password": "123456",
+    "birthdate": "1990-05-15",
+    "city_id": 1,
+    "company_name": "Doe Industries",
+    "industry": "Manufacturing",
+    "about": "Leading manufacturer of electronics.",
+    "image": "6713d2873dbb87.35970861.png",
+    "description": "A well-established company specializing in consumer electronics."
+  },
+  "response": {
+    "status": "success",
+    "data": {
+      "id": 102,
+      "first_name": "Gamal",
+      "second_name": "Sobhi",
+      "last_name": "Abdullah",
+      "full_name": "Gamal Sobhi Abdullah",
+      "dialing_code": "+20",
+      "phone": "1015174512",
+      "email": "rsh.rsh.tw@gmail.com",
+      "birthdate": "1995-08-15",
+      "city_id": 1,
+      "city": "مكه",
+      "institute": "Tech University",
+      "major_id": 2,
+      "major": "test",
+      "graduation_date": "2022-05-10",
+      "degree_id": 2,
+      "gpa_file": "http://127.0.0.1:8000/uploads/students/gpa/6713ceadc052d8.15469167.png",
+      "cv_file": "http://127.0.0.1:8000/uploads/students/cv/6713ceb742e852.61512886.png",
+      "image": "http://127.0.0.1:8000/uploads/students/images/6713cec059e7f3.40683120.png",
+      "created_at": "2024-10-19 15:36:55",
+      "guard": "student",
+      "verified_at": "",
+      "accessToken": "226|wd22j2dzxiCEDjZStsTSetApb1wOiTaHBmNAQiRW9db7f183"
+    },
+    "message": "api.register successfully, we sent you an code to your email to verify your account"
+  },
+  "mode": 0
+}

@@ -1,0 +1,17 @@
+{
+  "error_field_required": "حقل مطلوب",
+  "error_valid_email": "يرجى إدخال عنوان بريد إلكتروني صحيح",
+  "error_valid_phone_number": "يرجى إدخال رقم هاتف صحيح",
+  "error_valid_text": "يرجى إدخال نص صحيح",
+  "error_valid_numbers": "يرجى إدخال أرقام صحيحة",
+  "error_valid_password": "يرجى إدخال كلمة مرور صحيحة",
+  "error_valid_password_confirm": "يرجى تأكيد كلمة المرور بشكل صحيح",
+  "password_uppercase_requirement": "كلمة المرور يجب أن تحتوي على حرف كبير واحد على الأقل",
+  "password_lowercase_requirement": "كلمة المرور يجب أن تحتوي على حرف صغير واحد على الأقل",
+  "password_number_requirement": "كلمة المرور يجب أن تحتوي على رقم واحد على الأقل",
+  "password_special_character_requirement": "كلمة المرور يجب أن تحتوي على رمز خاص واحد على الأقل",
+  "zero_not_allowed": "الصفر غير مسموح به",
+  "maximum_decimal_places_allowed": "تم تجاوز الحد الأقصى للمنازل العشرية",
+  "must_be_digits_count": "عدد الأرقام يجب أن يكون",
+  "maximum_digits_allowed": "تم تجاوز الحد الأقصى للأرقام"
+}

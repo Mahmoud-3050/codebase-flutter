@@ -1,0 +1,18 @@
+{
+  "name": "getCities",
+  "model_class": "City",
+  "endpoint": "/common/cities",
+  "type": "GET",
+  "params": null,
+  "response": {
+    "status": "success",
+    "data": [
+      {
+        "id": 13,
+        "name": "نجران"
+      }
+    ],
+    "message": "api.employer data"
+  },
+  "mode": 0
+}

@@ -1,0 +1,107 @@
+<!--
+Sync Impact Report:
+- Version change: [CONSTITUTION_VERSION] -> 1.0.0
+- List of modified principles:
+  - [PRINCIPLE_1_NAME] -> Principle I: Feature-First Clean Architecture (NON-NEGOTIABLE)
+  - [PRINCIPLE_2_NAME] -> Principle II: Explicit Dependency Injection via Service Locator
+  - [PRINCIPLE_3_NAME] -> Principle III: Reactive State Management with Cubit/Bloc
+  - [PRINCIPLE_4_NAME] -> Principle IV: Safe Functional Error Handling (Either<Failure, T>)
+  - [PRINCIPLE_5_NAME] -> Principle V: Separation of Domain Entities and Data Models
+- Added sections:
+  - Code Quality & Best Practices (Profile Feature Exemplar)
+  - Development Workflow & Review Gates
+- Removed sections: None
+- Templates requiring updates:
+  - ✅ .specify/templates/plan-template.md (Verified alignment with Flutter Clean Architecture)
+  - ✅ .specify/templates/spec-template.md (Verified alignment with feature specs)
+  - ✅ .specify/templates/tasks-template.md (Verified alignment with task breakdown)
+- Follow-up TODOs: None
+-->
+
+# Base Project Constitution
+
+## Core Principles
+
+### Principle I: Feature-First Clean Architecture (NON-NEGOTIABLE)
+Every feature MUST be organized in its own self-contained directory under `lib/features/<feature_name>/`. Features MUST strictly enforce three decoupled layers:
+- **Domain Layer (`domain/`)**: Pure Dart logic including Entities, Repository interfaces, and UseCases. Must have zero dependencies on Flutter UI, Dio, or data sources.
+- **Data Layer (`data/`)**: Implements Repositories, DataSources, and Data Models (DTOs). Handles networking via `DioConsumer` and JSON parsing.
+- **Presentation Layer (`presentation/`)**: UI Pages, Widgets, and State Management controllers (Cubits/Blocs).
+
+*Rationale*: Prevents monolithic coupling, enables independent feature development, and facilitates unit and widget testability.
+
+### Principle II: Explicit Dependency Injection via Service Locator
+Dependency injection MUST be configured using GetIt (`ServiceLocator.instance`). Each feature MUST provide a dedicated injection file (`lib/features/<feature>/<feature>_injection.dart`) exposing an initialization function (e.g., `initProfileFeatureInjection()`).
+Registration conventions MUST be strictly followed:
+- **Cubits/Blocs**: Registered using `registerFactory` so fresh instances are created for controller lifecycles.
+- **UseCases, Repositories & DataSources**: Registered using `registerLazySingleton` to ensure single instance memory efficiency.
+
+All feature injection initializations MUST be explicitly called inside `ServiceLocator.init()` in `lib/injection_container.dart`.
+
+*Rationale*: Eliminates hidden state, ensures predictable lifecycle management, and simplifies mock substitution during testing.
+
+### Principle III: Reactive State Management with Cubit/Bloc
+State management MUST use `flutter_bloc` (`Cubit` or `Bloc`). Cubits/Blocs handle all business and presentation logic, keeping UI widgets purely declarative.
+- UI widgets MUST NEVER execute raw network requests or mutate state directly.
+- Cubit instances for a feature SHOULD be provided via feature `BlocProvider` lists (e.g., `get profileBlocs => <BlocProvider>[...]`) or injected directly at page entry points.
+- States MUST be immutable objects representing explicit UI outcomes (Initial, Loading, Success, Failure).
+
+*Rationale*: Decouples UI rendering from business logic, ensures deterministic widget updates, and makes presentation logic testable.
+
+### Principle IV: Safe Functional Error Handling (`Either<Failure, T>`)
+Domain and Data layers MUST adopt functional error handling using `dartz`:
+- Repositories MUST return `Future<Either<Failure, T>>`.
+- DataSources throw domain-specific exceptions (e.g., `ServerException`, `CacheException`).
+- Repository implementations MUST catch exceptions and map them to appropriate `Failure` objects (e.g., `ServerFailure`, `CacheFailure`).
+- Cubits/Blocs consume `Either` results using `.fold()`, explicitly handling both error and success branches.
+
+*Rationale*: Ensures compile-time safety for error handling, avoiding uncaught runtime exceptions in presentation logic.
+
+### Principle V: Separation of Domain Entities and Data Models
+Data models in `data/models/` MUST extend or map to pure Domain Entities in `domain/entities/`.
+- JSON parsing logic (`fromJson`, `toJson`) belongs strictly in `data/models/`. Domain entities MUST remain framework-agnostic pure Dart classes.
+- Remote DataSources interact exclusively with models and Dio, while Repositories map models to entities for domain consumption.
+
+*Rationale*: Protects core domain entities from breaking backend schema changes and API refactoring.
+
+## Code Quality & Best Practices (Profile Feature Exemplar)
+
+The `profile` feature (`lib/features/profile/`) serves as the standard reference architecture for all feature implementations:
+
+```text
+lib/features/profile/
+├── data/
+│   ├── datasources/               # ProfileRemoteDataSource (interface + implementation)
+│   ├── models/                    # API response models (e.g., GetStudentProfileModel)
+│   └── repositories/              # ProfileRepositoryImpl (maps exceptions -> Failures)
+├── domain/
+│   ├── entities/                  # Domain entities & response objects
+│   ├── repositories/              # ProfileRepository (abstract contract)
+│   └── usecases/                  # Single-responsibility use cases extending UseCase<Type, Params>
+├── presentation/
+│   └── controller/                # Granular Cubits (e.g., GetStudentProfileCubit)
+└── profile_injection.dart         # initProfileFeatureInjection() & profileBlocs
+```
+
+Key Rules from Profile Feature Implementation:
+1. **Granular Single-Responsibility Controllers**: Prefer granular Cubits (e.g., `GetStudentProfileCubit`, `UpdateStudentProfileCubit`, `ChangeStudentPasswordCubit`) over bloated monolithic Cubits.
+2. **Explicit Injection Functions**: Name feature injection functions `init<FeatureName>FeatureInjection()` and expose a `List<BlocProvider>` getter (e.g., `profileBlocs`) when multi-provider binding is needed.
+3. **Use Case Standards**: All use cases MUST extend `UseCase<Type, Params>` and implement `Future<Either<Failure, Type>> call(Params params)`.
+
+## Development Workflow & Review Gates
+
+1. **Static Analysis & Formatting**:
+   Code MUST pass `flutter analyze` with 0 warnings or errors before PR submission.
+2. **Architecture Compliance Check**:
+   Any new feature PR MUST include domain, data, presentation separation and a dedicated `<feature>_injection.dart` registered in `ServiceLocator`.
+3. **Testing Gates**:
+   - Unit tests MUST cover UseCases and Repository implementations.
+   - Bloc tests MUST cover Cubit state flows for all success and error paths.
+
+## Governance
+
+1. **Supremacy**: This Constitution supersedes all informal coding conventions for `base_project`.
+2. **Amendment Procedure**: Proposed amendments require updating this document, bumping the version according to semantic versioning, and running consistency checks across Specify templates.
+3. **Compliance Review**: All Pull Requests and feature plans must be validated against the Core Principles defined herein.
+
+**Version**: 1.0.0 | **Ratified**: 2026-07-26 | **Last Amended**: 2026-07-26

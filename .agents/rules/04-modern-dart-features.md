@@ -1,0 +1,214 @@
+---
+trigger: always_on
+---
+
+## 4. Modern Dart Language Features
+
+Use these Dart 3+ features deliberately — they usually *are* the clean, idiomatic
+solution, not an optional flourish.
+
+### 4.1 Enhanced Enums for Behavior, Not `String`/`int` Constants
+If you find yourself writing `if (role == 'admin')` scattered around a codebase, that's
+a sign you need an enum with behavior, not a raw string.
+
+```dart
+// ❌ BAD: stringly-typed role with logic scattered across the codebase
+String getDashboard(String role) {
+  if (role == 'admin') return '/admin/dashboard';
+  if (role == 'editor') return '/editor/dashboard';
+  return '/home';
+}
+bool canEdit(String role) => role == 'admin' || role == 'editor'; // duplicated knowledge
+
+// ✅ GOOD: the enum owns its own data and behavior
+enum UserRole {
+  admin(accessLevel: 3, label: 'Administrator'),
+  editor(accessLevel: 2, label: 'Content Editor'),
+  viewer(accessLevel: 1, label: 'Viewer');
+
+  final int accessLevel;
+  final String label;
+  const UserRole({required this.accessLevel, required this.label});
+
+  bool canEdit() => accessLevel >= 2;
+  bool canDelete() => accessLevel == 3;
+
+  String get dashboardRoute => switch (this) {
+        UserRole.admin => '/admin/dashboard',
+        UserRole.editor => '/editor/dashboard',
+        UserRole.viewer => '/home',
+      };
+}
+```
+
+### 4.2 Sealed Classes for Exhaustive State Modeling
+Use `sealed` for any "one of a fixed set of shapes" concept (API results, UI state,
+navigation events). The compiler then forces every `switch` to handle every case —
+no more forgotten `else` branches.
+
+```dart
+// ❌ BAD: a nullable/boolean-flag soup that the compiler can't verify
+class Result<T> {
+  final T? data;
+  final String? errorMessage;
+  final bool isLoading;
+  Result({this.data, this.errorMessage, this.isLoading = false});
+}
+// Nothing stops you from constructing an invalid Result(data: x, errorMessage: y) at once,
+// and nothing forces callers to handle every state.
+
+// ✅ GOOD: sealed class makes invalid states unrepresentable
+sealed class Result<T> {}
+
+final class Success<T> extends Result<T> {
+  final T data;
+  Success(this.data);
+}
+final class Failure<T> extends Result<T> {
+  final Exception exception;
+  final String message;
+  Failure(this.exception, this.message);
+}
+final class Loading<T> extends Result<T> {}
+
+// Compiler error if any subtype is left unhandled — no default needed, no silent bugs
+String handleResult<T>(Result<T> result) => switch (result) {
+      Success(:final data) => 'Success with data: $data',
+      Failure(:final message) => 'Failed: $message',
+      Loading() => 'Operation in progress...',
+    };
+```
+
+### 4.3 Records for Lightweight Multiple Return Values
+Stop building a throwaway class just to return two or three related values from a
+single function.
+
+```dart
+// ❌ BAD: a single-use class purely to shuttle two values out of a function
+class ValidationResult {
+  final bool isSuccess;
+  final String? error;
+  ValidationResult(this.isSuccess, this.error);
+}
+ValidationResult validateCredentials(String user, String pass) {
+  if (user.isEmpty) return ValidationResult(false, 'Username cannot be empty');
+  if (pass.length < 8) return ValidationResult(false, 'Password too short');
+  return ValidationResult(true, null);
+}
+
+// ✅ GOOD: a record expresses the same thing with zero boilerplate
+(bool isSuccess, String? error) validateCredentials(String user, String pass) {
+  if (user.isEmpty) return (false, 'Username cannot be empty');
+  if (pass.length < 8) return (false, 'Password too short');
+  return (true, null);
+}
+
+void main() {
+  final (isSuccess, error) = validateCredentials('alice', 'short');
+  if (!isSuccess) print('Failed: $error');
+}
+```
+
+### 4.4 Pattern Matching & Destructuring Over Manual Field Access
+Use object patterns, `if-case`, and destructuring instead of chains of getters and
+manual casts — it's both shorter and exhaustiveness-checked.
+
+```dart
+// ❌ BAD: manual type-checking and field extraction
+void handleEvent(Object event) {
+  if (event is LoginEvent) {
+    final userId = (event as LoginEvent).userId;
+    print('Login: $userId');
+  } else if (event is LogoutEvent) {
+    print('Logout');
+  }
+}
+
+// ✅ GOOD: pattern matching destructures and checks type in one step
+sealed class AppEvent {}
+final class LoginEvent extends AppEvent {
+  final String userId;
+  LoginEvent(this.userId);
+}
+final class LogoutEvent extends AppEvent {}
+
+void handleEvent(AppEvent event) {
+  switch (event) {
+    case LoginEvent(:final userId):
+      print('Login: $userId');
+    case LogoutEvent():
+      print('Logout');
+  }
+}
+
+// if-case for a single conditional match, instead of `is` + cast
+void maybeGreet(Object value) {
+  if (value case String name when name.isNotEmpty) {
+    print('Hello, $name');
+  }
+}
+```
+
+### 4.5 Extension Methods to Add Behavior Without Wrapper Classes
+Extend existing types (including SDK/core types) instead of writing static utility
+classes like `StringUtils.isEmail(x)`.
+
+```dart
+// ❌ BAD: a static utility class that reads awkwardly at the call site
+class StringUtils {
+  static String capitalize(String s) =>
+      s.isEmpty ? s : '${s[0].toUpperCase()}${s.substring(1).toLowerCase()}';
+  static bool isNullOrEmpty(String? s) => s == null || s.trim().isEmpty;
+}
+StringUtils.capitalize('hello world'); // reads backwards from the value it acts on
+
+// ✅ GOOD: extension methods read naturally, as if built into the language
+extension StringCasingExtension on String {
+  String toCapitalized() =>
+      isEmpty ? this : '${this[0].toUpperCase()}${substring(1).toLowerCase()}';
+}
+extension NullableStringExtension on String? {
+  bool get isNullOrEmpty => this == null || this!.trim().isEmpty;
+}
+
+'hello world'.toCapitalized(); // "Hello world" — reads left to right, naturally
+String? name;
+if (name.isNullOrEmpty) print('Name is missing');
+```
+
+### 4.6 Mixins for Cross-Cutting Behavior Without Inheritance Conflicts
+When two unrelated class hierarchies need the same behavior (formatting, validation,
+logging), a mixin avoids forcing a shared — and wrong — base class.
+
+```dart
+// ❌ BAD: forcing shared behavior through a common base class
+abstract class Formattable {
+  String formatCurrency(double amount) => '\$${amount.toStringAsFixed(2)}';
+}
+// Now InvoicePresenter AND ReceiptPrinter both have to extend Formattable,
+// burning their one shot at single inheritance for an unrelated "is-a" relationship.
+class InvoicePresenter extends Formattable {}
+
+// ✅ GOOD: mix in only the behavior needed, keep `extends` free for real hierarchy
+mixin Formatting {
+  String formatCurrency(double amount) => '\$${amount.toStringAsFixed(2)}';
+  String formatDate(DateTime date) =>
+      '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+}
+mixin Validation {
+  bool isValidEmail(String email) => email.isValidEmail; // reuse extension from 4.5
+}
+
+class InvoicePresenter with Formatting, Validation {
+  void printInvoice(double amount, DateTime date, String customerEmail) {
+    if (!isValidEmail(customerEmail)) {
+      throw ArgumentError('Invalid customer email');
+    }
+    print('Invoice Date: ${formatDate(date)}');
+    print('Total Due: ${formatCurrency(amount)}');
+  }
+}
+```
+
+---
+

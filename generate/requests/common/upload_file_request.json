@@ -1,0 +1,15 @@
+{
+  "name": "uploadFile",
+  "model_class": null,
+  "endpoint": "/common/upload",
+  "type": "POST",
+  "params": {
+    "file": "file"
+  },
+  "response": {
+    "status": "success",
+    "result": "671825b41303d3.93685874.png",
+    "message": "api.employer data"
+  },
+  "mode": 0
+}
