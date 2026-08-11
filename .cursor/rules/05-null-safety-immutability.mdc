@@ -1,0 +1,71 @@
+---
+description: Null safety and immutability guidelines for Dart
+alwaysApply: true
+---
+
+## 5. Null Safety & Immutability
+
+### 5.1 Model Optionality Explicitly — Avoid Nullable "Just in Case"
+A nullable field should mean "this value can genuinely be absent," not "I didn't want
+to think about initialization."
+
+```dart
+// ❌ BAD: nullable fields that are never actually supposed to be null
+class User {
+  String? name;
+  String? email;
+}
+final user = User();
+print(user.name!.toUpperCase()); // ticking time bomb: `!` on an uninitialized field
+
+// ✅ GOOD: required, non-nullable by default; nullable only for genuinely optional data
+class User {
+  final String name;
+  final String email;
+  final String? middleName; // genuinely optional
+  const User({required this.name, required this.email, this.middleName});
+}
+```
+
+### 5.2 Prefer `final`/`const` — Make Immutability the Default
+Mutable shared state is one of the most common sources of hard-to-reproduce bugs.
+Default to immutable; opt in to mutability only when you have a real reason.
+
+```dart
+// ❌ BAD: mutable fields invite accidental external mutation
+class Point {
+  double x;
+  double y;
+  Point(this.x, this.y);
+}
+final p = Point(1, 2);
+someFunction(p); // could silently mutate p.x / p.y inside
+
+// ✅ GOOD: immutable value object — safe to pass around, easy to reason about
+final class Point {
+  final double x;
+  final double y;
+  const Point(this.x, this.y);
+
+  Point copyWith({double? x, double? y}) => Point(x ?? this.x, y ?? this.y);
+}
+const origin = Point(0, 0);
+```
+
+### 5.3 Use `?.`, `??`, and `??=` Instead of Manual Null Checks
+Null-aware operators are shorter and remove a whole class of `if (x != null)` noise.
+
+```dart
+// ❌ BAD
+String getDisplayName(User? user) {
+  if (user != null && user.nickname != null) {
+    return user.nickname!;
+  }
+  return 'Guest';
+}
+
+// ✅ GOOD
+String getDisplayName(User? user) => user?.nickname ?? 'Guest';
+```
+
+---

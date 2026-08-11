@@ -1,0 +1,31 @@
+---
+description: Refactoring workflow checklist for Dart code
+alwaysApply: true
+---
+
+## 6. Refactoring Workflow
+
+When asked to refactor or review existing Dart code, work through this checklist in
+order and call out violations by section number:
+
+1. **Structure pass** — Any function doing more than one thing (§1.1)? Any class with
+   more than one reason to change (§3.1)?
+2. **Naming pass** — Any unclear names, magic numbers/strings (§1.2, §1.3)?
+3. **Control-flow pass** — Deep nesting that guard clauses would flatten (§1.4)?
+   Duplicated logic that should be extracted (§1.5)?
+4. **Coupling pass** — Concrete dependencies that should be interfaces (§2.3, §3.5)?
+   Inheritance used where composition or a mixin fits better (§2.2, §4.6)?
+5. **Type-modeling pass** — String/bool/int flags standing in for a fixed set of
+   states? Replace with a `sealed class` (§4.2) or enhanced `enum` (§4.1). Functions
+   returning ad-hoc wrapper classes for 2–3 values? Replace with a `record` (§4.3).
+6. **Null-safety pass** — Nullable fields that are never really optional (§5.1)?
+   Mutable fields that should be `final` (§5.2)? Manual null checks that a null-aware
+   operator would simplify (§5.3)?
+7. **Explain, don't just replace** — for each change, briefly state which rule it
+   addresses and why the new version is safer/clearer, so the change is a lesson, not
+   just a diff.
+
+Always preserve existing behavior unless the user asks for a behavior change — a
+refactor should be invisible to the tests, if any exist.
+
+---
