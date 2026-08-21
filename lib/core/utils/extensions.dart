@@ -7,46 +7,17 @@ import 'package:url_launcher/url_launcher.dart';
 import '../../injection_container.dart';
 import 'enums.dart';
 
+String _padTwoDigits(int value) => value.toString().padLeft(2, '0');
+
 extension DateTimeExtension on DateTime{
-  String get displayFormat {
-    String month = this.month.toString();
-    if(month.length == 1){
-      month = '0$month';
-    }
-    String day = this.day.toString();
-    if(day.length == 1){
-      day = '0$day';
-    }
-    return '$year-$month-$day';
-  }
+  String get displayFormat =>
+      '$year-${_padTwoDigits(month)}-${_padTwoDigits(day)}';
 
-  String get displayTimeFormat {
-    String month = this.month.toString();
-    if(month.length == 1){
-      month = '0$month';
-    }
-    String day = this.day.toString();
-    if(day.length == 1){
-      day = '0$day';
-    }
-    String hours = hour.toString();
-    if(hours.length == 1){
-      hours = '0$hours';
-    }
-    String minutes = minute.toString();
-    if(minutes.length == 1){
-      minutes = '0$minutes';
-    }
-    return '$year-$month-$day $hours:$minutes:00';
-  }
+  String get displayTimeFormat =>
+      '$year-${_padTwoDigits(month)}-${_padTwoDigits(day)} '
+      '${_padTwoDigits(hour)}:${_padTwoDigits(minute)}:00';
 
-  String get displayFormatYearMonth {
-    String month = this.month.toString();
-    if(month.length == 1){
-      month = '0$month';
-    }
-    return '$year-$month';
-  }
+  String get displayFormatYearMonth => '$year-${_padTwoDigits(month)}';
 }
 
 extension IntExtension on int{

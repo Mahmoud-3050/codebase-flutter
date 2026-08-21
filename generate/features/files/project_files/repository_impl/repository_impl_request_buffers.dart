@@ -47,6 +47,9 @@ class RepositoryImplRequestBuffers extends BaseRequestBuffers{
     buffer.writeln('      } on AppException catch (error) {');
     buffer.writeln("        Log.e('[${request.names.camelCase}] [\${error.runtimeType.toString()}] ---- \${error.message}');");
     buffer.writeln('        return Left<Failure, ${request.names.classCase}Response>(error.toFailure());');
+    buffer.writeln('      } on Object catch (error, stackTrace) {');
+    buffer.writeln("        Log.e('[${request.names.camelCase}] [\${error.runtimeType}] ---- \$error\\n\$stackTrace');");
+    buffer.writeln('        return Left<Failure, ${request.names.classCase}Response>(ServerFailure(message: Strings.pleaseTryAgainLater));');
     buffer.writeln('      }');
     // buffer.writeln('    } else {');
     // buffer.writeln('      return Left(NetworkFailure(message: Strings.noInternetConnection));');

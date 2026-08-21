@@ -6,9 +6,6 @@ import '../../utils/extensions.dart';
 abstract class _AppSharedPreferencesKeys {
   static const appTheme = 'appTheme';
   static const userType = 'userType';
-  static const String accessToken = 'accessToken';
-  static const String lastEmailLogin = 'lastEmailLogin';
-  static const String hasAuthLocal = 'hasAuthLocal';
 }
 
 abstract class SharedPreferencesService {
@@ -18,41 +15,12 @@ abstract class SharedPreferencesService {
     required this.instance,
   });
 
-  //region:: AccessToken
-  Future<String?> getAccessToken();
-
-  Future<void> saveAccessToken(String token);
-
-  Future<void> removeAccessToken();
-
-  //endregion
-
-
-
   //region:: App Theme
   Themes getAppTheme();
 
   Future<bool> saveAppTheme(Themes theme);
 
   Future<bool> removeAppTheme();
-
-  //endregion
-
-  //region:: Last Email Login
-  Future<String?> getLastEmailLogin();
-
-  Future<bool> saveLastEmailLogin(String email);
-
-  Future<bool> removeLastEmailLogin();
-
-  //endregion
-
-  //region:: Has Auth Local
-  Future<bool> getHasLocalAuth();
-
-  Future<bool> saveHasLocalAuth(bool value);
-
-  Future<bool> removeHasLocalAuth();
 
   //endregion
 
@@ -70,23 +38,6 @@ abstract class SharedPreferencesService {
 
 class SharedPreferencesServiceImpl extends SharedPreferencesService {
   SharedPreferencesServiceImpl({required super.instance});
-
-  //region:: AccessToken
-  @override
-  Future<String?> getAccessToken() async =>
-      instance.getString(_AppSharedPreferencesKeys.accessToken) ?? '';
-
-  @override
-  Future<void> saveAccessToken(String token) =>
-      instance.setString(_AppSharedPreferencesKeys.accessToken, token);
-
-  @override
-  Future<void> removeAccessToken() =>
-      instance.remove(_AppSharedPreferencesKeys.accessToken);
-
-  //endregion
-
-
 
   //region:: App Theme
   @override
@@ -119,36 +70,6 @@ class SharedPreferencesServiceImpl extends SharedPreferencesService {
       instance.remove(_AppSharedPreferencesKeys.userType);
 
 //endregion
-
-  //region:: Last Email Login
-  @override
-  Future<String?> getLastEmailLogin() async =>
-      instance.getString(_AppSharedPreferencesKeys.lastEmailLogin);
-
-  @override
-  Future<bool> saveLastEmailLogin(String email) =>
-      instance.setString(_AppSharedPreferencesKeys.lastEmailLogin, email);
-
-  @override
-  Future<bool> removeLastEmailLogin() =>
-      instance.remove(_AppSharedPreferencesKeys.lastEmailLogin);
-
-  //endregion
-
-  //region:: Has Local Auth
-  @override
-  Future<bool> getHasLocalAuth() async =>
-      instance.getBool(_AppSharedPreferencesKeys.hasAuthLocal) ?? false;
-
-  @override
-  Future<bool> saveHasLocalAuth(bool value) =>
-      instance.setBool(_AppSharedPreferencesKeys.hasAuthLocal, value);
-
-  @override
-  Future<bool> removeHasLocalAuth() =>
-      instance.remove(_AppSharedPreferencesKeys.hasAuthLocal);
-
-  //endregion
 
   @override
   Future<bool> clearAll() => instance.clear();

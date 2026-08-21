@@ -1,0 +1,9 @@
+# Host-app translation assets for packages/language.
+# Each path must also be listed under flutter.assets in pubspec.yaml.
+# File names must follow "ar.json" or "ar_EG.json".
+
+default_language: ar
+
+files:
+  - assets/lang/en.json
+  - assets/lang/ar.json

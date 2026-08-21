@@ -7,7 +7,7 @@ import 'package:field_validator/field_validator.dart';
 import '../utils/values/strings.dart';
 import '../utils/values/text_styles.dart';
 
-class AppTextFormField extends StatelessWidget {
+class AppTextFormField extends StatefulWidget {
   final FocusNode? focusNode;
   final TextEditingController? controller;
   final String? hintText;
@@ -78,96 +78,7 @@ class AppTextFormField extends StatelessWidget {
   });
 
   @override
-  Widget build(BuildContext context) {
-    FocusNode focusNode = this.focusNode?? FocusNode();
-    return TextFormField(
-      focusNode: focusNode,
-      controller: controller,
-      validator: validatorType != null
-          ? (String? value) => validatorType?.validate(value)
-          : validator,
-      obscureText: obscureText,
-      keyboardType: keyboardType,
-      maxLength: maxLength,
-      buildCounter: (BuildContext context, {int? currentLength, int? maxLength, bool? isFocused}) {
-        if(maxLength == null){
-          return null;
-        }
-        return Text(
-          '$currentLength/$maxLength',
-          style: TextStyles.regular10(color: colors.textSecondary),
-        );
-      },
-      maxLines: maxLines,
-      readOnly: readOnly,
-      autofocus: autofocus,
-      inputFormatters: inputFormatters,
-      textInputAction: textInputAction,
-      autofillHints: autofillHints,
-      maxLengthEnforcement: MaxLengthEnforcement.enforced,
-      style: textStyle?? TextStyles.medium14(color: colors.textPrimary),
-      cursorColor: cursorColor,
-      cursorRadius: Radius.circular(8.r),
-      decoration: _decoration,
-      onFieldSubmitted: onFieldSubmitted,
-      onChanged: onChanged,
-      onEditingComplete: onEditingComplete,
-      onTap: onTap,
-      onTapOutside: (PointerDownEvent event) => focusNode.unfocus(),
-    );
-  }
-
-  InputDecoration get _decoration => InputDecoration(
-    hintText: hintText,
-    labelText: labelText,
-    alignLabelWithHint: false,
-    contentPadding: _padding,
-    errorMaxLines: 2,
-    fillColor: backgroundColor?? colors.primary.withValues(alpha: 0.05),
-    filled: backgroundColor != null,
-    focusColor: colors.primary,
-    border: _createBorder(borderColor?? colors.primary.withValues(alpha: 0.05)),
-    enabledBorder: _createBorder(borderColor?? colors.hint),
-    focusedBorder: _createBorder(focusBorderColor?? colors.primary),
-    focusedErrorBorder: _createBorder(colors.primary),
-    errorBorder: _createBorder(colors.error),
-    errorStyle: TextStyles.regular12(color: colors.error),
-    hintStyle: hintTextStyle?? TextStyles.regular12(color: colors.textSecondary),
-    labelStyle: labelTextStyle?? TextStyles.regular12(color: colors.textSecondary),
-    prefixIcon: _prefixIcon,
-    suffixIcon: _suffixIcon,
-  );
-
-  EdgeInsetsGeometry get _padding => EdgeInsets.symmetric(
-    horizontal: 16.w,
-    vertical: 16.h * paddingVerticalFactory,
-  );
-
-  Widget? get _prefixIcon => (prefixIcon == null)
-      ? prefix
-      : InkWell(
-          onTap: onPrefixIconPressed,
-          child: Icon(
-            prefixIcon,
-            color: prefixIconColor ?? colors.hint,
-          ),
-        );
-
-  Widget? get _suffixIcon => suffixIcon == null
-      ? suffix
-      : InkWell(
-          onTap: onSuffixIconPressed,
-          child: Icon(
-            suffixIcon,
-            color: suffixIconColor ?? colors.hint,
-          ),
-        );
-
-  OutlineInputBorder _createBorder(Color color) {
-    return OutlineInputBorder(
-        borderRadius: borderRadius != null ? borderRadius! : BorderRadius.circular(12.r),
-        borderSide: BorderSide(color: color));
-  }
+  State<AppTextFormField> createState() => _AppTextFormFieldState();
 
   factory AppTextFormField.nameTextField({
     required TextEditingController controller,
@@ -416,6 +327,127 @@ class AppTextFormField extends StatelessWidget {
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^\d+\d{0,2}')),
       ],
+    );
+  }
+}
+
+class _AppTextFormFieldState extends State<AppTextFormField> {
+  late final FocusNode _focusNode;
+  late final bool _ownsFocusNode;
+
+  @override
+  void initState() {
+    super.initState();
+    _ownsFocusNode = widget.focusNode == null;
+    _focusNode = widget.focusNode ?? FocusNode();
+  }
+
+  @override
+  void dispose() {
+    if (_ownsFocusNode) {
+      _focusNode.dispose();
+    }
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return TextFormField(
+      focusNode: _focusNode,
+      controller: widget.controller,
+      validator: widget.validatorType != null
+          ? (String? value) => widget.validatorType?.validate(value)
+          : widget.validator,
+      obscureText: widget.obscureText,
+      keyboardType: widget.keyboardType,
+      maxLength: widget.maxLength,
+      buildCounter: (
+        BuildContext context, {
+        int? currentLength,
+        int? maxLength,
+        bool? isFocused,
+      }) {
+        if (maxLength == null) {
+          return null;
+        }
+        return Text(
+          '$currentLength/$maxLength',
+          style: TextStyles.regular10(color: colors.textSecondary),
+        );
+      },
+      maxLines: widget.maxLines,
+      readOnly: widget.readOnly,
+      autofocus: widget.autofocus,
+      inputFormatters: widget.inputFormatters,
+      textInputAction: widget.textInputAction,
+      autofillHints: widget.autofillHints,
+      maxLengthEnforcement: MaxLengthEnforcement.enforced,
+      style: widget.textStyle ?? TextStyles.medium14(color: colors.textPrimary),
+      cursorColor: widget.cursorColor,
+      cursorRadius: Radius.circular(8.r),
+      decoration: _decoration,
+      onFieldSubmitted: widget.onFieldSubmitted,
+      onChanged: widget.onChanged,
+      onEditingComplete: widget.onEditingComplete,
+      onTap: widget.onTap,
+      onTapOutside: (PointerDownEvent event) => _focusNode.unfocus(),
+    );
+  }
+
+  InputDecoration get _decoration => InputDecoration(
+        hintText: widget.hintText,
+        labelText: widget.labelText,
+        alignLabelWithHint: false,
+        contentPadding: _padding,
+        errorMaxLines: 2,
+        fillColor: widget.backgroundColor ?? colors.primary.withValues(alpha: 0.05),
+        filled: widget.backgroundColor != null,
+        focusColor: colors.primary,
+        border: _createBorder(
+          widget.borderColor ?? colors.primary.withValues(alpha: 0.05),
+        ),
+        enabledBorder: _createBorder(widget.borderColor ?? colors.hint),
+        focusedBorder: _createBorder(widget.focusBorderColor ?? colors.primary),
+        focusedErrorBorder: _createBorder(colors.primary),
+        errorBorder: _createBorder(colors.error),
+        errorStyle: TextStyles.regular12(color: colors.error),
+        hintStyle: widget.hintTextStyle ??
+            TextStyles.regular12(color: colors.textSecondary),
+        labelStyle: widget.labelTextStyle ??
+            TextStyles.regular12(color: colors.textSecondary),
+        prefixIcon: _prefixIcon,
+        suffixIcon: _suffixIcon,
+      );
+
+  EdgeInsetsGeometry get _padding => EdgeInsets.symmetric(
+        horizontal: 16.w,
+        vertical: 16.h * widget.paddingVerticalFactory,
+      );
+
+  Widget? get _prefixIcon => widget.prefixIcon == null
+      ? widget.prefix
+      : InkWell(
+          onTap: widget.onPrefixIconPressed,
+          child: Icon(
+            widget.prefixIcon,
+            color: widget.prefixIconColor ?? colors.hint,
+          ),
+        );
+
+  Widget? get _suffixIcon => widget.suffixIcon == null
+      ? widget.suffix
+      : InkWell(
+          onTap: widget.onSuffixIconPressed,
+          child: Icon(
+            widget.suffixIcon,
+            color: widget.suffixIconColor ?? colors.hint,
+          ),
+        );
+
+  OutlineInputBorder _createBorder(Color color) {
+    return OutlineInputBorder(
+      borderRadius: widget.borderRadius ?? BorderRadius.circular(12.r),
+      borderSide: BorderSide(color: color),
     );
   }
 }

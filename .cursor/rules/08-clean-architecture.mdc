@@ -1,0 +1,336 @@
+---
+description: Clean Architecture — feature structure, layer boundaries, Cubit/UseCase/Repository placement, DI, no logic in widgets
+alwaysApply: true
+---
+
+## 8. Clean Architecture
+
+Follow `lib/features/profile/` as the canonical reference. Every new feature mirrors
+its folder layout, dependency direction, and naming — do not invent parallel
+patterns.
+
+### 8.1 Feature Folder Structure
+
+Each feature is self-contained under `lib/features/{feature_name}/`:
+
+```text
+lib/features/profile/
+├── profile_injection.dart          # GetIt registration + BlocProvider list
+├── data/
+│   ├── datasources/                # HTTP / local I/O only
+│   ├── models/                     # JSON parsing (extends domain entities)
+│   └── repositories/               # ProfileRepositoryImpl
+├── domain/
+│   ├── entities/                   # Pure Dart types — no Flutter, no Dio
+│   ├── repositories/               # ProfileRepository (abstract contract)
+│   └── usecases/                   # One UseCase per operation + *Params
+└── presentation/
+    ├── controller/{operation}/     # *Cubit + *States (part file)
+    ├── pages/                      # Screens (when added)
+    └── widgets/                    # Feature-specific UI (when added)
+```
+
+- One **Cubit per user-facing operation** — not one god cubit for the whole feature.
+- One **UseCase per repository method** — `GetStudentProfileUseCase`,
+  `UpdateStudentProfileUseCase`, etc.
+- Mirror operation names across layers: `get_student_profile` →
+  `GetStudentProfileCubit` → `GetStudentProfileUseCase` → `getStudentProfile()`.
+
+### 8.2 Layer Boundaries & Dependency Direction
+
+Dependencies flow **inward only**:
+
+```text
+Presentation (Cubit, pages, widgets)
+    ↓ depends on
+Domain (UseCase → Repository interface → Entity)
+    ↑ implemented by
+Data (RepositoryImpl → DataSource → Model)
+```
+
+| Layer | Owns | Must NOT import |
+|---|---|---|
+| **Domain** | Entities, repository contracts, use cases, `*Params` | `data/`, `presentation/`, Flutter, Dio |
+| **Data** | DataSource, models, repository impl, JSON/`AppException` | `presentation/` |
+| **Presentation** | Cubits, states, pages, widgets | `data/` (never datasource or repo impl) |
+
+```dart
+// ❌ BAD: cubit reaches into the data layer — bypasses domain, untestable
+class GetStudentProfileCubit extends Cubit<GetStudentProfileState> {
+  Future<void> fGetStudentProfile() async {
+    final response = await dioConsumer.get('/student/profile/edit'); // data layer leak
+    emit(GetStudentProfileSuccessState(data: Student.fromJson(response)));
+  }
+}
+
+// ✅ GOOD: cubit depends only on a domain use case
+class GetStudentProfileCubit extends Cubit<GetStudentProfileState> {
+  GetStudentProfileCubit(this.getStudentProfileUseCase)
+      : super(const GetStudentProfileInitialState());
+
+  final GetStudentProfileUseCase getStudentProfileUseCase;
+
+  Future<void> fGetStudentProfile() async {
+    emit(const GetStudentProfileLoadingState());
+    final result = await getStudentProfileUseCase(NoParams());
+    result.fold(
+      (failure) => emit(GetStudentProfileErrorState(
+        message: failure.message ?? Strings.pleaseTryAgainLater,
+      )),
+      (response) => emit(GetStudentProfileSuccessState(data: response.data)),
+    );
+  }
+}
+```
+
+### 8.3 Where Logic Belongs
+
+| Concern | Layer | Example (profile) |
+|---|---|---|
+| HTTP calls, status checks, `fromJson` | **DataSource** | `ProfileRemoteDataSourceImpl.getStudentProfile()` |
+| `AppException` → `Failure` mapping | **Repository impl** | `ProfileRepositoryImpl` — `on AppException catch` → `Left` |
+| Delegate to repository | **UseCase** | `GetStudentProfileUseCase.call()` → `repository.getStudentProfile()` |
+| Request field mapping (`first_name`) | **`*Params.toJson()`** | `UpdateStudentProfileParams` in usecase file |
+| Loading / success / error UI states | **Cubit** | `emit(Loading)` → `fold` → `emit(Success \| Error)` |
+| Assembling UI args into `*Params` | **Cubit** | `fUpdateStudentProfile(...)` builds `UpdateStudentProfileParams` |
+| Layout, theming, navigation triggers | **Widget / page** | `BlocConsumer` builder + listener only |
+
+**Rule:** If it touches the network, parses JSON, or maps exceptions — it belongs in
+**data**. If it decides what the UI should show next — it belongs in the **cubit**.
+If it draws pixels — it belongs in a **widget**.
+
+### 8.4 Don't Put Business Logic in Widgets
+
+Widgets render state and dispatch actions. They never call APIs, parse JSON, or
+decide success/failure.
+
+```dart
+// ❌ BAD: widget owns async work, validation, and error handling
+class StudentProfileScreen extends StatefulWidget {
+  @override
+  State<StudentProfileScreen> createState() => _StudentProfileScreenState();
+}
+
+class _StudentProfileScreenState extends State<StudentProfileScreen> {
+  Student? student;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final response = await dioConsumer.get('/student/profile/edit');
+      setState(() => student = Student.fromJson(response['data']));
+    } catch (e) {
+      showAppSnackBar(context: context, message: e.toString(), type: ToastType.error);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) => Text(student?.fullName ?? '');
+}
+
+// ✅ GOOD: widget listens to cubit state, dispatches via context.read
+class StudentProfileScreen extends StatelessWidget {
+  const StudentProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<GetStudentProfileCubit, GetStudentProfileState>(
+      listener: (context, state) {
+        if (state is GetStudentProfileErrorState) {
+          showAppSnackBar(
+            context: context,
+            message: state.message,
+            type: ToastType.error,
+          );
+        }
+      },
+      builder: (context, state) => switch (state) {
+        GetStudentProfileLoadingState() => const Center(
+          child: CircularProgressIndicator(),
+        ),
+        GetStudentProfileSuccessState(:final data) => StudentProfileBody(
+          student: data!,
+        ),
+        _ => const SizedBox.shrink(),
+      },
+    );
+  }
+}
+
+// Dispatch once on entry (route initState, screen wrapper, or button press):
+context.read<GetStudentProfileCubit>().fGetStudentProfile();
+```
+
+- Use **`BlocConsumer`** when a screen needs both rebuild (builder) and side effects
+  (listener — snackbars, navigation).
+- Use **`BlocBuilder`** / **`BlocSelector`** when only UI rebuild is needed.
+- Use **`context.read<Cubit>()`** to dispatch — never `await` network calls in widgets.
+
+### 8.5 Cubit & State Conventions
+
+Match the profile controller pattern exactly:
+
+```dart
+// get_student_profile_cubit.dart
+part 'get_student_profile_states.dart';
+
+class GetStudentProfileCubit extends Cubit<GetStudentProfileState> {
+  // ...
+  Future<void> fGetStudentProfile() async { /* f-prefix for all public actions */ }
+}
+
+// get_student_profile_states.dart
+part of 'get_student_profile_cubit.dart';
+
+sealed class GetStudentProfileState extends Equatable { /* ... */ }
+final class GetStudentProfileInitialState extends GetStudentProfileState { /* ... */ }
+final class GetStudentProfileLoadingState extends GetStudentProfileState { /* ... */ }
+final class GetStudentProfileSuccessState extends GetStudentProfileState { /* ... */ }
+final class GetStudentProfileErrorState extends GetStudentProfileState { /* ... */ }
+```
+
+- **`f` prefix** on cubit action methods: `fGetStudentProfile`, `fUpdateStudentProfile`.
+- **Sealed states** with `Initial → Loading → Success | Error` — use exhaustive
+  `switch` in builders.
+- States live in a **`part` file** — import only the cubit, not the states file.
+- Cubit holds **no mutable side-channel fields** — all UI-relevant data flows through
+  `emit` and sealed states so `BlocBuilder` stays reliable.
+- Register cubits as **`registerFactory`** (new instance per provider scope).
+
+### 8.6 Domain & Data Patterns
+
+**UseCase** — thin delegate to repository. Do not add orchestration here unless the
+feature genuinely needs multi-repository coordination.
+
+```dart
+class GetStudentProfileUseCase extends UseCase<GetStudentProfileResponse, NoParams> {
+  final ProfileRepository repository;
+  GetStudentProfileUseCase({required this.repository});
+
+  @override
+  Future<Either<Failure, GetStudentProfileResponse>> call(NoParams params) async {
+    return await repository.getStudentProfile(params: params);
+  }
+}
+```
+
+**Repository impl** — catch `AppException`, return `Either`:
+
+```dart
+@override
+Future<Either<Failure, GetStudentProfileResponse>> getStudentProfile({
+  required NoParams params,
+}) async {
+  try {
+    final response = await remote.getStudentProfile();
+    return Right(response);
+  } on AppException catch (error) {
+    Log.e('[getStudentProfile] [${error.runtimeType}] ---- ${error.message}');
+    return Left(error.toFailure());
+  }
+}
+```
+
+**Model** — extends entity, adds `fromJson`. No separate mapper class unless parsing
+logic is genuinely complex:
+
+```dart
+class GetStudentProfileModel extends GetStudentProfileResponse {
+  factory GetStudentProfileModel.fromJson(Map<String, dynamic> json) =>
+      GetStudentProfileModel(
+        status: json['status'] ?? '',
+        message: json['message'] ?? '',
+        data: StudentModel.fromJson(json['data']),
+      );
+}
+```
+
+**DataSource** — owns endpoints and raw HTTP. Throws `ServerException` on failure:
+
+```dart
+Future<GetStudentProfileModel> getStudentProfile() async {
+  const endpoint = '/student/profile/edit';
+  final response = await dioConsumer.get(endpoint);
+  if (response['status'] == 'success') {
+    return GetStudentProfileModel.fromJson(response);
+  }
+  throw ServerException(message: response['message'] ?? '');
+}
+```
+
+- Co-locate **`*Params`** with their use case file; include `toJson()` for request
+  bodies — this is the existing project convention.
+- Return **`Either<Failure, T>`** end-to-end from repository through use case to cubit.
+
+### 8.7 Dependency Injection
+
+Every feature exposes `{feature}_injection.dart` following profile:
+
+```dart
+Future<void> initProfileFeatureInjection() async {
+  // Cubits — registerFactory
+  _sl.registerFactory<GetStudentProfileCubit>(() => GetStudentProfileCubit(_sl()));
+
+  // UseCases — registerLazySingleton
+  _sl.registerLazySingleton<GetStudentProfileUseCase>(
+    () => GetStudentProfileUseCase(repository: _sl()),
+  );
+
+  // Repository — registerLazySingleton
+  _sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(remote: _sl()),
+  );
+
+  // DataSource — registerLazySingleton
+  _sl.registerLazySingleton<ProfileRemoteDataSource>(
+    () => ProfileRemoteDataSourceImpl(),
+  );
+}
+
+List<BlocProvider> get profileBlocs => <BlocProvider>[
+  BlocProvider<GetStudentProfileCubit>(
+    create: (context) => _sl<GetStudentProfileCubit>(),
+  ),
+  // ...one BlocProvider per cubit
+];
+```
+
+- Call `init{Feature}FeatureInjection()` from `injection_container.dart`.
+- Spread `...{feature}Blocs` into `MultiBlocProvider` in `app.dart`.
+- **Never** construct cubits, use cases, or repositories with `new` in widgets.
+
+### 8.8 Avoid Unnecessary Abstractions
+
+Follow profile's pragmatic style — add layers only when they solve a real problem:
+
+| Don't add | Why — profile already handles it |
+|---|---|
+| Separate mapper classes | Models extend entities with `fromJson` |
+| Service layer between cubit and use case | Cubit → UseCase is sufficient |
+| One god cubit per feature | One cubit per operation scales and tests cleanly |
+| Extra repository interfaces per operation | One `{Feature}Repository` with focused methods |
+| Generic `BaseCubit` / `BaseRepository` wrappers | Repeat the proven pattern; don't abstract prematurely |
+| Domain events / command buses | Cubit `f*` methods are the dispatch mechanism |
+
+**Do add** a new use case + cubit + datasource method when the operation is a
+distinct user action or API endpoint — that is the expected unit of decomposition,
+not over-engineering.
+
+### 8.9 Quick Checklist
+
+| Check | Pass criteria |
+|---|---|
+| Feature folder matches profile layout | `data/`, `domain/`, `presentation/controller/` |
+| Domain imports nothing from data/presentation | No Flutter, Dio, or `*_model.dart` |
+| Cubit imports only use cases + entities | No datasource, no repo impl |
+| Widgets dispatch via `context.read<Cubit>().f…()` | No `dioConsumer`, no `setState` for API data |
+| Errors flow as `Either<Failure, T>` | Exceptions caught only in repository impl |
+| DI registered in `{feature}_injection.dart` | Factory for cubits, lazy singleton for rest |
+| States are sealed + `part of` cubit | `Initial / Loading / Success / Error` |
+
+---

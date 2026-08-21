@@ -1,5 +1,5 @@
 ---
-description: Modern Dart language features (Dart 3+)
+description: Modern Dart 3+ features — enums, sealed classes, records, patterns, extensions, mixins
 alwaysApply: true
 ---
 

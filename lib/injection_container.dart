@@ -7,7 +7,6 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:app_language/app_language.dart';
 import 'config/themes/app_theme.dart';
 import 'core/api/app_interceptors.dart';
 import 'core/api/dio_consumer.dart';
@@ -16,6 +15,7 @@ import 'core/services/local_storage/shared_preferences_service.dart';
 import 'core/utils/enums.dart';
 import 'core/utils/general_methods.dart';
 import 'core/utils/values/colors.dart';
+import 'features/profile/profile_injection.dart';
 import 'features/theme/theme_injection.dart';
 
 abstract class ServiceLocator {
@@ -26,7 +26,7 @@ abstract class ServiceLocator {
 
     /// Features
     await initThemeFeatureInjection();
-    _injectLanguageCubit();
+    await initProfileFeatureInjection();
 
     /// Core
     injectFCMTokenSingleton('');
@@ -43,17 +43,6 @@ abstract class ServiceLocator {
     injectDeviceTypeSingleton(
         Platform.isIOS ? DeviceType.ios : DeviceType.android);
     injectDeviceIdSingleton(await getDeviceId());
-  }
-
-  static void _injectLanguageCubit() {
-    instance.registerLazySingleton<LanguageCubit>(
-      () => LanguageCubit(
-        config: LanguageConfig(
-          assetPathPrefix: 'assets/lang/',
-          defaultLanguage: AppLanguage.fromCode('ar_SA'),
-        ),
-      ),
-    );
   }
 
   static void _injectDio() {

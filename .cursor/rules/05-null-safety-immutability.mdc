@@ -1,5 +1,5 @@
 ---
-description: Null safety and immutability guidelines for Dart
+description: Null safety and immutability patterns for Dart
 alwaysApply: true
 ---
 

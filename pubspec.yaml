@@ -21,12 +21,11 @@ dependencies:
     path: ./packages/either
   field_validator:
     path: ./packages/field_validator
-  app_language:
-    path: ./packages/app_language
+  language:
+    path: ./packages/language
   dio: ^5.11.0
   go_router: ^17.3.0
   flutter_bloc: ^9.1.1
-  hydrated_bloc: ^10.0.0
   shared_preferences: ^2.5.5
   flutter_secure_storage: ^10.3.1
   shimmer: ^3.0.0
@@ -59,7 +58,6 @@ dependencies:
   flutter_html: ^3.0.0
   share_plus: ^13.3.0
   font_awesome_flutter: ^11.0.0
-  mockito: ^5.6.4
 
 # Override win32 to v6.x to resolve conflict between share_plus/package_info_plus (which require win32 ^6.0.1) and file_picker (which constrains win32 ^5.9.0).
 dependency_overrides:
@@ -72,12 +70,14 @@ dev_dependencies:
   go_router_builder: ^4.4.0
   build_runner: ^2.15.1
   bloc_test: ^10.0.0
+  mockito: ^5.6.4
 
 
 flutter:
   uses-material-design: true
 
   assets:
+    - language.yaml
     - assets/
     - assets/lang/
     - assets/icons/

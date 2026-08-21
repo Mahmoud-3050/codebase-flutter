@@ -39,7 +39,7 @@ class SecureStorageServiceImpl extends SecureStorageService {
   //region:: AccessToken
   @override
   Future<String?> getAccessToken() async =>
-      (await instance.readAll())[_SecureStorageServiceKeys.accessToken];
+      instance.read(key: _SecureStorageServiceKeys.accessToken);
 
   @override
   Future<void> saveAccessToken(String token) =>
@@ -54,7 +54,7 @@ class SecureStorageServiceImpl extends SecureStorageService {
   //region:: DeviceToken
   @override
   Future<String?> getDeviceToken() async =>
-      (await instance.readAll())[_SecureStorageServiceKeys.deviceToken];
+      instance.read(key: _SecureStorageServiceKeys.deviceToken);
 
   @override
   Future<void> saveDeviceToken(String token) =>

@@ -1,4 +1,4 @@
-import 'package:app_language/app_language.dart';
+import 'package:language/language.dart';
 
 abstract class Strings {
   static String get appName => 'app_name'.tr;

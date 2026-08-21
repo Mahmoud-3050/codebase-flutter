@@ -1,5 +1,5 @@
 ---
-description: SOLID principles for Dart
+description: SOLID principles with Dart examples — SRP, OCP, LSP, ISP, DIP
 alwaysApply: true
 ---
 

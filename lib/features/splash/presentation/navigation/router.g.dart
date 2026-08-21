@@ -13,6 +13,7 @@ List<RouteBase> get $appRoutes => [
 RouteBase get $splashRoute => GoRouteData.$route(
       path: '/splash',
       name: '/splash',
+      hasOverriddenOnExit: false,
       factory: $SplashRoute._fromState,
     );
 

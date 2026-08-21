@@ -1,5 +1,5 @@
 ---
-description: Clean code guidelines for Dart
+description: Clean code guidelines for Dart — naming, small methods, no duplication, no magic numbers/strings, single responsibility, readability, guard clauses
 alwaysApply: true
 ---
 
@@ -203,6 +203,88 @@ class InsufficientFundsException implements Exception {
 if (balance < amount) {
   throw InsufficientFundsException(amount - balance);
 }
+```
+
+### 1.9 Single Responsibility Principle (One Reason to Change)
+A **class** should have exactly one reason to change. If a class mixes networking,
+persistence, and business rules, a change to any one of them risks breaking the
+others. (This is the class-level counterpart to 1.1's function-level rule.)
+
+```dart
+// ❌ BAD: fetches, caches, and transforms — three reasons to change
+class ProductService {
+  Future<List<Product>> getProducts() async {
+    final response = await http.get(Uri.parse('https://api.shop.com/products'));
+    final data = jsonDecode(response.body) as List;
+    await _prefs.setString('cached_products', response.body);
+    return data.map((e) => Product(
+      name: (e['name'] as String).toUpperCase(),
+      price: e['price'] as double,
+    )).toList();
+  }
+}
+
+// ✅ GOOD: each class owns exactly one responsibility
+class ProductApi {
+  Future<String> fetchRaw() async {
+    final response = await http.get(Uri.parse('https://api.shop.com/products'));
+    return response.body;
+  }
+}
+
+class ProductCache {
+  Future<void> save(String raw) => _prefs.setString('cached_products', raw);
+}
+
+class ProductMapper {
+  static List<Product> fromRawJson(String raw) {
+    final data = jsonDecode(raw) as List;
+    return data.map((e) => Product(
+      name: (e['name'] as String).toUpperCase(),
+      price: e['price'] as double,
+    )).toList();
+  }
+}
+
+class ProductService {
+  ProductService(this._api, this._cache);
+  final ProductApi _api;
+  final ProductCache _cache;
+
+  Future<List<Product>> getProducts() async {
+    final raw = await _api.fetchRaw();
+    await _cache.save(raw);
+    return ProductMapper.fromRawJson(raw);
+  }
+}
+```
+
+### 1.10 Readability & Formatting
+Code is read far more often than it's written. Favor the version a teammate can
+scan in seconds over the version that's merely "clever" or terse.
+
+- **Comments explain *why*, not *what***. If a comment restates the code, delete
+  either the comment or rewrite the code to be self-explanatory.
+- **Avoid long chained expressions** that force the reader to mentally unwind
+  several operations at once — break them into named intermediate variables.
+- **Keep consistent formatting** (trailing commas, brace style, import ordering)
+  so diffs stay focused on logic, not style noise — let `dart format` own this.
+- **One statement's worth of complexity per line.** If a line needs a comment to
+  explain itself, it's a candidate for extraction into a well-named variable or
+  function.
+
+```dart
+// ❌ BAD: unreadable in one pass, no clue what it computes without tracing it
+final r = users.where((u) => u.age > 18).map((u) => u.orders.fold<double>(
+    0, (s, o) => s + o.total)).reduce((a, b) => a + b) / users.length;
+
+// ✅ GOOD: each step is named, the intent reads top to bottom
+double _totalOrderValue(User user) =>
+    user.orders.fold(0, (sum, order) => sum + order.total);
+
+final adults = users.where((u) => u.age >= legalAdultAge);
+final totalRevenue = adults.map(_totalOrderValue).reduce((a, b) => a + b);
+final averageRevenuePerUser = totalRevenue / users.length;
 ```
 
 ---

@@ -4,6 +4,7 @@ import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
 import '../../../../core/utils/enums.dart';
 import '../../../../core/utils/log_utils.dart';
+import '../../../../core/utils/values/strings.dart';
 import '../../domain/repositories/theme_repository.dart';
 import '../datasources/theme_local_data_source.dart';
 
@@ -12,25 +13,34 @@ class ThemeRepositoryImpl implements ThemeRepository {
 
   ThemeRepositoryImpl({required this.themeLocalDataSource});
 
-  @override
-  Future<Either<Failure, void>> changeTheme({required Themes theme}) async {
+  Future<Either<Failure, T>> _guard<T>(
+    Future<T> Function() call,
+    String operation,
+  ) async {
     try {
-      final result = await themeLocalDataSource.changeTheme(theme: theme);
-      return Right(result);
+      final T result = await call();
+      return Right<Failure, T>(result);
     } on AppException catch (error) {
-      Log.e('[changeTheme] [${error.runtimeType.toString()}] ---- ${error.message}');
-      return Left<Failure, bool>(error.toFailure());
+      Log.e('[$operation] [${error.runtimeType}] ---- ${error.message}');
+      return Left<Failure, T>(error.toFailure());
+    } on Object catch (error, stackTrace) {
+      Log.e('[$operation] [${error.runtimeType}] ---- $error\n$stackTrace');
+      return Left<Failure, T>(
+        ServerFailure(message: Strings.pleaseTryAgainLater),
+      );
     }
   }
 
   @override
-  Future<Either<Failure, Themes>> getSavedTheme() async {
-    try {
-      final languageCode = await themeLocalDataSource.getSavedTheme();
-      return Right(languageCode);
-    } on AppException catch (error) {
-      Log.e('[getSavedTheme] [${error.runtimeType.toString()}] ---- ${error.message}');
-      return Left<Failure, Themes>(error.toFailure());
-    }
-  }
+  Future<Either<Failure, void>> changeTheme({required Themes theme}) =>
+      _guard(
+        () => themeLocalDataSource.changeTheme(theme: theme),
+        'changeTheme',
+      );
+
+  @override
+  Future<Either<Failure, Themes>> getSavedTheme() => _guard(
+        () => themeLocalDataSource.getSavedTheme(),
+        'getSavedTheme',
+      );
 }

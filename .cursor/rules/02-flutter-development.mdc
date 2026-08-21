@@ -1,0 +1,325 @@
+---
+description: Flutter development guidelines — const usage, widget composition, null safety, async/await, error handling, lifecycle/disposal, rebuild avoidance
+alwaysApply: true
+---
+
+## 2. Flutter Development Guidelines
+
+### 2.1 Use `const` Wherever Possible
+`const` widgets are built once and reused across rebuilds instead of being
+reconstructed every frame — skip it and you're paying a rebuild cost for
+something that never changes.
+
+Use `flutter_screenutil` (`.w`, `.h`, `.sp`) and shared `TextStyles` for
+responsive spacing and typography — those values are runtime-sized and cannot be
+`const`. Mark the widget itself `const` and reserve `const` for subtrees whose
+values truly never change (icons, static labels, fixed durations).
+
+```dart
+// ❌ BAD: fixed pixel values, no const constructor, rebuilt every parent rebuild
+class HeaderBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: EdgeInsets.all(16),
+      child: Text('Welcome', style: TextStyle(fontSize: 20)),
+    );
+  }
+}
+
+// ✅ GOOD: responsive sizing via ScreenUtil, shared TextStyles, const constructor
+class HeaderBanner extends StatelessWidget {
+  const HeaderBanner({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(16.w),
+      child: Text('Welcome', style: TextStyles.medium20()),
+    );
+  }
+}
+```
+
+Enable `prefer_const_constructors` and `prefer_const_literals_to_create_immutables`
+in `analysis_options.yaml` so the analyzer catches missed opportunities instead of
+relying on manual review.
+
+### 2.2 Proper Widget Composition
+Break large `build()` methods into small, named widgets instead of deeply nested
+anonymous trees. Composition — not inheritance, not giant methods — is how Flutter
+UIs stay maintainable.
+
+```dart
+// ❌ BAD: one build() method doing everything, 5+ levels of nesting, fixed sizes
+class ProfileScreen extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Column(
+        children: [
+          Container(
+            padding: EdgeInsets.all(16),
+            child: Row(
+              children: [
+                CircleAvatar(backgroundImage: NetworkImage(user.avatarUrl)),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(user.name, style: TextStyle(fontSize: 18)),
+                    Text(user.email, style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          // ...another 100 lines
+        ],
+      ),
+    );
+  }
+}
+
+// ✅ GOOD: each piece is a small, independently testable widget with responsive sizing
+class ProfileScreen extends StatelessWidget {
+  const ProfileScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Column(
+        children: [_ProfileHeader()],
+      ),
+    );
+  }
+}
+
+class _ProfileHeader extends StatelessWidget {
+  const _ProfileHeader();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.all(16.w),
+      child: Row(
+        children: const [_ProfileAvatar(), _ProfileNameAndEmail()],
+      ),
+    );
+  }
+}
+```
+
+A widget class is the right extraction unit when a chunk of the tree (a) has a
+clear name, (b) could plausibly be reused, or (c) is long enough to obscure the
+surrounding structure.
+
+### 2.3 Null Safety — Handle, Don't Silence
+The `!` operator turns a compile-time null check into a runtime crash waiting to
+happen. Prefer patterns that make the null case explicit and handled.
+
+```dart
+// ❌ BAD: force-unwrapping hides the null case until it crashes in production
+String getDisplayName(User? user) {
+  return user!.name!;
+}
+
+// ✅ GOOD: the null case is a decision, not a crash
+String getDisplayName(User? user) {
+  return user?.name ?? 'Guest';
+}
+
+// ✅ GOOD: guard clause when null truly is an error case
+String getDisplayName(User? user) {
+  if (user == null) throw ArgumentError('User must not be null here');
+  return user.name;
+}
+```
+
+- Reach for `!` only when nullability was already narrowed just above (e.g. right
+  after an `if (x != null)` check the analyzer can't yet promote automatically).
+- Prefer `late` over `!`-laden nullable fields only when the field is *guaranteed*
+  to be set before first read (e.g. initialized in `initState`) — otherwise it just
+  moves the crash from "wrong value" to "not yet assigned."
+- Model "value or absent" with `?`/`??`, not with sentinel values like `-1` or `''`.
+
+### 2.4 Async/Await Best Practices
+Async code has Flutter-specific failure modes beyond plain Dart: widgets can be
+disposed mid-`await`, and `BuildContext` can go stale. Keep async work in Cubits
+and Blocs — widgets should dispatch events, not own `await`/`setState` cycles.
+
+```dart
+// ❌ BAD: async logic in the widget — errors swallowed, setState after dispose
+class _SearchFieldState extends State<SearchField> {
+  Future<void> _onSubmit(String query) async {
+    final results = await _api.search(query); // if this throws, no one catches it
+    setState(() => _results = results); // may run after the widget is disposed
+  }
+}
+
+// ✅ GOOD: Cubit owns the async work; widget only dispatches
+class SearchCubit extends Cubit<SearchState> {
+  SearchCubit(this._api) : super(const SearchInitial());
+
+  final SearchApi _api;
+
+  Future<void> search(String query) async {
+    emit(const SearchLoading());
+    try {
+      final results = await _api.search(query);
+      emit(SearchSuccess(results));
+    } on ApiException catch (e) {
+      emit(SearchError(e.message));
+    }
+  }
+}
+
+// In the widget — no await, no setState, no mounted check needed
+onSubmitted: (query) => context.read<SearchCubit>().search(query),
+```
+
+- Only event handlers (`onPressed`, etc.) should be `async void`; everything else
+  returns `Future<T>` so callers can `await` and handle errors.
+- When a widget must `await` (e.g. `showDialog`), check `context.mounted` before
+  using `context` or calling `Navigator` after the `await`.
+- Never fire-and-forget a `Future` that can fail — at minimum attach
+  `.catchError(...)` or await it.
+- Use `Future.wait` for independent async calls instead of awaiting them
+  sequentially when there's no dependency between them.
+
+### 2.5 Error Handling
+Every async boundary (network, disk, platform channel) needs an explicit failure
+path — the user should see something actionable, not a red screen or a silent no-op.
+Model loading, success, and failure as distinct Cubit/Bloc states.
+
+```dart
+// ❌ BAD: no failure path — a network error just leaves the UI stuck loading
+class OrdersCubit extends Cubit<OrdersState> {
+  OrdersCubit(this._repository) : super(const OrdersInitial());
+
+  final OrdersRepository _repository;
+
+  Future<void> loadOrders() async {
+    final orders = await _repository.fetchOrders();
+    emit(OrdersLoaded(orders));
+  }
+}
+
+// ✅ GOOD: failure has a distinct, user-facing state
+class OrdersCubit extends Cubit<OrdersState> {
+  OrdersCubit(this._repository) : super(const OrdersInitial());
+
+  final OrdersRepository _repository;
+
+  Future<void> loadOrders() async {
+    emit(const OrdersLoading());
+    try {
+      final orders = await _repository.fetchOrders();
+      emit(OrdersLoaded(orders));
+    } on NetworkException catch (_) {
+      emit(const OrdersOffline());
+    } on ApiException catch (e) {
+      emit(OrdersError(e.message));
+    }
+  }
+}
+```
+
+- Catch specific exception types (see clean-code §1.8) rather than bare `catch (e)`
+  — a bare catch can mask bugs (e.g. a `NoSuchMethodError`) as if they were expected
+  failures.
+- Never leave an empty `catch` block. If an error genuinely can be ignored, say so
+  with a comment explaining why.
+- For Firebase/API/payment integrations, map raw SDK exceptions to your own
+  domain exceptions at the boundary, so the rest of the app never depends on a
+  third-party SDK's exception shape directly.
+
+### 2.6 Lifecycle & Disposal
+Anything a widget creates that outlives a single `build()` call —
+`AnimationController`, `TextEditingController`, `FocusNode`, `StreamSubscription`,
+`ScrollController` — must be released in `dispose()`, or it leaks and can keep
+firing callbacks into a dead widget.
+
+```dart
+// ❌ BAD: controller and subscription are never cleaned up
+class _VideoPlayerState extends State<VideoPlayer> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller =
+      AnimationController(vsync: this, duration: const Duration(seconds: 1));
+  late final StreamSubscription<Position> _positionSub =
+      widget.player.positionStream.listen(_onPositionChanged);
+
+  @override
+  Widget build(BuildContext context) => /* ... */ const SizedBox();
+}
+
+// ✅ GOOD: everything acquired is released
+class _VideoPlayerState extends State<VideoPlayer> with SingleTickerProviderStateMixin {
+  late final AnimationController _controller =
+      AnimationController(vsync: this, duration: const Duration(seconds: 1));
+  late final StreamSubscription<Position> _positionSub =
+      widget.player.positionStream.listen(_onPositionChanged);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    _positionSub.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) => /* ... */ const SizedBox();
+}
+```
+
+- Pair every `Controller()`/`.listen()`/`FocusNode()` with a matching disposal call
+  in the same review pass — treat them as acquire/release pairs.
+- Always call `super.dispose()` **last**, after your own cleanup.
+- In Cubits, cancel subscriptions and close streams in `close()` — call
+  `super.close()` last, same discipline as `dispose()`.
+
+### 2.7 Avoid Unnecessary Rebuilds
+A rebuild that doesn't change anything on screen is wasted work — and at scale
+(long lists, animations) it's the difference between smooth and janky.
+
+```dart
+// ❌ BAD: BlocBuilder rebuilds on ANY state change, even fields this widget ignores
+class CartTotalLabel extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return BlocBuilder<CartCubit, CartState>(
+      builder: (context, state) {
+        if (state is! CartLoaded) return const SizedBox.shrink();
+        return Text('Total: \$${state.total}');
+      },
+    );
+  }
+}
+
+// ✅ GOOD: BlocSelector narrows rebuilds to the one field this widget displays
+class CartTotalLabel extends StatelessWidget {
+  const CartTotalLabel({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<CartCubit, CartState, double>(
+      selector: (state) => state is CartLoaded ? state.total : 0,
+      builder: (context, total) => Text('Total: \$$total'),
+    );
+  }
+}
+```
+
+- Extract the parts of a widget tree that change into their own small widgets, so
+  a rebuild higher up doesn't force unrelated `const` subtrees to rebuild.
+- In Bloc/Cubit, use `BlocSelector` or `BlocBuilder` with `buildWhen` to watch
+  only the specific field a widget reads — not the whole state object.
+- Avoid defining closures (`onTap: () => doThing()`) inline inside frequently
+  rebuilt widgets when the callback can be hoisted to a stable method reference —
+  it avoids unnecessary `didUpdateWidget` diffing churn in some cases, though this
+  matters far less than the `const`/`BlocSelector` points above.
+- Use `ListView.builder`/`GridView.builder` (lazy) instead of building a full
+  `List<Widget>` up front for long or unbounded lists.
+- Add `Key`s to list items when the list can reorder, insert, or remove — without
+  one, Flutter can't tell which widget maps to which data and may rebuild or
+  animate the wrong element.
+
+---
