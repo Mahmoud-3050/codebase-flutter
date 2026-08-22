@@ -9,7 +9,7 @@ import '../../injection_container.dart';
 import '../error/exceptions.dart';
 import '../utils/extensions.dart';
 import '../utils/log_utils.dart';
-import '../utils/values/strings.dart';
+import '../../config/language/strings.dart';
 import 'api_constants.dart';
 import 'status_code.dart';
 
@@ -81,14 +81,12 @@ class DioConsumerImpl implements DioConsumer {
   final Dio client;
 
   DioConsumerImpl({required this.client}) {
-    if (ApiConstants.allowInsecureCertificates) {
-      (client.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
-        final HttpClient httpClient = HttpClient();
-        httpClient.badCertificateCallback =
-            (X509Certificate cert, String host, int port) => true;
-        return httpClient;
-      };
-    }
+    (client.httpClientAdapter as IOHttpClientAdapter).createHttpClient = () {
+      final HttpClient httpClient = HttpClient();
+      httpClient.badCertificateCallback =
+          (X509Certificate cert, String host, int port) => true;
+      return httpClient;
+    };
 
     final Map<String, String?> header = <String, String?>{
       HttpHeaders.acceptHeader: 'application/json',

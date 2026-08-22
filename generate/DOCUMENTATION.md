@@ -238,13 +238,14 @@ lib/features/<feature_name>/
 ### What It Does
 
 Generates localization files from a simple key-value JSON input:
-- Appends new keys to `assets/lang/en.json` and `assets/lang/ar.json`.
-- Generates a Dart `Strings` class at `lib/core/utils/values/strings.dart` with GetX `.tr` getters.
+- Appends new keys to **every existing** `assets/lang/*.json` file (`en.json`, `ar.json`, and country files such as `ar_EG.json`, `ar_SA.json`, `ar_OM.json` if they exist). Missing files are not created.
+- With `--d`, **removes** those keys from all of those JSON files.
+- Regenerates a Dart `Strings` class at `lib/config/language/strings.dart` with `.tr` getters and `.trParams` methods (from `en.json`, or the first `en_*` file).
 
 ### How to Run
 
 ```bash
-# Add new keys (update mode)
+# Add new keys (append mode)
 dart generate/strings/main.dart
 
 # Delete mode
@@ -253,28 +254,91 @@ dart generate/strings/main.dart --d
 
 ### Input Format (`lang.json`)
 
+Each entry is a key (or English sentence converted to a snake_case key) mapped
+to an object of locale codes → strings. The generator writes into **existing**
+`assets/lang/*.json` files only (`en_EG`, `en_SA`, `en_OM`, `ar_EG`, …).
+
+**Language defaults** — every English file gets `en`, every Arabic file gets `ar`:
+
 ```json
 {
-  "choose_future_date_and_time#;#Please choose a future date and time": "الرجاء اختيار تاريخ ووقت في المستقبل"
+  "choose_future_date_and_time": {
+    "en": "Please choose a future date and time",
+    "ar": "الرجاء اختيار تاريخ ووقت في المستقبل"
+  }
 }
 ```
 
-- **Key** (left): The snake_case key, optionally followed by `#;#` and an English default value.
-- **Value** (right): The Arabic translation.
+**Country values** — listed locales get those strings. An omitted country file
+uses the first entry of the same language (`en_OM` → first `en_*`):
+
+```json
+{
+  "welcome": {
+    "en_EG": "Welcome (Egypt)",
+    "en_SA": "Welcome (Saudi)",
+    "ar_EG": "أهلًا",
+    "ar_SA": "هلا"
+  }
+}
+```
+
+**Language + country** — omitted files use `en` / `ar` when those keys exist
+(they win over “first country”):
+
+```json
+{
+  "welcome": {
+    "en": "Welcome",
+    "ar": "مرحبا",
+    "en_EG": "Welcome (Egypt)",
+    "ar_EG": "أهلًا"
+  }
+}
+```
+
+Lookup for a file stem: exact locale → `en` / `ar` → first same-language value
+in the object → the outer key text.
+
+**Placeholders** — `{identifier}` belongs in **values only**, never in the outer key:
+
+```json
+{
+  "welcome": {
+    "en": "welcome {username}",
+    "ar": "مرحبا {username}",
+    "ar_EG": "اهلا وسهلا {username}"
+  },
+  "counts_from": {
+    "en": "{current} counts from {total}",
+    "ar": "{current} عدد من {total}"
+  }
+}
+```
+
+Generated API uses required named `String` parameters:
+
+```dart
+Strings.welcome(username: 'Ahmed');
+Strings.countsFrom(current: '10', total: '20');
+```
+
 - Dart reserved keywords are automatically skipped.
 - Keys ending with `_` are treated as special suffixes.
 
 ### Output
 
-**`assets/lang/en.json`** — English translations appended.  
-**`assets/lang/ar.json`** — Arabic translations appended.  
-**`lib/core/utils/values/strings.dart`** — Generated Dart class:
+**`assets/lang/*.json`** — translations appended or removed on each existing file.  
+**`lib/config/language/strings.dart`** — Generated Dart class:
 
 ```dart
-import 'package:get/get_utils/src/extensions/internacionalization.dart';
+import 'package:language/language.dart';
 
 abstract class Strings {
   static String get chooseFutureDateAndTime => 'choose_future_date_and_time'.tr;
+
+  static String welcome({required String username}) =>
+      'welcome'.trParams({'username': username});
 }
 ```
 

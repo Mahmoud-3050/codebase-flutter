@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../injection_container.dart';
-import '../utils/values/strings.dart';
+import '../../config/language/strings.dart';
 import '../utils/values/text_styles.dart';
 import 'app_shimmer.dart';
 

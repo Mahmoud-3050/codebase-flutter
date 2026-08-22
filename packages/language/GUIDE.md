@@ -19,7 +19,7 @@ Import `package:language/language.dart`. That barrel exports:
 | `LanguageStorage` / `InMemoryLanguageStorage` | persist last code |
 | `LanguageChangeListener` | host side effects on change |
 | `LanguageBuilder` | rebuild `MaterialApp` when locale changes |
-| `LanguageLocalizations` + `'key'.tr` | string lookup |
+| `LanguageLocalizations` + `'key'.tr` / `'key'.trParams` | string lookup / named `{placeholder}` substitution |
 | `LanguageLocalizationsSetup` | `supportedLocales`, delegates, resolution |
 | Exceptions | YAML, file names, init, unsupported language |
 
@@ -87,7 +87,9 @@ flutter:
 ```
 
 JSON files are flat string maps. Missing keys: `'some_key'.tr` returns
-`some_key`.
+`some_key`. Named holes use `{identifier}` in the JSON value and
+`'key'.trParams({'identifier': 'value'})` at the call site. Unmatched
+`{identifier}` tokens are left as-is.
 
 ## 3. Implement `LanguageStorage` (persist locale)
 
@@ -213,6 +215,7 @@ the first `ar_*`, then `defaultLanguage` — not `files.first`.
 
 ```dart
 Text('welcome_message'.tr);
+Text('welcome'.trParams({'username': 'Ahmed'}));
 
 final languages = Language.instance.supportedLanguages;
 await Language.instance.changeLanguage(languages.first);

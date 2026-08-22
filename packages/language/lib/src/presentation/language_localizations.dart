@@ -43,8 +43,19 @@ class LanguageLocalizations {
   }
 
   String text(String key) => _localizedStrings[key] ?? key;
+
+  String textParams(String key, Map<String, String> params) {
+    String result = text(key);
+    params.forEach((String name, String value) {
+      result = result.replaceAll('{$name}', value);
+    });
+    return result;
+  }
 }
 
 extension LanguageLocalizationsExtension on String {
   String get tr => LanguageLocalizations.instance.text(this);
+
+  String trParams([Map<String, String> params = const <String, String>{}]) =>
+      LanguageLocalizations.instance.textParams(this, params);
 }

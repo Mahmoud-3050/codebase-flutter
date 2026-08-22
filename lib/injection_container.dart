@@ -7,16 +7,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'config/themes/app_theme.dart';
-import 'core/api/app_interceptors.dart';
+import 'core/api/api_interceptors.dart';
 import 'core/api/dio_consumer.dart';
 import 'core/services/local_storage/secure_storage_service.dart';
 import 'core/services/local_storage/shared_preferences_service.dart';
 import 'core/utils/enums.dart';
 import 'core/utils/general_methods.dart';
-import 'core/utils/values/colors.dart';
 import 'features/profile/profile_injection.dart';
-import 'features/theme/theme_injection.dart';
+
+export 'config/themes/extra_colors.dart';
 
 abstract class ServiceLocator {
   static final GetIt instance = GetIt.instance;
@@ -25,7 +24,6 @@ abstract class ServiceLocator {
     instance.allowReassignment = true;
 
     /// Features
-    await initThemeFeatureInjection();
     await initProfileFeatureInjection();
 
     /// Core
@@ -36,7 +34,7 @@ abstract class ServiceLocator {
     _injectSecureStorage();
     _injectDio();
     _injectDioConsumer();
-    _injectAppInterceptors();
+    _injectApiInterceptors();
     _injectPrettyDioLogInterceptor();
     _injectLogInterceptor();
     injectRoutesStackSingleton(<String>[]);
@@ -54,8 +52,8 @@ abstract class ServiceLocator {
         () => DioConsumerImpl(client: instance()));
   }
 
-  static void _injectAppInterceptors() {
-    instance.registerLazySingleton<AppInterceptors>(() => AppInterceptors());
+  static void _injectApiInterceptors() {
+    instance.registerLazySingleton<ApiInterceptors>(() => ApiInterceptors());
   }
 
   static void _injectPrettyDioLogInterceptor() {
@@ -99,23 +97,6 @@ abstract class ServiceLocator {
         () => SecureStorageServiceImpl(instance: instance()));
   }
 
-  static void injectAppColors(BuildContext context, {Themes? theme}) async {
-    if (theme != null) {
-      instance.registerLazySingleton<AppColors>(() =>
-          getAppTheme(context: context, isLightTheme: theme == Themes.light)
-              .extension<AppColors>()!);
-      log('injectAppColors theme != null');
-    } else {
-      instance.registerLazySingleton<AppColors>(
-          () => Theme.of(context).extension<AppColors>()!);
-      log('injectAppColors of(context)');
-    }
-  }
-
-  static void injectAppTheme(Themes theme) async {
-    instance.registerLazySingleton<Themes>(() => theme);
-  }
-
   static void injectRoutesStackSingleton(List<String> routes) {
     instance.registerLazySingleton<List<String>>(() => routes,
         instanceName: 'routesStack');
@@ -152,17 +133,13 @@ SecureStorageService get secureStorageService =>
 
 DioConsumer get dioConsumer => ServiceLocator.instance<DioConsumer>();
 
-AppInterceptors get appInterceptors =>
-    ServiceLocator.instance<AppInterceptors>();
+ApiInterceptors get appInterceptors =>
+    ServiceLocator.instance<ApiInterceptors>();
 
 LogInterceptor get logInterceptor => ServiceLocator.instance<LogInterceptor>();
 
 PrettyDioLogger get prettyDioLogger =>
     ServiceLocator.instance<PrettyDioLogger>();
-
-AppColors get colors => ServiceLocator.instance<AppColors>();
-
-Themes get appTheme => ServiceLocator.instance<Themes>();
 
 List<String> get routesStack =>
     ServiceLocator.instance<List<String>>(instanceName: 'routesStack');

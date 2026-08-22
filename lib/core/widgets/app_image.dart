@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 
 import '../utils/values/assets.dart';
-import '../utils/values/colors.dart';
+import '../../config/themes/extra_colors.dart';
 import 'app_shimmer.dart';
 
 class AppImage extends StatelessWidget {
@@ -45,15 +45,15 @@ class AppImage extends StatelessWidget {
     bool? isCached,
     bool? isCircle,
     Duration? fadeDuration,
-  }){
+  }) {
     return AppImage(
       imageUrl: imageUrl,
       width: width,
       height: height,
       fit: fit,
       color: color,
-      isCached: isCached?? false,
-      isCircle: isCircle?? false,
+      isCached: isCached ?? false,
+      isCircle: isCircle ?? false,
       fadeDuration: fadeDuration,
     );
   }
@@ -66,7 +66,7 @@ class AppImage extends StatelessWidget {
     BoxFit fit = BoxFit.fill,
     Color? color,
     bool? isCircle,
-  }){
+  }) {
     return AppImage(
       key: imageKey,
       imageFile: imageFile,
@@ -74,7 +74,7 @@ class AppImage extends StatelessWidget {
       height: height,
       fit: fit,
       color: color,
-      isCircle: isCircle?? false,
+      isCircle: isCircle ?? false,
     );
   }
 
@@ -85,14 +85,14 @@ class AppImage extends StatelessWidget {
     BoxFit fit = BoxFit.fill,
     Color? color,
     bool? isCircle,
-  }){
+  }) {
     return AppImage(
       imageAsset: imageAsset,
       width: width,
       height: height,
       fit: fit,
       color: color,
-      isCircle: isCircle?? false,
+      isCircle: isCircle ?? false,
     );
   }
 
@@ -100,13 +100,13 @@ class AppImage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Builder(
       builder: (BuildContext context) {
-        if(imageUrl != null){
+        if (imageUrl != null) {
           return _imageNetwork;
         }
-        if(imageFile != null){
+        if (imageFile != null) {
           return _imageFile;
         }
-        if(imageAsset != null){
+        if (imageAsset != null) {
           return _imageAsset;
         }
         return const SizedBox();
@@ -114,7 +114,7 @@ class AppImage extends StatelessWidget {
     );
   }
 
-  Widget _buildBaseCircle(ImageProvider child){
+  Widget _buildBaseCircle(ImageProvider child) {
     return Container(
       width: width,
       height: height,
@@ -129,74 +129,75 @@ class AppImage extends StatelessWidget {
   }
 
   Image get _imageAssetItem => Image.asset(
-    imageAsset!,
-    width: width,
-    height: height,
-    fit: fit,
-    errorBuilder: (BuildContext context, Object url, StackTrace? error) => _errorWidget,
-  );
+        imageAsset!,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (BuildContext context, Object url, StackTrace? error) =>
+            _errorWidget,
+      );
 
   Widget get _imageAsset {
-    if(isCircle == true){
+    if (isCircle == true) {
       return _buildBaseCircle(_imageAssetItem.image);
     }
     return _imageAssetItem;
   }
 
   Image get _imageFileItem => Image.file(
-    key: imageKey,
-    imageFile!,
-    width: width,
-    height: height,
-    fit: fit,
-    errorBuilder: (BuildContext context, Object url, StackTrace? error) => _errorWidget,
-  );
+        key: imageKey,
+        imageFile!,
+        width: width,
+        height: height,
+        fit: fit,
+        errorBuilder: (BuildContext context, Object url, StackTrace? error) =>
+            _errorWidget,
+      );
 
   Widget get _imageFile {
-    if(isCircle == true){
+    if (isCircle == true) {
       return _buildBaseCircle(_imageFileItem.image);
     }
     return _imageFileItem;
   }
 
   Image get _imageNetworkItem => Image.network(
-    imageUrl!,
-    color: color,
-    width: width,
-    height: height,
-    fit: fit,
-    loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-      if(fadeDuration != null){
-        return child.animate().fadeIn(
-          curve: Curves.easeInOut,
-          duration: fadeDuration,
-        );
-      } else {
-        return child;
-      }
-    },
-    errorBuilder: (BuildContext context, _, dynamic error) => _errorWidget,
-  );
+        imageUrl!,
+        color: color,
+        width: width,
+        height: height,
+        fit: fit,
+        loadingBuilder: (BuildContext context, Widget child,
+            ImageChunkEvent? loadingProgress) {
+          if (fadeDuration != null) {
+            return child.animate().fadeIn(
+                  curve: Curves.easeInOut,
+                  duration: fadeDuration,
+                );
+          } else {
+            return child;
+          }
+        },
+        errorBuilder: (BuildContext context, _, dynamic error) => _errorWidget,
+      );
 
   Widget get _imageNetwork {
     // Check if the imageUrl is null or empty
     if (imageUrl == null || imageUrl?.isEmpty == true) {
-      if(isCircle == true){
+      if (isCircle == true) {
         return _buildBaseCircle(
           _placeholderImage.image,
         );
       }
       return _placeholderImage;
     }
-    if(isCached == true){
-      if(isCircle == true){
-        return _buildBaseCircle(
-            CachedNetworkImageProvider(
-              imageUrl!,
-              maxWidth: width?.toInt(),
-              maxHeight: height?.toInt(),
-            )
-        );
+    if (isCached == true) {
+      if (isCircle == true) {
+        return _buildBaseCircle(CachedNetworkImageProvider(
+          imageUrl!,
+          maxWidth: width?.toInt(),
+          maxHeight: height?.toInt(),
+        ));
       }
       return CachedNetworkImage(
         imageUrl: imageUrl!,
@@ -206,24 +207,25 @@ class AppImage extends StatelessWidget {
         fit: fit,
         placeholderFadeInDuration: const Duration(milliseconds: 500),
         placeholder: (BuildContext context, String url) => _loadingWidget,
-        errorWidget: (BuildContext context, String url, dynamic error) => _errorWidget,
+        errorWidget: (BuildContext context, String url, dynamic error) =>
+            _errorWidget,
       );
     }
-    if(isCircle == true){
+    if (isCircle == true) {
       return _buildBaseCircle(_imageNetworkItem.image);
     }
     return _imageNetworkItem;
   }
 
   Widget get _loadingWidget => Center(
-    child: AppShimmer(
-      child: Container(
-        width: width,
-        height: height,
-        color: MyColors.baseColorShimmer,
-      ),
-    ),
-  );
+        child: AppShimmer(
+          child: Container(
+            width: width,
+            height: height,
+            color: colors.baseColorShimmer,
+          ),
+        ),
+      );
 
   // Widget _loadingProgressWidget(ImageChunkEvent loadingProgress) => Center(
   //   child: CircularProgressIndicator(
@@ -235,16 +237,16 @@ class AppImage extends StatelessWidget {
   // );
 
   Widget get _errorWidget => Center(
-    child: Container(
-      width: width,
-      height: height,
-      color: MyColors.baseColorShimmer,
-      child: const Icon(
-        Icons.error,
-        color: Colors.grey,
-      ),
-    ),
-  );
+        child: Container(
+          width: width,
+          height: height,
+          color: colors.baseColorShimmer,
+          child: const Icon(
+            Icons.error,
+            color: Colors.grey,
+          ),
+        ),
+      );
 
   Image get _placeholderImage {
     return Image.asset(

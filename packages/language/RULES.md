@@ -88,7 +88,7 @@ Do not pull `MaterialApp` or widgets into value objects.
 
 **Exported:** `Language`, `LanguageModel`, `LanguageStorage`,
 `InMemoryLanguageStorage`, `LanguageChangeListener`, `LanguageBuilder`,
-`LanguageLocalizations` + `.tr`, `LanguageLocalizationsSetup`, exceptions,
+`LanguageLocalizations` + `.tr` / `.trParams`, `LanguageLocalizationsSetup`, exceptions,
 `LanguageContextExtension`.
 
 The domain file is exported with `show Language` so top-level test helpers
@@ -242,7 +242,7 @@ language” is the singleton’s job.
 | `LanguageStorage` | persistence contract only |
 | `LanguageChangeListener` | host side-effect contract only |
 | `LanguageBuilder` | how the tree subscribes to the singleton |
-| `LanguageLocalizations` | key lookup / `.tr` |
+| `LanguageLocalizations` | key lookup / `.tr` / `.trParams` |
 | `LanguageLocalizationsSetup` | Flutter locale list / resolution / delegates |
 
 If `Language.init` starts parsing regex, it has stolen SRP from
@@ -368,7 +368,7 @@ Domain may import `dart:ui` for `Locale`. Presentation may import
 | YAML malformed / empty `files` / unknown default | `InvalidLanguageYamlException` |
 | `changeLanguage` before `init` | `LanguageNotInitializedException` |
 | `changeLanguage` not in YAML `files` | `UnsupportedLanguageException` |
-| JSON asset missing at runtime | empty map; `.tr` returns the key |
+| JSON asset missing at runtime | empty map; `.tr` / `.trParams` returns the key |
 
 Do not swallow errors with empty `catch` in orchestration. YAML load maps
 any asset failure to `MissingLanguageYamlException`. JSON load returning
@@ -385,7 +385,7 @@ any asset failure to `MissingLanguageYamlException`. JSON load returning
   loads translations.
 - Cover: YAML default + files list, country variants (`ar_EG` vs `ar_SA`),
   storage restore, no-op `changeLanguage`, unsupported language, missing
-  YAML, `.tr` fallback, `LanguageBuilder` rebuild, `resetLanguage()` →
+  YAML, `.tr` fallback, `.trParams` substitution, `LanguageBuilder` rebuild, `resetLanguage()` →
   `und` / empty list.
 - Package tests must not import `lib/` of the host app.
 - Host tests of the app may import `package:language/testing.dart`;

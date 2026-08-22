@@ -1,11 +1,6 @@
-enum DeviceType{
+enum DeviceType {
   android,
   ios,
-}
-
-enum Themes {
-  light,
-  dark,
 }
 
 enum UserType {
@@ -16,21 +11,12 @@ enum UserType {
   guest, // HomeScreen
 }
 
-enum ProductBuyMethod{
-  all('all'),
-  withEdit('with_edit'),
-  buy('buy');
-  
-  final String name;
-  const ProductBuyMethod(this.name);
-}
-
-enum AppUpdateType{
+enum AppUpdateType {
   flexible,
   immediately,
 }
 
-enum JobLocationType{
+enum JobLocationType {
   inPerson(title: 'In-Person', paramKey: 'in-person'),
   remote(title: 'Remote', paramKey: 'remote');
 
@@ -43,20 +29,8 @@ enum JobLocationType{
   });
 
   bool get isRemote => this == remote;
-}
 
-enum DegreeType {
-  any(title: 'Any', paramKey: 'Any'),
-  bachelor(title: 'Bachelor’s', paramKey: 'Bachelor'),
-  associates(title: 'Associates', paramKey: 'Associates');
-
-  final String title;
-  final String paramKey;
-
-  const DegreeType({
-    required this.title,
-    required this.paramKey,
-  });
-
-
+  static JobLocationType fromString(String value) => JobLocationType.values
+      .firstWhere((JobLocationType element) => element.paramKey == value,
+          orElse: () => JobLocationType.inPerson);
 }

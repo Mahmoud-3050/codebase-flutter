@@ -3,7 +3,7 @@ import 'package:either/either.dart';
 import '../../../../../core/error/exceptions.dart';
 import '../../../../core/utils/log_utils.dart';
 import '../../../../core/error/failures.dart';
-import '../../../../core/utils/values/strings.dart';
+import '../../../../config/language/strings.dart';
 import '../../data/datasources/profile_remote_datasource.dart';
 import '../../domain/repositories/profile_repo.dart';
 import '../../domain/entities/change_company_password_response.dart';

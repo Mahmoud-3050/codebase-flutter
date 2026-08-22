@@ -836,6 +836,67 @@ files:
       await LanguageLocalizations(const Locale('en')).load();
       expect('any_key'.tr, equals('any_key'));
     });
+
+    test('trParams replaces named placeholders in the template', () async {
+      Language.instance.applyConfig(testConfig);
+      await LanguageLocalizations(const Locale('en')).load(
+        bundle: FakeAssetBundle({
+          'assets/lang/en.json':
+              '{"welcome":"welcome {username}","counts_from":"{current} counts from {total}"}',
+        }),
+      );
+
+      expect(
+        'welcome'.trParams({'username': 'Ahmed'}),
+        equals('welcome Ahmed'),
+      );
+      expect(
+        'counts_from'.trParams({'current': '10', 'total': '20'}),
+        equals('10 counts from 20'),
+      );
+    });
+
+    test('trParams leaves unmatched placeholders and ignores extra params',
+        () async {
+      Language.instance.applyConfig(testConfig);
+      await LanguageLocalizations(const Locale('en')).load(
+        bundle: FakeAssetBundle({
+          'assets/lang/en.json': '{"welcome":"welcome {username}"}',
+        }),
+      );
+
+      expect(
+        'welcome'.trParams({'other': 'x'}),
+        equals('welcome {username}'),
+      );
+      expect(
+        'welcome'.trParams({'username': 'Ahmed', 'extra': 'ignored'}),
+        equals('welcome Ahmed'),
+      );
+    });
+
+    test('trParams on a missing key still returns the key', () async {
+      Language.instance.applyConfig(testConfig);
+      await LanguageLocalizations(const Locale('en')).load(
+        bundle: FakeAssetBundle({}),
+      );
+
+      expect(
+        'missing_key'.trParams({'username': 'Ahmed'}),
+        equals('missing_key'),
+      );
+    });
+
+    test('.tr returns the raw template without substituting params', () async {
+      Language.instance.applyConfig(testConfig);
+      await LanguageLocalizations(const Locale('en')).load(
+        bundle: FakeAssetBundle({
+          'assets/lang/en.json': '{"welcome":"welcome {username}"}',
+        }),
+      );
+
+      expect('welcome'.tr, equals('welcome {username}'));
+    });
   });
 
   group('AssetLanguageLoader extra Tests', () {

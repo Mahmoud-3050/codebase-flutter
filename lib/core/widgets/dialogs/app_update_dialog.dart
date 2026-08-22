@@ -3,7 +3,7 @@ import 'package:store_redirect/store_redirect.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../../injection_container.dart';
-import '../../utils/values/strings.dart';
+import '../../../config/language/strings.dart';
 import '../../utils/values/text_styles.dart';
 import '../app_elevated_button.dart';
 import '../app_logo.dart';

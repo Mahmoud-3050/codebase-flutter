@@ -5,12 +5,15 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:themes/themes.dart';
 
 import 'app.dart';
+import 'config/language/language_change_adapter.dart';
+import 'config/language/shared_preferences_language_storage.dart';
+import 'config/themes/colors_palettes.dart';
 import 'core/services/bloc_observer/bloc_observer.dart';
 import 'core/services/crashlytics/crashlytics_service.dart';
-import 'core/services/language/language_change_adapter.dart';
-import 'core/services/local_storage/shared_preferences_language_storage.dart';
+import 'core/services/local_storage/shared_preferences_theme_storage.dart';
 import 'core/services/notifications/app_notifications_service.dart';
 import 'firebase_options.dart';
 import 'injection_container.dart';
@@ -25,6 +28,12 @@ Future<void> main() async {
       ServiceLocator.instance<SharedPreferences>(),
     ),
     listener: LanguageChangeAdapter(dioConsumer: dioConsumer),
+  );
+  await Themes.instance.init(
+    config: ColorsPalettes.config,
+    storage: SharedPreferencesThemeStorage(
+      ServiceLocator.instance<SharedPreferences>(),
+    ),
   );
   await AppNotificationsService.initNotifications();
   if (!kDebugMode) {

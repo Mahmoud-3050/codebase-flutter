@@ -2,13 +2,11 @@ import 'package:language/language.dart';
 import 'package:flutter/material.dart' hide RouteFactory;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:themes/themes.dart';
 
 import 'config/routes/app_router.dart';
 import 'config/themes/app_theme.dart';
-import 'core/utils/enums.dart';
 import 'features/profile/profile_injection.dart';
-import 'features/theme/presentation/cubit/theme_cubit/theme_cubit.dart';
-import 'features/theme/theme_injection.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -17,11 +15,10 @@ class App extends StatelessWidget {
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        ...themeBlocs,
         ...profileBlocs,
       ],
-      child: BlocBuilder<ThemeCubit, ThemeState>(
-        builder: (BuildContext context, ThemeState themState) {
+      child: ThemeBuilder(
+        builder: (context, themes) {
           return LanguageBuilder(
             builder: (context, language, locale) {
               return ScreenUtilInit(
@@ -30,14 +27,12 @@ class App extends StatelessWidget {
                 builder: (context, child) {
                   return MaterialApp.router(
                     title: 'Base Project',
-                    theme: getAppTheme(context: context, isLightTheme: true),
-                    darkTheme:
-                        getAppTheme(context: context, isLightTheme: false),
-                    themeMode: themState.theme == Themes.light
-                        ? ThemeMode.light
-                        : ThemeMode.dark,
+                    theme: appTheme(themes.lightColors, Brightness.light),
+                    darkTheme: appTheme(themes.darkColors, Brightness.dark),
+                    themeMode: themes.mode,
                     locale: locale,
-                    supportedLocales: LanguageLocalizationsSetup.supportedLocales,
+                    supportedLocales:
+                        LanguageLocalizationsSetup.supportedLocales,
                     localeResolutionCallback:
                         LanguageLocalizationsSetup.localeResolutionCallback,
                     localizationsDelegates:

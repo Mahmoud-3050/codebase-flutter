@@ -1,7 +1,7 @@
 import 'package:language/language.dart';
 import 'package:field_validator/field_validator.dart';
 
-import '../../api/dio_consumer.dart';
+import '../../core/api/dio_consumer.dart';
 
 /// Syncs host services when [Language] changes the active locale.
 class LanguageChangeAdapter implements LanguageChangeListener {

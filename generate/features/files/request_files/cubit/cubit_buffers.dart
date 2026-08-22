@@ -19,7 +19,7 @@ class CubitRequestBuffers extends BaseRequestBuffers{
     buffer.writeln("import 'package:flutter_bloc/flutter_bloc.dart';");
     buffer.writeln();
     buffer.writeln("import '../../../../../core/error/failures.dart';");
-    buffer.writeln("import '../../../../../core/utils/values/strings.dart';");
+    buffer.writeln("import '../../../../../config/language/strings.dart';");
     if(!hasParams){
       buffer.writeln("import '../../../../../core/usecases/usecase.dart';");
     }

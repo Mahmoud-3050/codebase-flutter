@@ -1,3 +1,16 @@
 {
-  "choose_future_date_and_time#;#Please choose a future date and time": "الرجاء اختيار تاريخ ووقت في المستقبل"
+  "choose_future_date_and_time": {
+    "en": "Please choose a future date and time",
+    "ar": "الرجاء اختيار تاريخ ووقت في المستقبل"
+  },
+  "welcome": {
+    "en": "welcome {username}",
+    "ar": "مرحبا {username}",
+    "ar_EG": "اهلا وسهلا {username}",
+    "ar_SA": "هلا {username}"
+  },
+  "counts_from": {
+    "en": "{current} counts from {total}",
+    "ar": "{current} عدد من {total}"
+  }
 }

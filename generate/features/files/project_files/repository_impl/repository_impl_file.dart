@@ -21,7 +21,7 @@ class RepositoryImplFile extends ProjectFile {
     buffer.writeln("import '../../../../../core/error/exceptions.dart';");
     buffer.writeln("import '../../../../core/utils/log_utils.dart';");
     buffer.writeln("import '../../../../core/error/failures.dart';");
-    buffer.writeln("import '../../../../core/utils/values/strings.dart';");
+    buffer.writeln("import '../../../../config/language/strings.dart';");
     buffer.writeln("import '../../data/datasources/${featureNames.snakeCase}_remote_datasource.dart';");
     buffer.writeln("import '../../domain/repositories/${featureNames.snakeCase}_repo.dart';");
 

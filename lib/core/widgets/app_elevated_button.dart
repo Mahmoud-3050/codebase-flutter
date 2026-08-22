@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:themes/themes.dart';
 
-import '../../features/theme/presentation/cubit/theme_cubit/theme_cubit.dart';
-import '../../injection_container.dart';
+import '../../config/themes/extra_colors.dart';
 import '../utils/extensions.dart';
 import '../utils/values/text_styles.dart';
 
@@ -29,7 +28,9 @@ class AppElevatedButton extends StatelessWidget {
   final EdgeInsetsGeometry? padding;
 
   const AppElevatedButton({
-    required this.text, required this.onPressed, super.key,
+    required this.text,
+    required this.onPressed,
+    super.key,
     this.buttonColor,
     this.borderColor,
     this.iconColor,
@@ -58,8 +59,7 @@ class AppElevatedButton extends StatelessWidget {
         boxShadow: [
           BoxShadow(
             color: shadowColor ?? colors.secondary,
-            blurRadius: elevation ??
-                (context.read<ThemeCubit>().isDarkMode ? 16.r : 4.r),
+            blurRadius: elevation ?? (context.isDarkTheme ? 16.r : 4.r),
           ),
         ],
       ),
@@ -67,7 +67,8 @@ class AppElevatedButton extends StatelessWidget {
         onPressed: onPressed,
         clipBehavior: Clip.antiAliasWithSaveLayer,
         style: ElevatedButton.styleFrom(
-          padding: padding ?? EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          padding:
+              padding ?? EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
           foregroundColor: colors.foreground,
           backgroundColor: buttonColor ?? colors.primary,
           elevation: 0,
@@ -88,14 +89,15 @@ class AppElevatedButton extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
                     Builder(
-                      builder: (context){
-                        if(iconSvg != null){
+                      builder: (context) {
+                        if (iconSvg != null) {
                           return SvgPicture.asset(
                             iconSvg!,
                             height: iconSize,
                             width: iconSize,
                             colorFilter: iconColor != null
-                                ? ColorFilterExtension.setColor(iconColor!) : null,
+                                ? ColorFilterExtension.setColor(iconColor!)
+                                : null,
                           );
                         } else {
                           return Image.asset(
@@ -120,10 +122,10 @@ class AppElevatedButton extends StatelessWidget {
   }
 
   Widget get _buttonText => Text(
-    text,
-    style: textStyle ??
-        TextStyles.medium16(color: textColor ?? colors.white),
-    textAlign: TextAlign.center,
-    maxLines: 1,
-  );
+        text,
+        style:
+            textStyle ?? TextStyles.medium16(color: textColor ?? colors.white),
+        textAlign: TextAlign.center,
+        maxLines: 1,
+      );
 }

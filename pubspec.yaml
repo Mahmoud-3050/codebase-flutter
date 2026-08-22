@@ -23,6 +23,8 @@ dependencies:
     path: ./packages/field_validator
   language:
     path: ./packages/language
+  themes:
+    path: ./packages/themes
   dio: ^5.11.0
   go_router: ^17.3.0
   flutter_bloc: ^9.1.1

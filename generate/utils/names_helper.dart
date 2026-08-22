@@ -83,4 +83,77 @@ abstract class NamesHelper {
   static String classToSnakeCase(String input) {
     return camelToSnakeCase(classToCamelCase(input));
   }
+
+  /// Dart reserved words that cannot be used as variable names.
+  static const Set<String> dartKeywords = {
+    'abstract',
+    'as',
+    'assert',
+    'async',
+    'await',
+    'break',
+    'case',
+    'catch',
+    'class',
+    'const',
+    'continue',
+    'covariant',
+    'default',
+    'deferred',
+    'do',
+    'dynamic',
+    'else',
+    'enum',
+    'export',
+    'extends',
+    'extension',
+    'external',
+    'factory',
+    'false',
+    'final',
+    'finally',
+    'for',
+    'Function',
+    'get',
+    'hide',
+    'if',
+    'implements',
+    'import',
+    'in',
+    'interface',
+    'is',
+    'late',
+    'library',
+    'mixin',
+    'new',
+    'null',
+    'on',
+    'operator',
+    'part',
+    'required',
+    'rethrow',
+    'return',
+    'set',
+    'show',
+    'static',
+    'super',
+    'switch',
+    'sync',
+    'this',
+    'throw',
+    'true',
+    'try',
+    'typedef',
+    'var',
+    'void',
+    'while',
+    'with',
+    'yield',
+  };
+
+  /// Lowercase-leading Dart identifier (not a reserved word).
+  static bool isValidDartVariableName(String name) {
+    if (name.isEmpty || dartKeywords.contains(name)) return false;
+    return RegExp(r'^[a-z][a-zA-Z0-9]*$').hasMatch(name);
+  }
 }

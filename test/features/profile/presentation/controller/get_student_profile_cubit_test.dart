@@ -5,7 +5,7 @@ import 'package:mockito/mockito.dart';
 
 import 'package:codebase/core/error/failures.dart';
 import 'package:codebase/core/usecases/usecase.dart';
-import 'package:codebase/core/utils/values/strings.dart';
+import 'package:codebase/config/language/strings.dart';
 import 'package:codebase/features/profile/domain/entities/get_student_profile_response.dart';
 import 'package:codebase/features/profile/presentation/controller/get_student_profile/get_student_profile_cubit.dart';
 

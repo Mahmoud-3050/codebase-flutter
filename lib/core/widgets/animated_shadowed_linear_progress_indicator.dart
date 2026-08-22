@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:themes/themes.dart';
 
-import '../../features/theme/presentation/cubit/theme_cubit/theme_cubit.dart';
-import '../../injection_container.dart';
+import '../../config/themes/extra_colors.dart';
 
 class AnimatedShadowedProgressIndicator extends StatefulWidget {
   final double targetValue; // Between 0.0 and 1.0
@@ -11,7 +10,8 @@ class AnimatedShadowedProgressIndicator extends StatefulWidget {
   final Duration delay;
 
   const AnimatedShadowedProgressIndicator({
-    required this.targetValue, super.key,
+    required this.targetValue,
+    super.key,
     this.duration = const Duration(milliseconds: 750),
     this.delay = const Duration(milliseconds: 500),
   });
@@ -21,7 +21,8 @@ class AnimatedShadowedProgressIndicator extends StatefulWidget {
       _AnimatedShadowedProgressIndicatorState();
 }
 
-class _AnimatedShadowedProgressIndicatorState extends State<AnimatedShadowedProgressIndicator>
+class _AnimatedShadowedProgressIndicatorState
+    extends State<AnimatedShadowedProgressIndicator>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<double> _progressAnimation;
@@ -46,7 +47,8 @@ class _AnimatedShadowedProgressIndicatorState extends State<AnimatedShadowedProg
       _progressAnimation = Tween<double>(
         begin: _progressAnimation.value,
         end: widget.targetValue,
-      ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+      ).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
       _controller
         ..reset()
         ..forward();
@@ -66,7 +68,8 @@ class _AnimatedShadowedProgressIndicatorState extends State<AnimatedShadowedProg
         return AnimatedBuilder(
           animation: _progressAnimation,
           builder: (context, child) {
-            final progressWidth = constraints.maxWidth * _progressAnimation.value;
+            final progressWidth =
+                constraints.maxWidth * _progressAnimation.value;
 
             return Stack(
               children: [
@@ -88,7 +91,7 @@ class _AnimatedShadowedProgressIndicatorState extends State<AnimatedShadowedProg
                     boxShadow: [
                       BoxShadow(
                         color: colors.secondary,
-                        blurRadius: context.read<ThemeCubit>().isDarkMode ? 16.r : 4.r,
+                        blurRadius: context.isDarkTheme ? 16.r : 4.r,
                       ),
                     ],
                   ),

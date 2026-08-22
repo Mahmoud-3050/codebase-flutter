@@ -4,7 +4,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import '../../injection_container.dart';
 import 'package:field_validator/field_validator.dart';
-import '../utils/values/strings.dart';
+import '../../config/language/strings.dart';
 import '../utils/values/text_styles.dart';
 
 class AppTextFormField extends StatefulWidget {

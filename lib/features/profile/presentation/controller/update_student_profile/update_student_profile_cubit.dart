@@ -3,7 +3,7 @@ import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/failures.dart';
-import '../../../../../core/utils/values/strings.dart';
+import '../../../../../config/language/strings.dart';
 import '../../../domain/usecases/update_student_profile_usecase.dart';
 import '../../../domain/entities/update_student_profile_response.dart';
 

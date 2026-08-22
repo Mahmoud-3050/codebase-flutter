@@ -6,10 +6,10 @@ class NamesException implements Exception {
   String toString() => 'NamesException: $message';
 }
 
-class DartTypeException implements Exception {
+class ColorException implements Exception {
   final String message;
-  const DartTypeException(this.message);
+  const ColorException(this.message);
 
   @override
-  String toString() => 'DartTypeException: $message';
+  String toString() => 'ColorException: $message';
 }
