@@ -1,49 +1,30 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../../utils/enums.dart';
-import '../../utils/extensions.dart';
+abstract interface class SharedPreferencesService {
+  String? getString(String key);
 
-abstract class _AppSharedPreferencesKeys {
-  static const userType = 'userType';
+  Future<bool> setString(String key, String value);
+
+  Future<bool> remove(String key);
+
+  Future<bool> clear();
 }
 
-abstract class SharedPreferencesService {
+class SharedPreferencesServiceImpl implements SharedPreferencesService {
+  SharedPreferencesServiceImpl({required this.instance});
+
   final SharedPreferences instance;
 
-  const SharedPreferencesService({
-    required this.instance,
-  });
-
-  //region:: User Type
-  UserType getUserType();
-
-  Future<bool> saveUserType(UserType value);
-
-  Future<bool> removeUserType();
-
-  //endregion
-
-  Future<bool> clearAll();
-}
-
-class SharedPreferencesServiceImpl extends SharedPreferencesService {
-  SharedPreferencesServiceImpl({required super.instance});
-
-  //region:: User Type
   @override
-  UserType getUserType() => UserTypeExtension.fromString(
-      instance.getString(_AppSharedPreferencesKeys.userType) ?? '');
+  String? getString(String key) => instance.getString(key);
 
   @override
-  Future<bool> saveUserType(UserType value) =>
-      instance.setString(_AppSharedPreferencesKeys.userType, value.name);
+  Future<bool> setString(String key, String value) =>
+      instance.setString(key, value);
 
   @override
-  Future<bool> removeUserType() =>
-      instance.remove(_AppSharedPreferencesKeys.userType);
-
-//endregion
+  Future<bool> remove(String key) => instance.remove(key);
 
   @override
-  Future<bool> clearAll() => instance.clear();
+  Future<bool> clear() => instance.clear();
 }

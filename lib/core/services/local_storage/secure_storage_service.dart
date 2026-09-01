@@ -1,71 +1,30 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-abstract class _SecureStorageServiceKeys {
-  static const String accessToken = 'accessToken';
-  static const String deviceToken = 'deviceToken';
+abstract interface class SecureStorageService {
+  Future<String?> read(String key);
+
+  Future<void> write(String key, String value);
+
+  Future<void> delete(String key);
+
+  Future<void> clear();
 }
 
-abstract class SecureStorageService {
+class SecureStorageServiceImpl implements SecureStorageService {
+  SecureStorageServiceImpl({required this.instance});
+
   final FlutterSecureStorage instance;
 
-  const SecureStorageService({
-    required this.instance,
-  });
-
-  //region:: AccessToken
-  Future<String?> getAccessToken();
-
-  Future<void> saveAccessToken(String token);
-
-  Future<void> removeAccessToken();
-
-  //endregion
-
-  //region:: DeviceToken
-  Future<String?> getDeviceToken();
-
-  Future<void> saveDeviceToken(String token);
-
-  Future<void> removeDeviceToken();
-
-  //endregion
-
-  Future<void> clearAll();
-}
-
-class SecureStorageServiceImpl extends SecureStorageService {
-  SecureStorageServiceImpl({required super.instance});
-
-  //region:: AccessToken
   @override
-  Future<String?> getAccessToken() async =>
-      instance.read(key: _SecureStorageServiceKeys.accessToken);
+  Future<String?> read(String key) => instance.read(key: key);
 
   @override
-  Future<void> saveAccessToken(String token) =>
-      instance.write(key: _SecureStorageServiceKeys.accessToken, value: token);
+  Future<void> write(String key, String value) =>
+      instance.write(key: key, value: value);
 
   @override
-  Future<void> removeAccessToken() =>
-      instance.delete(key: _SecureStorageServiceKeys.accessToken);
-
-  //endregion
-
-  //region:: DeviceToken
-  @override
-  Future<String?> getDeviceToken() async =>
-      instance.read(key: _SecureStorageServiceKeys.deviceToken);
+  Future<void> delete(String key) => instance.delete(key: key);
 
   @override
-  Future<void> saveDeviceToken(String token) =>
-      instance.write(key: _SecureStorageServiceKeys.deviceToken, value: token);
-
-  @override
-  Future<void> removeDeviceToken() =>
-      instance.delete(key: _SecureStorageServiceKeys.deviceToken);
-
-  //endregion
-
-  @override
-  Future<void> clearAll() => instance.deleteAll();
+  Future<void> clear() => instance.deleteAll();
 }

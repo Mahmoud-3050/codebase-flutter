@@ -1,16 +1,17 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'core/api/api_interceptors.dart';
+
 import 'core/api/dio_consumer.dart';
+import 'core/services/local_storage/access_token_storage.dart';
+import 'core/services/local_storage/device_token_storage.dart';
 import 'core/services/local_storage/secure_storage_service.dart';
 import 'core/services/local_storage/shared_preferences_service.dart';
+import 'core/services/local_storage/user_type_storage.dart';
 import 'core/utils/enums.dart';
 import 'core/utils/general_methods.dart';
 import 'features/profile/profile_injection.dart';
@@ -30,13 +31,13 @@ abstract class ServiceLocator {
     injectFCMTokenSingleton('');
     await _injectSharedPreferences();
     _injectSharedPreferencesService();
-    _injectSecureStorageService();
+    _injectUserTypeStorage();
     _injectSecureStorage();
+    _injectSecureStorageService();
+    _injectAccessTokenStorage();
+    _injectDeviceTokenStorage();
     _injectDio();
     _injectDioConsumer();
-    _injectApiInterceptors();
-    _injectPrettyDioLogInterceptor();
-    _injectLogInterceptor();
     injectRoutesStackSingleton(<String>[]);
     injectDeviceTypeSingleton(
         Platform.isIOS ? DeviceType.ios : DeviceType.android);
@@ -49,26 +50,8 @@ abstract class ServiceLocator {
 
   static void _injectDioConsumer() {
     instance.registerLazySingleton<DioConsumer>(
-        () => DioConsumerImpl(client: instance()));
-  }
-
-  static void _injectApiInterceptors() {
-    instance.registerLazySingleton<ApiInterceptors>(() => ApiInterceptors());
-  }
-
-  static void _injectPrettyDioLogInterceptor() {
-    instance.registerLazySingleton<PrettyDioLogger>(() => PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          logPrint: (text) => log(text.toString(), name: 'logger'),
-        ));
-  }
-
-  static void _injectLogInterceptor() {
-    instance.registerLazySingleton<LogInterceptor>(() => LogInterceptor(
-          requestBody: true,
-          responseBody: true,
-        ));
+      () => DioConsumerImpl(client: instance()),
+    );
   }
 
   static Future<void> _injectSharedPreferences() async {
@@ -76,9 +59,15 @@ abstract class ServiceLocator {
     instance.registerLazySingleton<SharedPreferences>(() => sharedPreferences);
   }
 
-  static Future<void> _injectSharedPreferencesService() async {
+  static void _injectSharedPreferencesService() {
     instance.registerLazySingleton<SharedPreferencesService>(
         () => SharedPreferencesServiceImpl(instance: instance()));
+  }
+
+  static void _injectUserTypeStorage() {
+    instance.registerLazySingleton<UserTypeStorage>(
+      () => UserTypeStorageImpl(preferences: instance()),
+    );
   }
 
   static void _injectSecureStorage() {
@@ -95,6 +84,18 @@ abstract class ServiceLocator {
   static void _injectSecureStorageService() {
     instance.registerLazySingleton<SecureStorageService>(
         () => SecureStorageServiceImpl(instance: instance()));
+  }
+
+  static void _injectAccessTokenStorage() {
+    instance.registerLazySingleton<AccessTokenStorage>(
+      () => AccessTokenStorageImpl(secureStorage: instance()),
+    );
+  }
+
+  static void _injectDeviceTokenStorage() {
+    instance.registerLazySingleton<DeviceTokenStorage>(
+      () => DeviceTokenStorageImpl(secureStorage: instance()),
+    );
   }
 
   static void injectRoutesStackSingleton(List<String> routes) {
@@ -128,18 +129,19 @@ abstract class ServiceLocator {
 SharedPreferencesService get sharedPreferencesService =>
     ServiceLocator.instance<SharedPreferencesService>();
 
+UserTypeStorage get userTypeStorage =>
+    ServiceLocator.instance<UserTypeStorage>();
+
 SecureStorageService get secureStorageService =>
     ServiceLocator.instance<SecureStorageService>();
 
+AccessTokenStorage get accessTokenStorage =>
+    ServiceLocator.instance<AccessTokenStorage>();
+
+DeviceTokenStorage get deviceTokenStorage =>
+    ServiceLocator.instance<DeviceTokenStorage>();
+
 DioConsumer get dioConsumer => ServiceLocator.instance<DioConsumer>();
-
-ApiInterceptors get appInterceptors =>
-    ServiceLocator.instance<ApiInterceptors>();
-
-LogInterceptor get logInterceptor => ServiceLocator.instance<LogInterceptor>();
-
-PrettyDioLogger get prettyDioLogger =>
-    ServiceLocator.instance<PrettyDioLogger>();
 
 List<String> get routesStack =>
     ServiceLocator.instance<List<String>>(instanceName: 'routesStack');

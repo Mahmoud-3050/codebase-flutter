@@ -125,34 +125,33 @@ If you omit `storage` in `init`, the package uses `InMemoryLanguageStorage`
 
 ## 4. Implement `LanguageChangeListener` (host side effects)
 
-Keep Dio headers, validator locales, analytics, etc. **out of `main()`** and
-**out of widgets**. Implement the port in the host:
+Keep validator locales, analytics, etc. **out of `main()`** and **out of
+widgets**. Implement the port in the host:
 
 ```dart
 import 'package:language/language.dart';
 import 'package:field_validator/field_validator.dart';
 
 class LanguageChangeAdapter implements LanguageChangeListener {
-  const LanguageChangeAdapter({required this.dioConsumer});
-
-  final DioConsumer dioConsumer;
+  const LanguageChangeAdapter();
 
   @override
   void onLanguageChanged(LanguageModel language) {
     FieldValidator.instance.setLocale(
       ValidatorLocale.fromCode(language.code),
     );
-    dioConsumer.updateLanguageCodeHeader();
   }
 }
 ```
+
+For Dio, set `Accept-Language` from `Language.instance.currentCode` (or
+`language.fullCode`) in an interceptor `onRequest` so each call uses the
+current locale. Do not cache that header only at startup.
 
 `onLanguageChanged` runs:
 
 - once at the end of `Language.instance.init` (restored or default)
 - after every **successful** `changeLanguage` (not on no-op / not-initialized)
-
-Use `language.fullCode` for `Accept-Language` when country variants exist.
 
 ## 5. Call `Language.instance.init` in `main()`
 
@@ -168,7 +167,7 @@ Future<void> main() async {
 
   await Language.instance.init(
     storage: SharedPreferencesLanguageStorage(prefs),
-    listener: LanguageChangeAdapter(dioConsumer: dioConsumer),
+    listener: const LanguageChangeAdapter(),
   );
 
   runApp(const App());
