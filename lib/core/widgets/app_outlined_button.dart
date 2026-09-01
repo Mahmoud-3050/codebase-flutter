@@ -39,10 +39,10 @@ class AppOutlinedButton extends StatelessWidget {
       style: OutlinedButton.styleFrom(
         backgroundColor: backgroundColor ?? Colors.transparent,
         side: BorderSide(color: borderColor ?? colors.primary),
-        padding:
-            padding ?? EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+        padding: padding ?? .symmetric(horizontal: 16.w, vertical: 12.h),
         shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius ?? 16.r)),
+          borderRadius: .circular(borderRadius ?? 16.r),
+        ),
         minimumSize: minimumSize,
         maximumSize: maximumSize,
         foregroundColor: colors.foreground,
@@ -52,13 +52,10 @@ class AppOutlinedButton extends StatelessWidget {
           builder: (BuildContext context) {
             if (icon != null) {
               return Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                mainAxisAlignment: .center,
                 children: [
                   icon!,
-                  if (text.isNotEmpty)
-                    SizedBox(
-                      width: 8.w,
-                    ),
+                  if (text.isNotEmpty) SizedBox(width: 8.w),
                   _buttonText,
                 ],
               );
@@ -71,10 +68,10 @@ class AppOutlinedButton extends StatelessWidget {
   }
 
   Widget get _buttonText => Text(
-        text,
-        style: textStyle ??
-            TextStyles.of(size: 16, weight: FontWeight.w500, color: textColor),
-        textAlign: TextAlign.center,
-        maxLines: 1,
-      );
+    text,
+    style:
+        textStyle ?? TextStyles.of(size: 16, weight: .w500, color: textColor),
+    textAlign: .center,
+    maxLines: 1,
+  );
 }

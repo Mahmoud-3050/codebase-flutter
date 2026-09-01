@@ -89,7 +89,7 @@ class AppTextFormField extends StatefulWidget {
     String? labelText,
     int? maxLength,
     int? maxLines = 1,
-    TextInputAction? textInputAction = TextInputAction.next,
+    TextInputAction? textInputAction = .next,
     BaseValidator? validatorType,
     void Function(String)? onFieldSubmitted,
     void Function(String)? onChanged,
@@ -113,7 +113,7 @@ class AppTextFormField extends StatefulWidget {
       prefixIcon: prefixIcon,
       onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
-      validatorType: validatorType ?? EmptyValidator(),
+      validatorType: validatorType ?? const EmptyValidator(),
       backgroundColor: backgroundColor,
       prefixIconColor: prefixIconColor,
       cursorColor: cursorColor,
@@ -130,7 +130,7 @@ class AppTextFormField extends StatefulWidget {
     FocusNode? focusNode,
     String? hintText,
     String? labelText,
-    TextInputAction? textInputAction = TextInputAction.next,
+    TextInputAction? textInputAction = .next,
     void Function(String)? onFieldSubmitted,
     final bool autofocus = false,
     final bool readOnly = false,
@@ -153,14 +153,14 @@ class AppTextFormField extends StatefulWidget {
       labelText: labelText,
       autofocus: autofocus,
       readOnly: readOnly,
-      keyboardType: TextInputType.emailAddress,
+      keyboardType: .emailAddress,
       textInputAction: textInputAction,
       autofillHints: const <String>[AutofillHints.email],
       maxLines: 1,
       prefixIcon: Icons.email_rounded,
       onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
-      validatorType: validatorType ?? EmptyValidator(),
+      validatorType: validatorType ?? const EmptyValidator(),
       backgroundColor: backgroundColor,
       prefixIconColor: prefixIconColor,
       cursorColor: cursorColor,
@@ -175,7 +175,7 @@ class AppTextFormField extends StatefulWidget {
   factory AppTextFormField.phoneTextField({
     required TextEditingController controller,
     FocusNode? focusNode,
-    TextInputAction? textInputAction = TextInputAction.next,
+    TextInputAction? textInputAction = .next,
     BaseValidator? validatorType,
     void Function(String)? onFieldSubmitted,
     void Function(String)? onChanged,
@@ -197,10 +197,10 @@ class AppTextFormField extends StatefulWidget {
       hintText: hintText ?? Strings.phoneNumber,
       labelText: labelText,
       maxLines: 1,
-      keyboardType: TextInputType.phone,
+      keyboardType: .phone,
       textInputAction: textInputAction,
       prefixIcon: Icons.phone_rounded,
-      validatorType: validatorType ?? PhoneValidator(),
+      validatorType: validatorType ?? const PhoneValidator(),
       onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
       readOnly: readOnly,
@@ -218,12 +218,12 @@ class AppTextFormField extends StatefulWidget {
   static Widget passwordTextField({
     required TextEditingController controller,
     FocusNode? focusNode,
-    TextInputAction? textInputAction = TextInputAction.done,
+    TextInputAction? textInputAction = .done,
     BaseValidator? validatorType,
     void Function(String)? onFieldSubmitted,
     void Function(String)? onChanged,
     void Function(void Function(void Function()) localSetState)?
-        onSuffixIconPressed,
+    onSuffixIconPressed,
     String? hintText,
     String? labelText,
     Color? backgroundColor,
@@ -237,41 +237,42 @@ class AppTextFormField extends StatefulWidget {
     Color? focusBorderColor,
   }) {
     bool isSecureText = true;
-    return StatefulBuilder(builder:
-        (BuildContext context, void Function(void Function()) setState) {
-      hintText ??= Strings.password;
-      return AppTextFormField(
-        controller: controller,
-        focusNode: focusNode,
-        hintText: hintText,
-        labelText: labelText,
-        obscureText: isSecureText,
-        keyboardType: TextInputType.visiblePassword,
-        textInputAction: textInputAction,
-        maxLines: 1,
-        prefixIcon: Icons.lock_rounded,
-        suffixIcon: isSecureText
-            ? Icons.visibility_rounded
-            : Icons.visibility_off_rounded,
-        onSuffixIconPressed: () {
-          setState(() {
-            isSecureText = !isSecureText;
-          });
-        },
-        validatorType: validatorType ?? PasswordValidator(),
-        onFieldSubmitted: onFieldSubmitted,
-        onChanged: onChanged,
-        backgroundColor: backgroundColor,
-        prefixIconColor: prefixIconColor,
-        suffixIconColor: suffixIconColor,
-        cursorColor: cursorColor,
-        textStyle: textStyle,
-        hintTextStyle: hintTextStyle,
-        labelTextStyle: labelTextStyle,
-        borderColor: borderColor,
-        focusBorderColor: focusBorderColor,
-      );
-    });
+    return StatefulBuilder(
+      builder: (BuildContext context, void Function(void Function()) setState) {
+        hintText ??= Strings.password;
+        return AppTextFormField(
+          controller: controller,
+          focusNode: focusNode,
+          hintText: hintText,
+          labelText: labelText,
+          obscureText: isSecureText,
+          keyboardType: .visiblePassword,
+          textInputAction: textInputAction,
+          maxLines: 1,
+          prefixIcon: Icons.lock_rounded,
+          suffixIcon: isSecureText
+              ? Icons.visibility_rounded
+              : Icons.visibility_off_rounded,
+          onSuffixIconPressed: () {
+            setState(() {
+              isSecureText = !isSecureText;
+            });
+          },
+          validatorType: validatorType ?? const PasswordValidator(),
+          onFieldSubmitted: onFieldSubmitted,
+          onChanged: onChanged,
+          backgroundColor: backgroundColor,
+          prefixIconColor: prefixIconColor,
+          suffixIconColor: suffixIconColor,
+          cursorColor: cursorColor,
+          textStyle: textStyle,
+          hintTextStyle: hintTextStyle,
+          labelTextStyle: labelTextStyle,
+          borderColor: borderColor,
+          focusBorderColor: focusBorderColor,
+        );
+      },
+    );
   }
 
   factory AppTextFormField.search({
@@ -288,16 +289,16 @@ class AppTextFormField extends StatefulWidget {
       focusNode: focusNode,
       autofocus: autofocus,
       // backgroundColor: Themes.instance.colors.upBackground,
-      borderRadius: BorderRadius.circular(24.r),
+      borderRadius: .circular(24.r),
       // borderColor: Themes.instance.colors.upBackground.withValues(alpha: 0.2),
       focusBorderColor: Themes.instance.colors.primary,
       cursorColor: Themes.instance.colors.primary,
       hintText: '${Strings.search}...',
       // hintTextStyle: TextStyles.of(size: 14, color: Themes.instance.colors.upBackground.withValues(alpha: 0.8)),
       // textStyle: TextStyles.of(size: 14, color: Themes.instance.colors.secondary),
-      validatorType: EmptyValidator(),
-      keyboardType: TextInputType.text,
-      textInputAction: TextInputAction.search,
+      validatorType: const EmptyValidator(),
+      keyboardType: .text,
+      textInputAction: .search,
       prefixIcon: Icons.search_rounded,
       // prefixIconColor: Themes.instance.colors.upBackground.withValues(alpha: 0.8),
       readOnly: readOnly,
@@ -321,11 +322,11 @@ class AppTextFormField extends StatefulWidget {
       focusNode: focusNode,
       hintText: hintText,
       labelText: labelText,
-      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      keyboardType: const .numberWithOptions(decimal: true),
       maxLines: 1,
       onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
-      validatorType: isValidator ? NumbersValidator() : null,
+      validatorType: isValidator ? const NumbersValidator() : null,
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'^\d+\d{0,2}')),
       ],
@@ -363,20 +364,24 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       obscureText: widget.obscureText,
       keyboardType: widget.keyboardType,
       maxLength: widget.maxLength,
-      buildCounter: (
-        BuildContext context, {
-        int? currentLength,
-        int? maxLength,
-        bool? isFocused,
-      }) {
-        if (maxLength == null) {
-          return null;
-        }
-        return Text(
-          '$currentLength/$maxLength',
-          style: TextStyles.of(size: 10, color: context.colors.textSecondary),
-        );
-      },
+      buildCounter:
+          (
+            BuildContext context, {
+            int? currentLength,
+            int? maxLength,
+            bool? isFocused,
+          }) {
+            if (maxLength == null) {
+              return null;
+            }
+            return Text(
+              '$currentLength/$maxLength',
+              style: TextStyles.of(
+                size: 10,
+                color: context.colors.textSecondary,
+              ),
+            );
+          },
       maxLines: widget.maxLines,
       readOnly: widget.readOnly,
       autofocus: widget.autofocus,
@@ -384,10 +389,9 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       textInputAction: widget.textInputAction,
       autofillHints: widget.autofillHints,
       maxLengthEnforcement: MaxLengthEnforcement.enforced,
-      style:
-          widget.textStyle ?? TextStyles.of(size: 14, weight: FontWeight.w500),
+      style: widget.textStyle ?? TextStyles.of(size: 14, weight: .w500),
       cursorColor: widget.cursorColor,
-      cursorRadius: Radius.circular(8.r),
+      cursorRadius: .circular(8.r),
       decoration: _decoration,
       onFieldSubmitted: widget.onFieldSubmitted,
       onChanged: widget.onChanged,
@@ -398,35 +402,40 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
   }
 
   InputDecoration get _decoration => InputDecoration(
-        hintText: widget.hintText,
-        labelText: widget.labelText,
-        alignLabelWithHint: false,
-        contentPadding: _padding,
-        errorMaxLines: 2,
-        fillColor:
-            widget.backgroundColor ?? context.colors.primary.withValues(alpha: 0.05),
-        filled: widget.backgroundColor != null,
-        focusColor: context.colors.primary,
-        border: _createBorder(
-          widget.borderColor ?? context.colors.primary.withValues(alpha: 0.05),
-        ),
-        enabledBorder: _createBorder(widget.borderColor ?? context.colors.hint),
-        focusedBorder: _createBorder(widget.focusBorderColor ?? context.colors.primary),
-        focusedErrorBorder: _createBorder(context.colors.primary),
-        errorBorder: _createBorder(context.colors.error),
-        errorStyle: TextStyles.of(size: 12, color: context.colors.error),
-        hintStyle: widget.hintTextStyle ??
-            TextStyles.of(size: 12, color: context.colors.textSecondary),
-        labelStyle: widget.labelTextStyle ??
-            TextStyles.of(size: 12, color: context.colors.textSecondary),
-        prefixIcon: _prefixIcon,
-        suffixIcon: _suffixIcon,
-      );
+    hintText: widget.hintText,
+    labelText: widget.labelText,
+    alignLabelWithHint: false,
+    contentPadding: _padding,
+    errorMaxLines: 2,
+    fillColor:
+        widget.backgroundColor ??
+        context.colors.primary.withValues(alpha: 0.05),
+    filled: widget.backgroundColor != null,
+    focusColor: context.colors.primary,
+    border: _createBorder(
+      widget.borderColor ?? context.colors.primary.withValues(alpha: 0.05),
+    ),
+    enabledBorder: _createBorder(widget.borderColor ?? context.colors.hint),
+    focusedBorder: _createBorder(
+      widget.focusBorderColor ?? context.colors.primary,
+    ),
+    focusedErrorBorder: _createBorder(context.colors.primary),
+    errorBorder: _createBorder(context.colors.error),
+    errorStyle: TextStyles.of(size: 12, color: context.colors.error),
+    hintStyle:
+        widget.hintTextStyle ??
+        TextStyles.of(size: 12, color: context.colors.textSecondary),
+    labelStyle:
+        widget.labelTextStyle ??
+        TextStyles.of(size: 12, color: context.colors.textSecondary),
+    prefixIcon: _prefixIcon,
+    suffixIcon: _suffixIcon,
+  );
 
-  EdgeInsetsGeometry get _padding => EdgeInsets.symmetric(
-        horizontal: 16.w,
-        vertical: 16.h * widget.paddingVerticalFactory,
-      );
+  EdgeInsetsGeometry get _padding => .symmetric(
+    horizontal: 16.w,
+    vertical: 16.h * widget.paddingVerticalFactory,
+  );
 
   Widget? get _prefixIcon => widget.prefixIcon == null
       ? widget.prefix
@@ -450,7 +459,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
 
   OutlineInputBorder _createBorder(Color color) {
     return OutlineInputBorder(
-      borderRadius: widget.borderRadius ?? BorderRadius.circular(12.r),
+      borderRadius: widget.borderRadius ?? .circular(12.r),
       borderSide: BorderSide(color: color),
     );
   }

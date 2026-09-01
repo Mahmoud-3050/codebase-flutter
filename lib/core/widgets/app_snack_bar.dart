@@ -33,7 +33,7 @@ SnackBar _buildAppSnackBar({
     padding: _padding,
     margin: _getMargin(context, behavior),
     backgroundColor: type.color,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.r)),
+    shape: RoundedRectangleBorder(borderRadius: .circular(16.r)),
     behavior: behavior,
     duration: duration,
     elevation: 0.0,
@@ -43,73 +43,61 @@ SnackBar _buildAppSnackBar({
 Widget _buildContent(BuildContext context, String message, ToastType type) {
   final colors = context.colors;
   return Wrap(
-    crossAxisAlignment: WrapCrossAlignment.center,
+    crossAxisAlignment: .center,
     children: <Widget>[
-      Icon(
-        type.icon,
-        color: colors.white,
-        size: 32.r,
-      ),
+      Icon(type.icon, color: colors.white, size: 32.r),
       SizedBox(width: 8.w),
       Text(
         message,
         style: TextStyle(
           color: colors.white,
           fontSize: 13.sp,
-          fontWeight: FontWeight.w400,
-          overflow: TextOverflow.clip,
+          fontWeight: .w400,
+          overflow: .clip,
         ),
       ),
     ],
   );
 }
 
-EdgeInsetsGeometry get _padding =>
-    EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h);
+EdgeInsetsGeometry get _padding => .symmetric(horizontal: 16.w, vertical: 8.h);
 
 EdgeInsetsGeometry? _getMargin(
-    BuildContext context, SnackBarBehavior? behavior) {
+  BuildContext context,
+  SnackBarBehavior? behavior,
+) {
   if (behavior != SnackBarBehavior.floating) {
     return null;
   }
-  return EdgeInsetsDirectional.only(
-    bottom: 16.h,
-    start: 16.w,
-    end: 16.w,
-  );
+  return EdgeInsetsDirectional.only(bottom: 16.h, start: 16.w, end: 16.w);
 }
 
-enum ToastType {
-  success,
-  error,
-  warning,
-  info,
-}
+enum ToastType { success, error, warning, info }
 
 extension ToastTypeColor on ToastType {
   Color get color {
     switch (this) {
-      case ToastType.success:
+      case .success:
         return _Colors.success;
-      case ToastType.error:
+      case .error:
         return _Colors.red;
-      case ToastType.warning:
+      case .warning:
         return _Colors.warning;
-      case ToastType.info:
+      case .info:
         return _Colors.info;
-      }
+    }
   }
 
   IconData get icon {
     switch (this) {
-      case ToastType.success:
+      case .success:
         return Icons.check_circle_rounded;
-      case ToastType.error:
+      case .error:
         return Icons.error_rounded;
-      case ToastType.warning:
+      case .warning:
         return Icons.warning_rounded;
-      case ToastType.info:
-      return Icons.info_rounded;
+      case .info:
+        return Icons.info_rounded;
     }
   }
 }

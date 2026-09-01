@@ -13,10 +13,7 @@ class FeatureModeRunner {
   final Feature feature;
   final bool generateTest;
 
-  const FeatureModeRunner({
-    required this.feature,
-    required this.generateTest,
-  });
+  const FeatureModeRunner({required this.feature, required this.generateTest});
 
   Future<void> run() async {
     final FeaturePaths paths = FeaturePaths.fromFeatureName(feature.names);
@@ -84,18 +81,17 @@ class FeatureModeRunner {
 
   static Future<void> runBuildRunner() async {
     ConsoleLogger.info('Running build_runner to generate test mocks...');
-    final Process process = await Process.start(
-      'dart',
-      ['run', 'build_runner', 'build', '--delete-conflicting-outputs'],
-      mode: ProcessStartMode.inheritStdio,
-    );
+    final Process process = await Process.start('dart', [
+      'run',
+      'build_runner',
+      'build',
+      '--delete-conflicting-outputs',
+    ], mode: ProcessStartMode.inheritStdio);
     final int exitCode = await process.exitCode;
     if (exitCode == 0) {
       ConsoleLogger.success('Test mocks generated successfully!');
     } else {
-      ConsoleLogger.error(
-        'build_runner failed with exit code $exitCode',
-      );
+      ConsoleLogger.error('build_runner failed with exit code $exitCode');
     }
   }
 }

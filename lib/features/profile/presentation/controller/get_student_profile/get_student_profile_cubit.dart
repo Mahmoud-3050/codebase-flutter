@@ -13,17 +13,24 @@ part 'get_student_profile_states.dart';
 class GetStudentProfileCubit extends Cubit<GetStudentProfileState> {
   final GetStudentProfileUseCase getStudentProfileUseCase;
 
-  GetStudentProfileCubit(this.getStudentProfileUseCase) : super(const GetStudentProfileInitialState());
-
+  GetStudentProfileCubit(this.getStudentProfileUseCase)
+    : super(const GetStudentProfileInitialState());
 
   Future<void> fGetStudentProfile() async {
     emit(const GetStudentProfileLoadingState());
-    final Either<Failure, GetStudentProfileResponse> eitherResult = await getStudentProfileUseCase(NoParams());
-    eitherResult.fold((Failure failure) {
-      emit(GetStudentProfileErrorState(message: failure.message?? Strings.pleaseTryAgainLater));
-    }, (GetStudentProfileResponse response) {
-      emit(GetStudentProfileSuccessState(data: response.data));
-    });
+    final Either<Failure, GetStudentProfileResponse> eitherResult =
+        await getStudentProfileUseCase(NoParams());
+    eitherResult.fold(
+      (Failure failure) {
+        emit(
+          GetStudentProfileErrorState(
+            message: failure.message ?? Strings.pleaseTryAgainLater,
+          ),
+        );
+      },
+      (GetStudentProfileResponse response) {
+        emit(GetStudentProfileSuccessState(data: response.data));
+      },
+    );
   }
 }
-

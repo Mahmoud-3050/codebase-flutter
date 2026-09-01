@@ -6,10 +6,7 @@ abstract class BaseValidator {
   final bool required;
   final String? customErrorMessage;
 
-  const BaseValidator({
-    this.required = true,
-    this.customErrorMessage,
-  });
+  const BaseValidator({this.required = true, this.customErrorMessage});
 
   String? validate(String? value);
 
@@ -28,10 +25,7 @@ abstract class BaseValidator {
 }
 
 class EmptyValidator extends BaseValidator {
-  const EmptyValidator({
-    super.required = true,
-    super.customErrorMessage,
-  });
+  const EmptyValidator({super.required = true, super.customErrorMessage});
 
   @override
   String? validate(String? value) => validateRequired(value);
@@ -74,25 +68,19 @@ class GenericPatternValidator extends PatternValidator {
 }
 
 class EmailValidator extends PatternValidator {
-  const EmailValidator({
-    super.required = true,
-    super.customErrorMessage,
-  }) : super(
-          pattern:
-              r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",
-        );
+  const EmailValidator({super.required = true, super.customErrorMessage})
+    : super(
+        pattern:
+            r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$",
+      );
 
   @override
   String get defaultErrorMessage => FieldValidator.instance.messages.validEmail;
 }
 
 class TextOnlyValidator extends PatternValidator {
-  const TextOnlyValidator({
-    super.required = true,
-    super.customErrorMessage,
-  }) : super(
-          pattern: r'^[a-zA-Z\s]+$',
-        );
+  const TextOnlyValidator({super.required = true, super.customErrorMessage})
+    : super(pattern: r'^[a-zA-Z\s]+$');
 
   @override
   String get defaultErrorMessage => FieldValidator.instance.messages.validText;
@@ -118,7 +106,9 @@ class PhoneValidator extends BaseValidator {
     final trimmed = value!.trim();
     final isValid = (phoneCode != null && phoneValidationHandler != null)
         ? phoneValidationHandler!(trimmed, phoneCode!)
-        : RegExp(r'^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$').hasMatch(trimmed);
+        : RegExp(
+            r'^[+]*[(]{0,1}[0-9]{1,4}[)]{0,1}[-\s\./0-9]*$',
+          ).hasMatch(trimmed);
 
     if (!isValid) {
       return customErrorMessage ?? FieldValidator.instance.messages.validPhone;
@@ -144,12 +134,12 @@ class NumbersValidator extends BaseValidator {
 
   @override
   List<TextInputFormatter> get inputFormatters {
-    final formatters = <TextInputFormatter>[
-      ArabicToEnglishNumberFormatter(),
-    ];
+    final formatters = <TextInputFormatter>[ArabicToEnglishNumberFormatter()];
 
     if (maxDecimalPlaces != null && maxDecimalPlaces! > 0) {
-      formatters.add(DecimalTextInputFormatter(decimalRange: maxDecimalPlaces!));
+      formatters.add(
+        DecimalTextInputFormatter(decimalRange: maxDecimalPlaces!),
+      );
     } else {
       formatters.add(FilteringTextInputFormatter.digitsOnly);
     }
@@ -172,16 +162,19 @@ class NumbersValidator extends BaseValidator {
     final trimmed = value!.trim();
     final parsed = num.tryParse(trimmed);
     if (parsed == null) {
-      return customErrorMessage ?? FieldValidator.instance.messages.validNumbers;
+      return customErrorMessage ??
+          FieldValidator.instance.messages.validNumbers;
     }
 
     if (!allowZero && parsed == 0) {
-      return customErrorMessage ?? FieldValidator.instance.messages.zeroNotAllowed;
+      return customErrorMessage ??
+          FieldValidator.instance.messages.zeroNotAllowed;
     }
 
     if ((maxDecimalPlaces == null || maxDecimalPlaces == 0) &&
         !RegExp(r'^[0-9]+$').hasMatch(trimmed)) {
-      return customErrorMessage ?? FieldValidator.instance.messages.validNumbers;
+      return customErrorMessage ??
+          FieldValidator.instance.messages.validNumbers;
     }
 
     if (maxDecimalPlaces != null && maxDecimalPlaces! > 0) {
@@ -193,7 +186,8 @@ class NumbersValidator extends BaseValidator {
     }
 
     final digitsOnlyLength = trimmed.replaceAll('.', '').length;
-    if (requiredDigitLength != null && digitsOnlyLength != requiredDigitLength!) {
+    if (requiredDigitLength != null &&
+        digitsOnlyLength != requiredDigitLength!) {
       return customErrorMessage ??
           '${FieldValidator.instance.messages.mustBeDigitsCount} ($requiredDigitLength)';
     }
@@ -230,12 +224,14 @@ class PasswordValidator extends BaseValidator {
   String? validate(String? value) {
     final requiredError = validateRequired(value);
     if (requiredError != null) {
-      return customErrorMessage ?? FieldValidator.instance.messages.validPassword;
+      return customErrorMessage ??
+          FieldValidator.instance.messages.validPassword;
     }
     if (!shouldValidate(value)) return null;
 
     if (value!.length < minLength) {
-      return customErrorMessage ?? FieldValidator.instance.messages.validPassword;
+      return customErrorMessage ??
+          FieldValidator.instance.messages.validPassword;
     }
 
     if (requireUppercase && !RegExp(r'[A-Z]').hasMatch(value)) {
@@ -262,10 +258,7 @@ class PasswordValidator extends BaseValidator {
 class CompositeValidator extends BaseValidator {
   final List<BaseValidator> validators;
 
-  const CompositeValidator({
-    required this.validators,
-    super.required = true,
-  });
+  const CompositeValidator({required this.validators, super.required = true});
 
   @override
   String? validate(String? value) {

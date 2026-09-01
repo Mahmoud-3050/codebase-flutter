@@ -150,10 +150,7 @@ class DioConsumerImpl implements DioConsumer {
     Map<String, dynamic>? queryParameters,
   }) {
     return _send(
-      () => client.delete<dynamic>(
-        path,
-        queryParameters: queryParameters,
-      ),
+      () => client.delete<dynamic>(path, queryParameters: queryParameters),
     );
   }
 

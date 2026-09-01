@@ -42,8 +42,10 @@ abstract class NamesHelper {
   }
 
   static String snakeToCamelCase(String input) {
-    List<String> parts =
-        input.split('_').where((part) => part.isNotEmpty).toList();
+    List<String> parts = input
+        .split('_')
+        .where((part) => part.isNotEmpty)
+        .toList();
     if (parts.isEmpty) return '';
     String camelCase = parts[0];
     for (int i = 1; i < parts.length; i++) {

@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class ChangeCompanyPasswordResponse extends Equatable{
+class ChangeCompanyPasswordResponse extends Equatable {
   final String status;
   final String message;
 
@@ -10,11 +10,5 @@ class ChangeCompanyPasswordResponse extends Equatable{
   });
 
   @override
-  List<Object?> get props => <Object?>[
-    status,
-    message,
-  ];
+  List<Object?> get props => <Object?>[status, message];
 }
-
-
-

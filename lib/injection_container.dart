@@ -39,8 +39,7 @@ abstract class ServiceLocator {
     _injectDio();
     _injectDioConsumer();
     injectRoutesStackSingleton(<String>[]);
-    injectDeviceTypeSingleton(
-        Platform.isIOS ? DeviceType.ios : DeviceType.android);
+    injectDeviceTypeSingleton(Platform.isIOS ? .ios : .android);
     injectDeviceIdSingleton(await getDeviceId());
   }
 
@@ -61,7 +60,8 @@ abstract class ServiceLocator {
 
   static void _injectSharedPreferencesService() {
     instance.registerLazySingleton<SharedPreferencesService>(
-        () => SharedPreferencesServiceImpl(instance: instance()));
+      () => SharedPreferencesServiceImpl(instance: instance()),
+    );
   }
 
   static void _injectUserTypeStorage() {
@@ -71,8 +71,9 @@ abstract class ServiceLocator {
   }
 
   static void _injectSecureStorage() {
-    AndroidOptions androidOptions =
-        const AndroidOptions(encryptedSharedPreferences: true);
+    AndroidOptions androidOptions = const AndroidOptions(
+      encryptedSharedPreferences: true,
+    );
     // IOSOptions iosOptions = const IOSOptions(accessibility: KeychainAccessibility.first_unlock);
     final FlutterSecureStorage secureStorage = FlutterSecureStorage(
       aOptions: androidOptions,
@@ -83,7 +84,8 @@ abstract class ServiceLocator {
 
   static void _injectSecureStorageService() {
     instance.registerLazySingleton<SecureStorageService>(
-        () => SecureStorageServiceImpl(instance: instance()));
+      () => SecureStorageServiceImpl(instance: instance()),
+    );
   }
 
   static void _injectAccessTokenStorage() {
@@ -99,30 +101,40 @@ abstract class ServiceLocator {
   }
 
   static void injectRoutesStackSingleton(List<String> routes) {
-    instance.registerLazySingleton<List<String>>(() => routes,
-        instanceName: 'routesStack');
+    instance.registerLazySingleton<List<String>>(
+      () => routes,
+      instanceName: 'routesStack',
+    );
   }
 
   static void injectFCMTokenSingleton(String? fcmToken) {
-    instance.registerLazySingleton<String>(() => fcmToken ?? '',
-        instanceName: 'fcmToken');
+    instance.registerLazySingleton<String>(
+      () => fcmToken ?? '',
+      instanceName: 'fcmToken',
+    );
   }
 
   static void injectDeviceTypeSingleton(DeviceType deviceType) {
-    instance.registerLazySingleton<DeviceType>(() => deviceType,
-        instanceName: 'deviceType');
+    instance.registerLazySingleton<DeviceType>(
+      () => deviceType,
+      instanceName: 'deviceType',
+    );
   }
 
   static void injectDeviceIdSingleton(String? deviceId) {
-    instance.registerLazySingleton<String>(() => deviceId ?? '',
-        instanceName: 'deviceId');
+    instance.registerLazySingleton<String>(
+      () => deviceId ?? '',
+      instanceName: 'deviceId',
+    );
   }
 
   static void injectNavigatorKeySingleton(
-      GlobalKey<NavigatorState> navigatorKey) {
+    GlobalKey<NavigatorState> navigatorKey,
+  ) {
     instance.registerLazySingleton<GlobalKey<NavigatorState>>(
-        () => navigatorKey,
-        instanceName: 'navigatorKey');
+      () => navigatorKey,
+      instanceName: 'navigatorKey',
+    );
   }
 }
 

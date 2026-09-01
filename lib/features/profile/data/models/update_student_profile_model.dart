@@ -15,7 +15,6 @@ class UpdateStudentProfileModel extends UpdateStudentProfileResponse {
       );
 }
 
-
 class StudentModel extends Student {
   const StudentModel({
     required super.id,
@@ -41,7 +40,9 @@ class StudentModel extends Student {
   });
 
   factory StudentModel.fromJson(Map<String, dynamic> json) => StudentModel(
-    id: json['id'] != null? num.tryParse(json['id'].toString())?.toInt()?? 0: 0,
+    id: json['id'] != null
+        ? num.tryParse(json['id'].toString())?.toInt() ?? 0
+        : 0,
     firstName: json['first_name'] ?? '',
     secondName: json['second_name'] ?? '',
     lastName: json['last_name'] ?? '',
@@ -50,11 +51,15 @@ class StudentModel extends Student {
     phone: json['phone'] ?? '',
     email: json['email'] ?? '',
     birthdate: json['birthdate'] ?? '',
-    cityId: json['city_id'] != null? num.tryParse(json['city_id'].toString())?.toInt()?? 0: 0,
+    cityId: json['city_id'] != null
+        ? num.tryParse(json['city_id'].toString())?.toInt() ?? 0
+        : 0,
     institute: json['institute'] ?? '',
     major: json['major'] ?? '',
     graduationDate: json['graduation_date'] ?? '',
-    degreeId: json['degree_id'] != null? num.tryParse(json['degree_id'].toString())?.toInt()?? 0: 0,
+    degreeId: json['degree_id'] != null
+        ? num.tryParse(json['degree_id'].toString())?.toInt() ?? 0
+        : 0,
     gpaFile: json['gpa_file'] ?? '',
     cvFile: json['cv_file'] ?? '',
     image: json['image'] ?? '',
@@ -62,8 +67,4 @@ class StudentModel extends Student {
     verifiedAt: json['verified_at'] ?? '',
     accessToken: json['access_token'] ?? '',
   );
-
 }
-
-
-

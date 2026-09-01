@@ -8,21 +8,23 @@ class InfiniteSmoothAutoScroll extends StatefulWidget {
   final Duration startDelay;
 
   const InfiniteSmoothAutoScroll({
-    required this.items, super.key,
+    required this.items,
+    super.key,
     this.scrollSpeed = const Duration(milliseconds: 16), // ~60 FPS
-    this.startDelay = const Duration(seconds: 1), 
+    this.startDelay = const Duration(seconds: 1),
   });
 
   @override
-  State<InfiniteSmoothAutoScroll> createState() => _InfiniteSmoothAutoScrollState();
+  State<InfiniteSmoothAutoScroll> createState() =>
+      _InfiniteSmoothAutoScrollState();
 }
 
 class _InfiniteSmoothAutoScrollState extends State<InfiniteSmoothAutoScroll>
     with WidgetsBindingObserver {
   final ScrollController _controller = ScrollController();
-  bool _appShouldScroll = true;      // controlled by AppLifecycle
-  bool _userIsDragging = false;      // controlled by user gestures
-  bool _scrollLoopRunning = true;    // keeps the loop going
+  bool _appShouldScroll = true; // controlled by AppLifecycle
+  bool _userIsDragging = false; // controlled by user gestures
+  bool _scrollLoopRunning = true; // keeps the loop going
   Timer? _autoScrollTimer;
 
   @override
@@ -97,7 +99,6 @@ class _InfiniteSmoothAutoScrollState extends State<InfiniteSmoothAutoScroll>
     });
   }
 
-
   @override
   Widget build(BuildContext context) {
     if (widget.items.isEmpty) return const SizedBox();
@@ -110,12 +111,12 @@ class _InfiniteSmoothAutoScrollState extends State<InfiniteSmoothAutoScroll>
         onPanCancel: _onScrollEnd,
         child: ListView.builder(
           controller: _controller,
-          scrollDirection: Axis.horizontal,
+          scrollDirection: .horizontal,
           // **REMOVE** NeverScrollableScrollPhysics so that user can drag
           itemBuilder: (context, index) {
             final item = widget.items[index % widget.items.length];
             return Padding(
-              padding: EdgeInsets.symmetric(horizontal: 8.w),
+              padding: .symmetric(horizontal: 8.w),
               child: item,
             );
           },

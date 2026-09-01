@@ -1,6 +1,5 @@
 part of 'get_company_profile_cubit.dart';
 
-
 sealed class GetCompanyProfileState extends Equatable {
   const GetCompanyProfileState();
 
@@ -33,4 +32,3 @@ final class GetCompanyProfileErrorState extends GetCompanyProfileState {
   @override
   List<Object?> get props => <Object?>[message];
 }
-

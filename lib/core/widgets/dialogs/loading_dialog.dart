@@ -6,23 +6,20 @@ import '../../utils/values/text_styles.dart';
 
 class LoadingDialog extends StatelessWidget {
   final String? title;
-  const LoadingDialog({
-    this.title,
-    super.key,
-  });
+  const LoadingDialog({this.title, super.key});
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 72.h),
+      padding: .symmetric(horizontal: 8.w, vertical: 72.h),
       child: Builder(
         builder: (context) {
           if (title != null) {
             return Wrap(
-              direction: Axis.vertical,
-              alignment: WrapAlignment.center,
-              crossAxisAlignment: WrapCrossAlignment.center,
-              runAlignment: WrapAlignment.center,
+              direction: .vertical,
+              alignment: .center,
+              crossAxisAlignment: .center,
+              runAlignment: .center,
               children: [
                 SizedBox(
                   width: 64.w,
@@ -34,8 +31,8 @@ class LoadingDialog extends StatelessWidget {
                 SizedBox(height: 16.h),
                 Text(
                   title!,
-                  style: TextStyles.of(size: 16, weight: FontWeight.w500),
-                  textAlign: TextAlign.center,
+                  style: TextStyles.of(size: 16, weight: .w500),
+                  textAlign: .center,
                 ),
               ],
             );
@@ -43,9 +40,7 @@ class LoadingDialog extends StatelessWidget {
           return SizedBox(
             width: 64.w,
             height: 64.h,
-            child: Center(
-              child: const CircularProgressIndicator().appLoading,
-            ),
+            child: Center(child: const CircularProgressIndicator().appLoading),
           );
         },
       ),

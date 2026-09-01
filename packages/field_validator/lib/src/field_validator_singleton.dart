@@ -10,26 +10,20 @@ class FieldValidator {
   static FieldValidator get instance => _instance;
   factory FieldValidator() => _instance;
 
-  ValidatorLocale _locale = ValidatorLocale.en;
+  ValidatorLocale _locale = .en;
   ValidatorLocale get locale => _locale;
 
   ValidatorMessages _messages = ValidatorMessages.en();
   ValidatorMessages get messages => _messages;
 
   /// Initialize default locale ([ValidatorLocale.en] by default) and optional custom messages override
-  void init({
-    ValidatorLocale locale = ValidatorLocale.en,
-    ValidatorMessages? messages,
-  }) {
+  void init({ValidatorLocale locale = .en, ValidatorMessages? messages}) {
     _locale = locale;
     _messages = messages ?? ValidatorMessages.fromLocale(locale);
   }
 
   /// Initialize messages directly from a JSON map (e.g. loaded from assets)
-  void initFromJson(
-    Map<String, dynamic> json, {
-    ValidatorLocale locale = ValidatorLocale.en,
-  }) {
+  void initFromJson(Map<String, dynamic> json, {ValidatorLocale locale = .en}) {
     _locale = locale;
     _messages = ValidatorMessages.fromJson(json, locale: locale);
   }
@@ -66,13 +60,12 @@ class FieldValidator {
     String? phoneCode,
     String? customError,
     bool Function(String phone, String code)? phoneValidationHandler,
-  }) =>
-      PhoneValidator(
-        required: required,
-        phoneCode: phoneCode,
-        customErrorMessage: customError,
-        phoneValidationHandler: phoneValidationHandler,
-      );
+  }) => PhoneValidator(
+    required: required,
+    phoneCode: phoneCode,
+    customErrorMessage: customError,
+    phoneValidationHandler: phoneValidationHandler,
+  );
 
   static BaseValidator textOnly({bool required = true, String? customError}) =>
       TextOnlyValidator(required: required, customErrorMessage: customError);
@@ -84,15 +77,14 @@ class FieldValidator {
     int? maxDecimalPlaces,
     bool allowZero = false,
     String? customError,
-  }) =>
-      NumbersValidator(
-        required: required,
-        requiredDigitLength: requiredDigitLength,
-        maxDigitLength: maxDigitLength,
-        maxDecimalPlaces: maxDecimalPlaces,
-        allowZero: allowZero,
-        customErrorMessage: customError,
-      );
+  }) => NumbersValidator(
+    required: required,
+    requiredDigitLength: requiredDigitLength,
+    maxDigitLength: maxDigitLength,
+    maxDecimalPlaces: maxDecimalPlaces,
+    allowZero: allowZero,
+    customErrorMessage: customError,
+  );
 
   static BaseValidator password({
     bool required = true,
@@ -103,30 +95,28 @@ class FieldValidator {
     bool requireNumbers = false,
     bool requireSpecialChars = false,
     String? customError,
-  }) =>
-      PasswordValidator(
-        required: required,
-        minLength: minLength,
-        password: password,
-        requireUppercase: requireUppercase,
-        requireLowercase: requireLowercase,
-        requireNumbers: requireNumbers,
-        requireSpecialChars: requireSpecialChars,
-        customErrorMessage: customError,
-      );
+  }) => PasswordValidator(
+    required: required,
+    minLength: minLength,
+    password: password,
+    requireUppercase: requireUppercase,
+    requireLowercase: requireLowercase,
+    requireNumbers: requireNumbers,
+    requireSpecialChars: requireSpecialChars,
+    customErrorMessage: customError,
+  );
 
   static BaseValidator pattern({
     required String pattern,
     required String errorMessage,
     bool required = true,
     String? customError,
-  }) =>
-      PatternValidator(
-        pattern: pattern,
-        errorMessage: errorMessage,
-        required: required,
-        customErrorMessage: customError,
-      );
+  }) => PatternValidator(
+    pattern: pattern,
+    errorMessage: errorMessage,
+    required: required,
+    customErrorMessage: customError,
+  );
 
   static BaseValidator combine(List<BaseValidator> validators) =>
       CompositeValidator(validators: validators);

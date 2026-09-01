@@ -13,8 +13,12 @@ class RepositoryImplFile extends ProjectFile {
   RepositoryImplFile({required super.file});
 
   @override
-  Future<void> generate({required Names featureNames, required List<Request> requests}) async{
+  Future<void> generate({
+    required Names featureNames,
+    required List<Request> requests,
+  }) async {
     final StringBuffer buffer = StringBuffer();
+
     ///-> File imports
     buffer.writeln("import 'package:either/either.dart';");
     buffer.writeln();
@@ -22,20 +26,28 @@ class RepositoryImplFile extends ProjectFile {
     buffer.writeln("import '../../../../core/utils/log_utils.dart';");
     buffer.writeln("import '../../../../core/error/failures.dart';");
     buffer.writeln("import '../../../../config/language/strings.dart';");
-    buffer.writeln("import '../../data/datasources/${featureNames.snakeCase}_remote_datasource.dart';");
-    buffer.writeln("import '../../domain/repositories/${featureNames.snakeCase}_repo.dart';");
+    buffer.writeln(
+      "import '../../data/datasources/${featureNames.snakeCase}_remote_datasource.dart';",
+    );
+    buffer.writeln(
+      "import '../../domain/repositories/${featureNames.snakeCase}_repo.dart';",
+    );
 
     ///-> Func imports
-    for(Request request in requests){
+    for (Request request in requests) {
       List<String> importsLines = request.buffers.repositoryImpl
-          .generateImports(featureNameSnakeCase: featureNames.snakeCase, requestNameSnakeCase: request.names.snakeCase, hasParams: request.params != null)
+          .generateImports(
+            featureNameSnakeCase: featureNames.snakeCase,
+            requestNameSnakeCase: request.names.snakeCase,
+            hasParams: request.params != null,
+          )
           .toString()
           .split('\n');
 
       ///-> Filter duplicated imports
-      for(String line in importsLines){
-        if(line.contains('core/usecases/usecase.dart')){
-          if(isNoParamsImports){
+      for (String line in importsLines) {
+        if (line.contains('core/usecases/usecase.dart')) {
+          if (isNoParamsImports) {
             continue;
           }
           isNoParamsImports = true;
@@ -47,7 +59,9 @@ class RepositoryImplFile extends ProjectFile {
 
     ///-> Class RepositoryImpl
     buffer.writeln();
-    buffer.writeln('class ${featureNames.classCase}RepositoryImpl implements ${featureNames.classCase}Repository {');
+    buffer.writeln(
+      'class ${featureNames.classCase}RepositoryImpl implements ${featureNames.classCase}Repository {',
+    );
     buffer.writeln('  final ${featureNames.classCase}RemoteDataSource remote;');
     buffer.writeln();
     buffer.writeln('  ${featureNames.classCase}RepositoryImpl({');
@@ -56,9 +70,8 @@ class RepositoryImplFile extends ProjectFile {
     buffer.writeln();
     buffer.writeln('  /// Impl');
 
-
     ///-> Func
-    for(Request request in requests){
+    for (Request request in requests) {
       String func = request.buffers.repositoryImpl
           .generateBody(featureNames: featureNames, request: request)
           .toString();
@@ -73,8 +86,10 @@ class RepositoryImplFile extends ProjectFile {
   }
 
   @override
-  Future<void> modify(
-      {required Names featureNames, required List<Request> requests}) async {
+  Future<void> modify({
+    required Names featureNames,
+    required List<Request> requests,
+  }) async {
     final List<String> lines = file.readAsLinesSync();
     if (requests.isEmpty) {
       return;
@@ -120,7 +135,6 @@ class RepositoryImplFile extends ProjectFile {
         constructorIndex = index + 1;
         currentIndex = constructorIndex;
       }
-
       ///-> Detect functionsIndex
       else if (currentIndex == constructorIndex && line.contains('@override')) {
         functionsIndex = index - 1;
@@ -131,12 +145,10 @@ class RepositoryImplFile extends ProjectFile {
       if (currentIndex == 0) {
         importsLines.add(line);
       }
-
       ///-> Add constructor lines
       else if (currentIndex == constructorIndex) {
         constructorLines.add(line);
       }
-
       ///-> Add functions lines
       else if (currentIndex == functionsIndex) {
         functionsLines.add(line);
@@ -148,8 +160,9 @@ class RepositoryImplFile extends ProjectFile {
     if (!isAuthLocalImports &&
         isOneRequestHasToken &&
         !importsLines.lineContains('local_datasource.dart')) {
-      importsLines
-          .add("import '../../../../core/local/auth_local_datasource.dart';");
+      importsLines.add(
+        "import '../../../../core/local/auth_local_datasource.dart';",
+      );
       isAuthLocalImports = true;
     }
 
@@ -181,7 +194,9 @@ class RepositoryImplFile extends ProjectFile {
         !constructorLines.lineContains('LocalDataSource')) {
       constructorLines.insert(1, '  final AuthLocalDataSource local;');
       constructorLines.insert(
-          constructorLines.length - 2, '    required this.local,');
+        constructorLines.length - 2,
+        '    required this.local,',
+      );
     }
 
     ///-> Functions Impl
@@ -210,12 +225,7 @@ class RepositoryImplFile extends ProjectFile {
     ///-> Write file
     await file.writeAsString(fileBuffer.toString());
   }
-
-
-
-
 }
-
 
 // void generateRepositoryImplFile({
 //   required String feature,
@@ -280,7 +290,6 @@ class RepositoryImplFile extends ProjectFile {
 //   //print('File generated: ${file.path}');
 // }
 
-
 void modifyRepositoryImplFile({
   required File file,
   required String feature,
@@ -296,28 +305,32 @@ void modifyRepositoryImplFile({
   // Imports
   bool isLocalDatasourceWrote = false;
   int count = 0;
-  for(String line in lines){
+  for (String line in lines) {
     //Start looping
-    if(line.contains('class ${className}RepositoryImpl implements ${className}Repository {')){
+    if (line.contains(
+      'class ${className}RepositoryImpl implements ${className}Repository {',
+    )) {
       break; //end of imports
     }
     contentsBuffer.writeln(line);
 
-    if(line.contains('auth_local_datasource.dart')){
+    if (line.contains('auth_local_datasource.dart')) {
       isLocalDatasourceWrote = true;
     }
-    if(line.contains("/domain/repositories/${feature}_repo.dart';")){
+    if (line.contains("/domain/repositories/${feature}_repo.dart';")) {
       // write functions imports
-      for(Map<String, String?> item in filesImport){
-        if(item['entity'] != null){
-          contentsBuffer.writeln('import \'../../domain/entities/${item['entity']}.dart\';');
+      for (Map<String, String?> item in filesImport) {
+        if (item['entity'] != null) {
+          contentsBuffer.writeln(
+            'import \'../../domain/entities/${item['entity']}.dart\';',
+          );
         }
-        if(item['usecase'] == '../../../../core/usecases/usecases'){
-          if(!isCoreUseCaseImports){
+        if (item['usecase'] == '../../../../core/usecases/usecases') {
+          if (!isCoreUseCaseImports) {
             contentsBuffer.writeln('import \'${item['usecase']}.dart\';');
             isCoreUseCaseImports = true;
           }
-        }else{
+        } else {
           contentsBuffer.writeln('import \'${item['usecase']}.dart\';');
         }
       }
@@ -325,19 +338,21 @@ void modifyRepositoryImplFile({
     count++;
   }
 
-
-
   // Class
-  for(int i=count; i<lines.length; i++){
+  for (int i = count; i < lines.length; i++) {
     contentsBuffer.writeln(lines[i]);
-    if(lines[i].contains('final ${className}RemoteDataSource') && !isLocalDatasourceWrote && isOneRequestHasToken){
+    if (lines[i].contains('final ${className}RemoteDataSource') &&
+        !isLocalDatasourceWrote &&
+        isOneRequestHasToken) {
       contentsBuffer.writeln('  final AuthLocalDataSource local;');
     }
-    if(lines[i].contains('${className}RepositoryImpl({') && !isLocalDatasourceWrote && isOneRequestHasToken){
+    if (lines[i].contains('${className}RepositoryImpl({') &&
+        !isLocalDatasourceWrote &&
+        isOneRequestHasToken) {
       contentsBuffer.writeln('    required this.local,');
     }
-    if(lines[i].contains('});')){
-      for(final Map<String, StringBuffer> item in functions){
+    if (lines[i].contains('});')) {
+      for (final Map<String, StringBuffer> item in functions) {
         contentsBuffer.write(item['repositoryImplFunc']);
       }
     }

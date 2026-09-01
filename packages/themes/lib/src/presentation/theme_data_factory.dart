@@ -41,8 +41,8 @@ abstract final class ThemeDataFactory {
       progressIndicatorTheme: ProgressIndicatorThemeData(color: colors.primary),
       iconButtonTheme: IconButtonThemeData(
         style: ButtonStyle(
-          padding: WidgetStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.zero),
-          alignment: Alignment.center,
+          padding: WidgetStateProperty.all<EdgeInsetsGeometry>(.zero),
+          alignment: .center,
           foregroundColor: WidgetStateProperty.all<Color>(colors.primary),
           iconColor: WidgetStateProperty.all<Color>(colors.textPrimary),
         ),
@@ -53,14 +53,11 @@ abstract final class ThemeDataFactory {
         scrolledUnderElevation: 0,
         centerTitle: false,
         iconTheme: IconThemeData(color: colors.textPrimary),
-        titleTextStyle: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: colors.textPrimary,
-        ),
+        titleTextStyle: TextStyle(fontWeight: .w600, color: colors.textPrimary),
       ),
       bottomNavigationBarTheme: BottomNavigationBarThemeData(
         backgroundColor: colors.foreground,
-        type: BottomNavigationBarType.fixed,
+        type: .fixed,
         selectedItemColor: colors.primary,
         unselectedItemColor: colors.unselected,
       ),

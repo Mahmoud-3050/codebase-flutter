@@ -2,34 +2,38 @@ import 'dart:developer';
 
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
-class LocalNotificationService{
+class LocalNotificationService {
+  final FlutterLocalNotificationsPlugin _service =
+      FlutterLocalNotificationsPlugin();
 
-  final FlutterLocalNotificationsPlugin _service = FlutterLocalNotificationsPlugin();
-
-
-  static Future<void> requestPermission(FlutterLocalNotificationsPlugin instance) async{
+  static Future<void> requestPermission(
+    FlutterLocalNotificationsPlugin instance,
+  ) async {
     final bool? result = await instance
         .resolvePlatformSpecificImplementation<
-        IOSFlutterLocalNotificationsPlugin>()
-        ?.requestPermissions(
-      alert: true,
-      badge: true,
-      sound: true,
-    );
+          IOSFlutterLocalNotificationsPlugin
+        >()
+        ?.requestPermissions(alert: true, badge: true, sound: true);
 
-    log('@NOTIFICATIONS:: FlutterLocalNotificationsPlugin requestPermission $result');
+    log(
+      '@NOTIFICATIONS:: FlutterLocalNotificationsPlugin requestPermission $result',
+    );
   }
 
-  Future<void> initialize() async{
-    log('@NOTIFICATIONS:: FlutterLocalNotificationsPlugin initialize STARTING...');
-    const AndroidInitializationSettings androidInitializationSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
-    DarwinInitializationSettings iosInitializationSettings = const DarwinInitializationSettings(
+  Future<void> initialize() async {
+    log(
+      '@NOTIFICATIONS:: FlutterLocalNotificationsPlugin initialize STARTING...',
+    );
+    const AndroidInitializationSettings androidInitializationSettings =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+    DarwinInitializationSettings
+    iosInitializationSettings = const DarwinInitializationSettings(
       notificationCategories: <DarwinNotificationCategory>[
         DarwinNotificationCategory(
-            'demoCategory',
-            options: <DarwinNotificationCategoryOption>{
-              DarwinNotificationCategoryOption.hiddenPreviewShowTitle,
-            }
+          'demoCategory',
+          options: <DarwinNotificationCategoryOption>{
+            DarwinNotificationCategoryOption.hiddenPreviewShowTitle,
+          },
         ),
       ],
       // onDidReceiveLocalNotification: (int id, String? title, String? body, String? payload) =>
@@ -44,15 +48,16 @@ class LocalNotificationService{
     requestPermission(_service);
   }
 
-  Future<NotificationDetails> _notificationsDetails(String icon) async{
-    AndroidNotificationDetails androidNotificationDetails = const AndroidNotificationDetails(
-      'my_channel_id',
-      'my_channel_name',
-      channelDescription: 'my_description',
-      importance: Importance.max,
-      priority: Priority.max,
-      //sound: RawResourceAndroidNotificationSound('notification'),
-    );
+  Future<NotificationDetails> _notificationsDetails(String icon) async {
+    AndroidNotificationDetails androidNotificationDetails =
+        const AndroidNotificationDetails(
+          'my_channel_id',
+          'my_channel_name',
+          channelDescription: 'my_description',
+          importance: Importance.max,
+          priority: Priority.max,
+          //sound: RawResourceAndroidNotificationSound('notification'),
+        );
     return NotificationDetails(android: androidNotificationDetails);
   }
 
@@ -61,11 +66,18 @@ class LocalNotificationService{
     required String title,
     required String body,
     required String icon,
-  }) async{
+  }) async {
     log('@NOTIFICATIONS:: showNotification id($id) title($title) STARTING...');
-    log('@NOTIFICATIONS:: showNotification NotificationDetails title: $title, body: $body');
+    log(
+      '@NOTIFICATIONS:: showNotification NotificationDetails title: $title, body: $body',
+    );
     final NotificationDetails details = await _notificationsDetails(icon);
-    await _service.show(id: id, title: title, body: body, notificationDetails: details);
+    await _service.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: details,
+    );
   }
 
   // void onDidReceiveLocalNotification({int? id, String? title, String? body, String? payload}){

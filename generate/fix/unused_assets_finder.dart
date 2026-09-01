@@ -16,7 +16,7 @@ void main(List<String> args) async {
   final shouldDelete = args.contains('--delete');
 
   final foldersArg = args.firstWhere(
-        (arg) => arg.startsWith('--folders='),
+    (arg) => arg.startsWith('--folders='),
     orElse: () => '',
   );
 
@@ -38,9 +38,7 @@ void main(List<String> args) async {
   print('📦 Found ${assetConstants.length} assets in Assets class\n');
 
   // Get all project Dart + YAML files
-  final projectFiles = await _getProjectFiles(
-    Directory('.'),
-  );
+  final projectFiles = await _getProjectFiles(Directory('.'));
 
   print('📄 Scanning ${projectFiles.length} Dart/YAML files...\n');
 
@@ -96,8 +94,8 @@ void main(List<String> args) async {
   // Apply folder filter
   final filteredPaths = specificFolders != null
       ? unusedPaths.where((path) {
-    return specificFolders.any((folder) => path.contains('/$folder/'));
-  }).toList()
+          return specificFolders.any((folder) => path.contains('/$folder/'));
+        }).toList()
       : unusedPaths;
 
   print('\n📁 Unused asset file paths:');
@@ -163,26 +161,20 @@ List<String> _extractAssetConstants(String content) {
 
 /// Map constant → asset path
 Map<String, String> _extractAssetPathMap(String content) {
-  final regex =
-  RegExp(r'''static const String (\w+) = [\'"](.+?)[\'"]''');
+  final regex = RegExp(r'''static const String (\w+) = [\'"](.+?)[\'"]''');
   final matches = regex.allMatches(content);
 
-  return {
-    for (final m in matches) m.group(1)!: m.group(2)!,
-  };
+  return {for (final m in matches) m.group(1)!: m.group(2)!};
 }
 
 /// Get all Dart + YAML files in project
 Future<List<File>> _getProjectFiles(
-    Directory dir, {
-      List<String> extensions = const ['.dart', '.yaml', '.yml'],
-    }) async {
+  Directory dir, {
+  List<String> extensions = const ['.dart', '.yaml', '.yml'],
+}) async {
   final files = <File>[];
 
-  await for (final entity in dir.list(
-    recursive: true,
-    followLinks: false,
-  )) {
+  await for (final entity in dir.list(recursive: true, followLinks: false)) {
     if (entity is File &&
         extensions.any((ext) => entity.path.endsWith(ext)) &&
         !_isIgnored(entity.path)) {

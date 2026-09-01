@@ -9,8 +9,9 @@ export '../../features/profile/presentation/navigation/router.dart'
 export '../../features/splash/presentation/navigation/router.dart'
     hide $appRoutes;
 
-final GlobalKey<NavigatorState> rootNavigatorKey =
-    GlobalKey<NavigatorState>(debugLabel: 'root');
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>(
+  debugLabel: 'root',
+);
 
 class AppRouter {
   AppRouter._();
@@ -22,9 +23,6 @@ class AppRouter {
       // Example redirect logic can stay here
       return null;
     },
-    routes: [
-      ...splash.$appRoutes,
-      ...profile.$appRoutes,
-    ],
+    routes: [...splash.$appRoutes, ...profile.$appRoutes],
   );
 }

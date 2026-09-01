@@ -5,37 +5,43 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_file.dart';
 
-
-
-class CubitStatesFile extends RequestFile{
-
+class CubitStatesFile extends RequestFile {
   CubitStatesFile({required super.file});
 
   @override
-  Future<void> generate({required Names featureNames, required Request request}) async {
+  Future<void> generate({
+    required Names featureNames,
+    required Request request,
+  }) async {
     final StringBuffer buffer = StringBuffer();
+
     ///-> File imports
-    buffer.writeln(request.buffers.cubitStates.generateImports(requestNameSnakeCase: request.names.snakeCase).toString());
+    buffer.writeln(
+      request.buffers.cubitStates
+          .generateImports(requestNameSnakeCase: request.names.snakeCase)
+          .toString(),
+    );
 
     buffer.writeln();
 
     ///-> Class CubitStates
-    buffer.writeln(request.buffers.cubitStates.generateBody(featureNames: featureNames, request: request).toString());
+    buffer.writeln(
+      request.buffers.cubitStates
+          .generateBody(featureNames: featureNames, request: request)
+          .toString(),
+    );
 
     ///-> Write file
     final File targetFile = createFile(file.path);
     await targetFile.writeAsString(buffer.toString());
   }
 
-
   @override
   Future<void> modify({required Names featureNames, required Request request}) {
     // TODO: implement modify
     throw UnimplementedError();
   }
-
 }
-
 
 // void generateCubitStateFile({
 //   required String name,

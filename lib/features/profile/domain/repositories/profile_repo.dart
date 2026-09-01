@@ -20,35 +20,26 @@ abstract class ProfileRepository {
     required ChangeCompanyPasswordParams params,
   });
 
-
-  Future<Either<Failure, UpdateCompanyUserProfileResponse>> updateCompanyUserProfile({
-    required UpdateCompanyUserProfileParams params,
-  });
-
+  Future<Either<Failure, UpdateCompanyUserProfileResponse>>
+  updateCompanyUserProfile({required UpdateCompanyUserProfileParams params});
 
   Future<Either<Failure, ChangeStudentPasswordResponse>> changeStudentPassword({
     required ChangeStudentPasswordParams params,
   });
 
-
   Future<Either<Failure, GetCompanyProfileResponse>> getCompanyProfile({
     required NoParams params,
   });
-
 
   Future<Either<Failure, GetStudentProfileResponse>> getStudentProfile({
     required NoParams params,
   });
 
-
   Future<Either<Failure, UpdateCompanyProfileResponse>> updateCompanyProfile({
     required UpdateCompanyProfileParams params,
   });
 
-
   Future<Either<Failure, UpdateStudentProfileResponse>> updateStudentProfile({
     required UpdateStudentProfileParams params,
   });
-
-
 }

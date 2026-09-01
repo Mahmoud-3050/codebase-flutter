@@ -12,9 +12,6 @@ class AppDivider extends StatefulWidget {
 class _AppDividerState extends State<AppDivider> {
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 1.h,
-      color: context.colors.divider,
-    );
+    return Container(height: 1.h, color: context.colors.divider);
   }
 }

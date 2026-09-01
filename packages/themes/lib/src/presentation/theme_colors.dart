@@ -129,7 +129,8 @@ class ThemeColors extends ThemeExtension<ThemeColors> {
     final keys = {...a.keys, ...b.keys};
     return {
       for (final key in keys)
-        key: Color.lerp(a[key] ?? b[key], b[key] ?? a[key], t) ??
+        key:
+            Color.lerp(a[key] ?? b[key], b[key] ?? a[key], t) ??
             a[key] ??
             b[key]!,
     };

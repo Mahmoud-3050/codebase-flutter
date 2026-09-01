@@ -3,7 +3,8 @@ import 'dart:developer';
 import 'package:phone_numbers_parser/phone_numbers_parser.dart';
 
 class PhoneValidationService {
-  static final PhoneValidationService _instance = PhoneValidationService._internal();
+  static final PhoneValidationService _instance =
+      PhoneValidationService._internal();
 
   factory PhoneValidationService() {
     return _instance;
@@ -18,7 +19,7 @@ class PhoneValidationService {
     try {
       PhoneNumber parsedNumber = PhoneNumber.parse('$phoneCode$phoneNumber');
       bool isValid = parsedNumber.isValid(type: PhoneNumberType.mobile);
-      if(!isValid){
+      if (!isValid) {
         throw Exception('Phone($phoneCode$phoneNumber) is not valid!');
       }
       String phoneNumberParsed = parsedNumber.nsn;

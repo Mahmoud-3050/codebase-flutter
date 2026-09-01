@@ -12,12 +12,12 @@ final class ThemeConfig {
   const ThemeConfig({
     required this.light,
     required this.dark,
-    this.defaultMode = ThemeMode.light,
+    this.defaultMode = .light,
   });
 
   /// Rejects [ThemeMode.system]. Light and dark palettes are required.
   void validate() {
-    if (defaultMode == ThemeMode.system) {
+    if (defaultMode == .system) {
       throw const InvalidThemeConfigException(
         'defaultMode cannot be ThemeMode.system. Use ThemeMode.light or ThemeMode.dark.',
       );

@@ -7,10 +7,7 @@ import '../../config/themes/extra_colors.dart';
 class AppShimmer extends StatefulWidget {
   final Widget child;
 
-  const AppShimmer({
-    required this.child,
-    super.key,
-  });
+  const AppShimmer({required this.child, super.key});
 
   @override
   State<AppShimmer> createState() => _AppShimmerState();

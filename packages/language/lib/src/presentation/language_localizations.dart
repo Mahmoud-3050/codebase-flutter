@@ -21,7 +21,9 @@ class LanguageLocalizations {
 
   static LanguageLocalizations? of(BuildContext context) {
     return Localizations.of<LanguageLocalizations>(
-        context, LanguageLocalizations);
+      context,
+      LanguageLocalizations,
+    );
   }
 
   Future<void> load({AssetBundle? bundle}) async {
@@ -34,7 +36,8 @@ class LanguageLocalizations {
       return;
     }
 
-    _localizedStrings = await AssetLanguageLoader.loadJsonTranslation(
+    _localizedStrings =
+        await AssetLanguageLoader.loadJsonTranslation(
           assetPath,
           bundle: bundle,
         ) ??

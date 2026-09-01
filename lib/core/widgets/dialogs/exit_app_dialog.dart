@@ -13,13 +13,13 @@ class ExitAppDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+      padding: .symmetric(horizontal: 16.w, vertical: 20.h),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           Text(
             Strings.confirmExit,
-            style: TextStyles.of(size: 18, weight: FontWeight.w600),
+            style: TextStyles.of(size: 18, weight: .w600),
           ),
           SizedBox(height: 24.h),
           Text(

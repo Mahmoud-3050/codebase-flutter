@@ -14,9 +14,7 @@ class App extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
-      providers: [
-        ...profileBlocs,
-      ],
+      providers: [...profileBlocs],
       child: ThemeBuilder(
         builder: (context, themes) {
           return LanguageBuilder(
@@ -27,8 +25,8 @@ class App extends StatelessWidget {
                 builder: (context, child) {
                   return MaterialApp.router(
                     title: 'Base Project',
-                    theme: appTheme(themes.lightColors, Brightness.light),
-                    darkTheme: appTheme(themes.darkColors, Brightness.dark),
+                    theme: appTheme(themes.lightColors, .light),
+                    darkTheme: appTheme(themes.darkColors, .dark),
                     themeMode: themes.mode,
                     locale: locale,
                     supportedLocales:

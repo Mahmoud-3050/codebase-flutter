@@ -54,11 +54,11 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
   Widget build(BuildContext context) {
     if (widget.labelText != null) {
       return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: .start,
         children: <Widget>[
           Text(
             widget.labelText!,
-            style: TextStyles.of(size: 16, weight: FontWeight.w500),
+            style: TextStyles.of(size: 16, weight: .w500),
           ),
           SizedBox(height: 4.h),
           _dropdown,
@@ -70,11 +70,11 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
 
   Widget get _dropdown {
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 4.h),
+      padding: .symmetric(horizontal: 16.w, vertical: 4.h),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: .circular(8.r),
         color: widget.backgroundColor,
-        border: Border.all(color: widget.borderColor ?? context.colors.hint),
+        border: .all(color: widget.borderColor ?? context.colors.hint),
       ),
       child: DropdownButton<T>(
         value: widget.value,
@@ -84,12 +84,12 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
           color: widget.values.isEmpty
               ? context.colors.hint
               : widget.onChanged != null
-                  ? context.colors.textPrimary
-                  : context.colors.hint,
+              ? context.colors.textPrimary
+              : context.colors.hint,
           size: 20.r,
         ),
         hint: _buildHintText(),
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: .circular(8.r),
         isExpanded: true,
         underline: const SizedBox(),
         selectedItemBuilder: (context) {
@@ -98,8 +98,9 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
             final noneItem = DropdownMenuItem<T>(child: _buildHintText());
             selectedItems.add(noneItem);
           }
-          List<Widget> valuesSelectedItems =
-              mapNamesValues.entries.map((MapEntry<T, String> entry) {
+          List<Widget> valuesSelectedItems = mapNamesValues.entries.map((
+            MapEntry<T, String> entry,
+          ) {
             return DropdownMenuItem<T>(
               value: entry.key,
               child: Builder(
@@ -110,20 +111,19 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
                         Text(
                           widget.textItemBuilder!,
                           style: TextStyles.of(
-                              size: 12, color: context.colors.textSecondary),
+                            size: 12,
+                            color: context.colors.textSecondary,
+                          ),
                         ),
                         SizedBox(width: 8.w),
                         Container(
                           width: 2.w,
                           height: 32.h,
-                          padding: EdgeInsets.symmetric(
-                              horizontal: 0.w, vertical: 8.h),
+                          padding: .symmetric(horizontal: 0.w, vertical: 8.h),
                           color: context.colors.divider,
                         ),
                         SizedBox(width: 8.w),
-                        Expanded(
-                          child: _buildSelectedText(entry.value),
-                        ),
+                        Expanded(child: _buildSelectedText(entry.value)),
                       ],
                     );
                   }
@@ -159,7 +159,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
             Expanded(
               child: Text(
                 Strings.none,
-                style: TextStyles.of(size: 14, weight: FontWeight.w500),
+                style: TextStyles.of(size: 14, weight: .w500),
               ),
             ),
           ],
@@ -184,7 +184,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
             Expanded(
               child: Text(
                 entry.value,
-                style: TextStyles.of(size: 14, weight: FontWeight.w500),
+                style: TextStyles.of(size: 14, weight: .w500),
               ),
             ),
           ],
@@ -224,12 +224,12 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
         children: [
           TextSpan(
             text: value,
-            style: TextStyles.of(size: 14, weight: FontWeight.w500),
+            style: TextStyles.of(size: 14, weight: .w500),
           ),
         ],
       ),
       maxLines: 100,
-      overflow: TextOverflow.ellipsis,
+      overflow: .ellipsis,
     );
   }
 }
@@ -240,69 +240,73 @@ class AppDropdownShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Builder(builder: (BuildContext context) {
-      if (labelText != null) {
-        return Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              labelText!,
-              style: TextStyles.of(size: 18, weight: FontWeight.w500),
-            ),
-            SizedBox(height: 4.h),
-            _dropdown(context),
-          ],
-        );
-      }
-      return _dropdown(context);
-    });
+    return Builder(
+      builder: (BuildContext context) {
+        if (labelText != null) {
+          return Column(
+            crossAxisAlignment: .start,
+            children: <Widget>[
+              Text(labelText!, style: TextStyles.of(size: 18, weight: .w500)),
+              SizedBox(height: 4.h),
+              _dropdown(context),
+            ],
+          );
+        }
+        return _dropdown(context);
+      },
+    );
   }
 
   Widget _dropdown(BuildContext context) {
     return AppShimmer(
-        child: Container(
-          padding: EdgeInsets.symmetric(horizontal: 16.w),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8.r),
-            color: context.colors.foreground,
+      child: Container(
+        padding: .symmetric(horizontal: 16.w),
+        decoration: BoxDecoration(
+          borderRadius: .circular(8.r),
+          color: context.colors.foreground,
+        ),
+        child: DropdownButton<int>(
+          value: 0,
+          icon: Icon(
+            Icons.arrow_drop_down_rounded,
+            color: context.colors.unselected,
           ),
-          child: DropdownButton<int>(
-            value: 0,
-            icon: Icon(
-              Icons.arrow_drop_down_rounded,
-              color: context.colors.unselected,
-            ),
-            hint: Builder(builder: (BuildContext context) {
+          hint: Builder(
+            builder: (BuildContext context) {
               return Text(
                 'hintText',
-                style: TextStyles.of(size: 15, color: context.colors.unselected),
-              );
-            }),
-            borderRadius: BorderRadius.circular(8.r),
-            isExpanded: true,
-            underline: const SizedBox(),
-            items: <DropdownMenuItem<int>>[
-              DropdownMenuItem<int>(
-                value: 0,
-                child: Row(
-                  children: <Widget>[
-                    Icon(Icons.add, color: context.colors.primary),
-                    SizedBox(width: 8.w),
-                    Text(
-                      'entry.value',
-                      style: TextStyles.of(
-                          size: 14,
-                          weight: FontWeight.w600,
-                          color: Colors.black),
-                    ),
-                  ],
+                style: TextStyles.of(
+                  size: 15,
+                  color: context.colors.unselected,
                 ),
-              )
-            ],
-            onChanged: (int? value) {},
+              );
+            },
           ),
+          borderRadius: .circular(8.r),
+          isExpanded: true,
+          underline: const SizedBox(),
+          items: <DropdownMenuItem<int>>[
+            DropdownMenuItem<int>(
+              value: 0,
+              child: Row(
+                children: <Widget>[
+                  Icon(Icons.add, color: context.colors.primary),
+                  SizedBox(width: 8.w),
+                  Text(
+                    'entry.value',
+                    style: TextStyles.of(
+                      size: 14,
+                      weight: .w600,
+                      color: Colors.black,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+          onChanged: (int? value) {},
         ),
-      );
+      ),
+    );
   }
 }
-

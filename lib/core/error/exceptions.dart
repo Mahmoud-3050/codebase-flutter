@@ -23,10 +23,7 @@ class ServerException extends AppException {
   final String? message;
   final int? statusCode;
 
-  const ServerException({
-    this.message,
-    this.statusCode,
-  });
+  const ServerException({this.message, this.statusCode});
 
   @override
   List<Object?> get props => <Object?>[message, statusCode];
@@ -41,9 +38,7 @@ class FetchDataException extends AppException {
   @override
   final String? message;
 
-  const FetchDataException({
-    this.message,
-  });
+  const FetchDataException({this.message});
 
   @override
   Failure toFailure() {
@@ -55,9 +50,7 @@ class UnauthorizedException extends AppException {
   @override
   final String? message;
 
-  const UnauthorizedException({
-    this.message,
-  });
+  const UnauthorizedException({this.message});
 
   @override
   Failure toFailure() {
@@ -65,14 +58,11 @@ class UnauthorizedException extends AppException {
   }
 }
 
-
 class InternetConnectionException extends AppException {
   @override
   final String? message;
 
-  const InternetConnectionException({
-    this.message,
-  });
+  const InternetConnectionException({this.message});
 
   @override
   Failure toFailure() {
@@ -84,9 +74,7 @@ class CacheException extends AppException {
   @override
   final String? message;
 
-  const CacheException({
-    this.message,
-  });
+  const CacheException({this.message});
 
   @override
   Failure toFailure() {

@@ -6,10 +6,7 @@ class LanguageConfig {
   final List<String> jsonAssetPaths;
   final LanguageModel? defaultLanguage;
 
-  const LanguageConfig({
-    required this.jsonAssetPaths,
-    this.defaultLanguage,
-  });
+  const LanguageConfig({required this.jsonAssetPaths, this.defaultLanguage});
 
   List<LanguageModel> get declaredLanguages {
     final parsedLanguages = <LanguageModel>[];

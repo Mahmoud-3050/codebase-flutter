@@ -22,8 +22,10 @@ final class Language extends ChangeNotifier {
 
   bool _initialized = false;
   LanguageModel _current = const LanguageModel(code: 'und', nativeName: '');
-  LanguageModel _defaultLanguage =
-      const LanguageModel(code: 'und', nativeName: '');
+  LanguageModel _defaultLanguage = const LanguageModel(
+    code: 'und',
+    nativeName: '',
+  );
   List<LanguageModel> _supportedLanguages = const [];
   LanguageConfig? _config;
   LanguageStorage _storage = InMemoryLanguageStorage();
@@ -49,7 +51,8 @@ final class Language extends ChangeNotifier {
     AssetBundle? bundle,
     LanguageConfig? config,
   }) async {
-    final resolvedConfig = config ??
+    final resolvedConfig =
+        config ??
         await LanguageYamlLoader.load(assetName: yamlAssetName, bundle: bundle);
     applyConfig(resolvedConfig);
 
@@ -72,7 +75,8 @@ final class Language extends ChangeNotifier {
     if (declaredLanguages.isNotEmpty) {
       _supportedLanguages = declaredLanguages;
     }
-    _defaultLanguage = config.defaultLanguage ??
+    _defaultLanguage =
+        config.defaultLanguage ??
         (declaredLanguages.isNotEmpty
             ? declaredLanguages.first
             : _defaultLanguage);
@@ -112,8 +116,8 @@ final class Language extends ChangeNotifier {
   LanguageModel fromLocale(Locale locale) {
     final codeStr =
         (locale.countryCode != null && locale.countryCode!.isNotEmpty)
-            ? '${locale.languageCode}_${locale.countryCode}'
-            : locale.languageCode;
+        ? '${locale.languageCode}_${locale.countryCode}'
+        : locale.languageCode;
     return fromCode(codeStr);
   }
 

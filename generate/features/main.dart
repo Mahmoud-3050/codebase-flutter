@@ -39,7 +39,8 @@ bool _confirmContinuation(ModeType modeType) {
     'You are in ${modeType.name.toUpperCase()} mode. Are you sure you want to continue? [y/n]',
   );
   final String? input = stdin.readLineSync();
-  if (input?.trim().toLowerCase() != 'y' && input?.trim().toLowerCase() != 'yes') {
+  if (input?.trim().toLowerCase() != 'y' &&
+      input?.trim().toLowerCase() != 'yes') {
     ConsoleLogger.error('CLOSED!');
     return false;
   }

@@ -14,22 +14,21 @@ Future<dynamic> showAppModalBottomSheet({
     enableDrag: isDismissible,
     isDismissible: isDismissible,
     shape: RoundedRectangleBorder(
-      borderRadius: BorderRadius.circular(borderRadius ?? 20.r),
+      borderRadius: .circular(borderRadius ?? 20.r),
     ),
     builder: (BuildContext context) {
       return Padding(
-        padding: EdgeInsets.only(bottom: MediaQuery.viewInsetsOf(context).bottom),
+        padding: .only(bottom: MediaQuery.viewInsetsOf(context).bottom),
         child: PopScope(
           canPop: isDismissible,
-          child: Builder(builder: (BuildContext context) {
-            if (height == null) {
-              return child;
-            }
-            return SizedBox(
-              height: height,
-              child: child,
-            );
-          }),
+          child: Builder(
+            builder: (BuildContext context) {
+              if (height == null) {
+                return child;
+              }
+              return SizedBox(height: height, child: child);
+            },
+          ),
         ),
       );
     },

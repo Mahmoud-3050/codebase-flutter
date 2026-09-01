@@ -9,10 +9,7 @@ const _yellowLight = Color(0xFFECC826);
 const _yellowDark = Color(0xFFD4B020);
 const _primaryOverride = Color(0xFF123456);
 
-ThemeColors _swatch(
-  Color color, {
-  Map<String, Color> extra = const {},
-}) {
+ThemeColors _swatch(Color color, {Map<String, Color> extra = const {}}) {
   return ThemeColors(
     white: color,
     black: color,
@@ -63,7 +60,7 @@ void main() {
   final light = _swatch(_white, extra: {'yellow': _yellowLight});
   final dark = _swatch(_black, extra: {'yellow': _yellowDark});
 
-  ThemeConfig config({ThemeMode defaultMode = ThemeMode.light}) {
+  ThemeConfig config({ThemeMode defaultMode = .light}) {
     return ThemeConfig(light: light, dark: dark, defaultMode: defaultMode);
   }
 
@@ -79,10 +76,7 @@ void main() {
 
     test('validate accepts light and dark', () {
       expect(() => config().validate(), returnsNormally);
-      expect(
-        () => config(defaultMode: ThemeMode.dark).validate(),
-        returnsNormally,
-      );
+      expect(() => config(defaultMode: .dark).validate(), returnsNormally);
     });
 
     test('rejects ThemeMode.system as defaultMode', () {
@@ -90,7 +84,7 @@ void main() {
         () => ThemeConfig(
           light: light,
           dark: dark,
-          defaultMode: ThemeMode.system,
+          defaultMode: .system,
         ).validate(),
         throwsA(isA<InvalidThemeConfigException>()),
       );
@@ -111,18 +105,28 @@ void main() {
 
   group('Themes.init', () {
     test('accessors and changeTheme throw before init', () {
-      expect(() => Themes.instance.colors,
-          throwsA(isA<ThemeNotInitializedException>()));
-      expect(() => Themes.instance.lightColors,
-          throwsA(isA<ThemeNotInitializedException>()));
-      expect(() => Themes.instance.darkColors,
-          throwsA(isA<ThemeNotInitializedException>()));
-      expect(() => Themes.instance.lightTheme,
-          throwsA(isA<ThemeNotInitializedException>()));
-      expect(() => Themes.instance.darkTheme,
-          throwsA(isA<ThemeNotInitializedException>()));
       expect(
-        () => Themes.instance.changeTheme(ThemeMode.dark),
+        () => Themes.instance.colors,
+        throwsA(isA<ThemeNotInitializedException>()),
+      );
+      expect(
+        () => Themes.instance.lightColors,
+        throwsA(isA<ThemeNotInitializedException>()),
+      );
+      expect(
+        () => Themes.instance.darkColors,
+        throwsA(isA<ThemeNotInitializedException>()),
+      );
+      expect(
+        () => Themes.instance.lightTheme,
+        throwsA(isA<ThemeNotInitializedException>()),
+      );
+      expect(
+        () => Themes.instance.darkTheme,
+        throwsA(isA<ThemeNotInitializedException>()),
+      );
+      expect(
+        () => Themes.instance.changeTheme(.dark),
         throwsA(isA<ThemeNotInitializedException>()),
       );
     });
@@ -130,11 +134,7 @@ void main() {
     test('system defaultMode throws and does not initialize', () async {
       expect(
         () => Themes.instance.init(
-          config: ThemeConfig(
-            light: light,
-            dark: dark,
-            defaultMode: ThemeMode.system,
-          ),
+          config: ThemeConfig(light: light, dark: dark, defaultMode: .system),
         ),
         throwsA(isA<InvalidThemeConfigException>()),
       );
@@ -142,7 +142,7 @@ void main() {
     });
 
     test('uses defaultMode when storage is empty', () async {
-      await Themes.instance.init(config: config(defaultMode: ThemeMode.dark));
+      await Themes.instance.init(config: config(defaultMode: .dark));
       expect(Themes.instance.isInitialized, isTrue);
       expect(Themes.instance.mode, ThemeMode.dark);
       expect(Themes.instance.defaultMode, ThemeMode.dark);
@@ -153,7 +153,7 @@ void main() {
 
     test('uses defaultMode when stored value is null', () async {
       await Themes.instance.init(
-        config: config(defaultMode: ThemeMode.light),
+        config: config(defaultMode: .light),
         storage: FakeThemeStorage(),
       );
       expect(Themes.instance.mode, ThemeMode.light);
@@ -163,7 +163,7 @@ void main() {
     test('restores stored light', () async {
       final storage = FakeThemeStorage()..themeMode = 'light';
       await Themes.instance.init(
-        config: config(defaultMode: ThemeMode.dark),
+        config: config(defaultMode: .dark),
         storage: storage,
       );
       expect(Themes.instance.mode, ThemeMode.light);
@@ -180,7 +180,7 @@ void main() {
         resetThemes();
         final storage = FakeThemeStorage()..themeMode = stored;
         await Themes.instance.init(
-          config: config(defaultMode: ThemeMode.dark),
+          config: config(defaultMode: .dark),
           storage: storage,
         );
         expect(Themes.instance.mode, ThemeMode.dark, reason: 'stored: $stored');
@@ -200,7 +200,7 @@ void main() {
 
     test('omitted storage uses InMemoryThemeStorage', () async {
       await Themes.instance.init(config: config());
-      await Themes.instance.changeTheme(ThemeMode.dark);
+      await Themes.instance.changeTheme(.dark);
       expect(Themes.instance.mode, ThemeMode.dark);
     });
   });
@@ -215,7 +215,7 @@ void main() {
         listener: listener,
       );
 
-      await Themes.instance.changeTheme(ThemeMode.dark);
+      await Themes.instance.changeTheme(.dark);
 
       expect(Themes.instance.mode, ThemeMode.dark);
       expect(storage.themeMode, 'dark');
@@ -229,7 +229,7 @@ void main() {
       final storage = FakeThemeStorage()..themeMode = 'dark';
       await Themes.instance.init(config: config(), storage: storage);
 
-      await Themes.instance.changeTheme(ThemeMode.light);
+      await Themes.instance.changeTheme(.light);
 
       expect(Themes.instance.mode, ThemeMode.light);
       expect(storage.themeMode, 'light');
@@ -245,7 +245,7 @@ void main() {
         listener: listener,
       );
 
-      await Themes.instance.changeTheme(ThemeMode.light);
+      await Themes.instance.changeTheme(.light);
 
       expect(storage.themeMode, isNull);
       expect(storage.saveCount, 0);
@@ -255,7 +255,7 @@ void main() {
     test('rejects ThemeMode.system and keeps current mode', () async {
       await Themes.instance.init(config: config());
       expect(
-        () => Themes.instance.changeTheme(ThemeMode.system),
+        () => Themes.instance.changeTheme(.system),
         throwsA(
           isA<UnsupportedThemeException>().having(
             (e) => e.themeMode,
@@ -271,7 +271,7 @@ void main() {
   group('Themes palettes', () {
     test('lightColors and darkColors ignore current mode', () async {
       await Themes.instance.init(config: config());
-      await Themes.instance.changeTheme(ThemeMode.dark);
+      await Themes.instance.changeTheme(.dark);
 
       expect(Themes.instance.lightColors.primary, light.primary);
       expect(Themes.instance.darkColors.primary, dark.primary);
@@ -299,7 +299,7 @@ void main() {
       await Themes.instance.init(config: config());
       expect(Themes.instance.colors.extra('yellow'), _yellowLight);
 
-      await Themes.instance.changeTheme(ThemeMode.dark);
+      await Themes.instance.changeTheme(.dark);
       expect(Themes.instance.colors.extra('yellow'), _yellowDark);
     });
 
@@ -318,10 +318,7 @@ void main() {
     });
 
     test('extras is unmodifiable', () {
-      expect(
-        () => light.extras['yellow'] = _black,
-        throwsUnsupportedError,
-      );
+      expect(() => light.extras['yellow'] = _black, throwsUnsupportedError);
     });
 
     test('copyWith overrides only provided fields', () {
@@ -373,7 +370,7 @@ void main() {
 
   group('ThemeData factory', () {
     test('maps tokens onto ThemeData and ColorScheme', () {
-      final theme = Themes.buildThemeData(light, Brightness.light);
+      final theme = Themes.buildThemeData(light, .light);
       expect(theme.extension<ThemeColors>(), light);
       expect(theme.brightness, Brightness.light);
       expect(theme.scaffoldBackgroundColor, light.background);
@@ -386,14 +383,11 @@ void main() {
       expect(theme.colorScheme.surface, light.foreground);
       expect(theme.colorScheme.onSurface, light.textPrimary);
       expect(theme.appBarTheme.backgroundColor, light.background);
-      expect(
-        theme.bottomNavigationBarTheme.selectedItemColor,
-        light.primary,
-      );
+      expect(theme.bottomNavigationBarTheme.selectedItemColor, light.primary);
     });
 
     test('dark brightness uses dark tokens', () {
-      final theme = Themes.buildThemeData(dark, Brightness.dark);
+      final theme = Themes.buildThemeData(dark, .dark);
       expect(theme.brightness, Brightness.dark);
       expect(theme.scaffoldBackgroundColor, dark.background);
       expect(theme.colorScheme.brightness, Brightness.dark);
@@ -419,10 +413,7 @@ void main() {
         const UnsupportedThemeException('system').toString(),
         contains('system'),
       );
-      expect(
-        const ThemeNotInitializedException().toString(),
-        contains('init'),
-      );
+      expect(const ThemeNotInitializedException().toString(), contains('init'));
       expect(
         const MissingThemeExtraException('yellow').toString(),
         contains('yellow'),
@@ -440,7 +431,7 @@ void main() {
           builder: (context, themes) {
             builds++;
             return Directionality(
-              textDirection: TextDirection.ltr,
+              textDirection: .ltr,
               child: Text(themes.mode.name),
             );
           },
@@ -449,7 +440,7 @@ void main() {
       expect(find.text('light'), findsOneWidget);
       expect(builds, 1);
 
-      await Themes.instance.changeTheme(ThemeMode.dark);
+      await Themes.instance.changeTheme(.dark);
       await tester.pump();
       expect(find.text('dark'), findsOneWidget);
       expect(builds, 2);
@@ -469,7 +460,7 @@ void main() {
       );
       expect(builds, 1);
 
-      await Themes.instance.changeTheme(ThemeMode.light);
+      await Themes.instance.changeTheme(.light);
       await tester.pump();
       expect(builds, 1);
     });
@@ -499,13 +490,14 @@ void main() {
       );
       expect(find.text('true|light'), findsOneWidget);
 
-      await Themes.instance.changeTheme(ThemeMode.dark);
+      await Themes.instance.changeTheme(.dark);
       await tester.pump();
       expect(find.text('false|dark'), findsOneWidget);
     });
 
-    testWidgets('falls back to singleton when Theme has no extension',
-        (tester) async {
+    testWidgets('falls back to singleton when Theme has no extension', (
+      tester,
+    ) async {
       await Themes.instance.init(config: config());
 
       late ThemeColors fromContext;
@@ -527,7 +519,7 @@ void main() {
   group('resetThemes', () {
     test('returns uninitialized state without dispose', () async {
       await Themes.instance.init(config: config());
-      await Themes.instance.changeTheme(ThemeMode.dark);
+      await Themes.instance.changeTheme(.dark);
       resetThemes();
 
       expect(Themes.instance.isInitialized, isFalse);
@@ -542,9 +534,9 @@ void main() {
     test('allows init again after reset', () async {
       await Themes.instance.init(config: config());
       resetThemes();
-      await Themes.instance.init(config: config(defaultMode: ThemeMode.dark));
+      await Themes.instance.init(config: config(defaultMode: .dark));
       expect(Themes.instance.mode, ThemeMode.dark);
-      await Themes.instance.changeTheme(ThemeMode.light);
+      await Themes.instance.changeTheme(.light);
       expect(Themes.instance.mode, ThemeMode.light);
     });
   });

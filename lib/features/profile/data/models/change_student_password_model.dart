@@ -12,6 +12,3 @@ class ChangeStudentPasswordModel extends ChangeStudentPasswordResponse {
         message: json['message'] ?? '',
       );
 }
-
-
-

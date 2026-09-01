@@ -36,15 +36,18 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
   @override
   void initState() {
     super.initState();
-    _firstNameController =
-        TextEditingController(text: widget.student.firstName);
-    _middleNameController =
-        TextEditingController(text: widget.student.secondName);
+    _firstNameController = TextEditingController(
+      text: widget.student.firstName,
+    );
+    _middleNameController = TextEditingController(
+      text: widget.student.secondName,
+    );
     _lastNameController = TextEditingController(text: widget.student.lastName);
     _emailController = TextEditingController(text: widget.student.email);
     _phoneController = TextEditingController(text: widget.student.phone);
-    _instituteController =
-        TextEditingController(text: widget.student.institute);
+    _instituteController = TextEditingController(
+      text: widget.student.institute,
+    );
   }
 
   @override
@@ -75,13 +78,13 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
     return Form(
       key: _formKey,
       child: ListView(
-        padding: EdgeInsets.all(16.w),
+        padding: .all(16.w),
         children: [
           _StudentProfileHeader(student: widget.student),
           SizedBox(height: 24.h),
           Text(
             Strings.personalData,
-            style: TextStyles.of(size: 16, weight: FontWeight.w600),
+            style: TextStyles.of(size: 16, weight: .w600),
           ),
           SizedBox(height: 12.h),
           AppTextFormField.nameTextField(
@@ -147,10 +150,7 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
                   ),
                 );
               }
-              return AppElevatedButton(
-                text: Strings.save,
-                onPressed: _onSave,
-              );
+              return AppElevatedButton(text: Strings.save, onPressed: _onSave);
             },
           ),
         ],
@@ -164,21 +164,21 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
 
     final student = widget.student;
     context.read<UpdateStudentProfileCubit>().fUpdateStudentProfile(
-          firstName: _firstNameController.text.trim(),
-          secondName: _middleNameController.text.trim(),
-          lastName: _lastNameController.text.trim(),
-          dialingCode: student.dialingCode,
-          phone: _phoneController.text.trim(),
-          cityId: student.cityId,
-          birthdate: student.birthdate,
-          image: _imageValue(student),
-          institute: _instituteController.text.trim(),
-          degreeId: student.degreeId,
-          majorId: int.tryParse(student.major) ?? 0,
-          graduationDate: student.graduationDate,
-          gpaFile: student.gpaFile,
-          cvFile: student.cvFile,
-        );
+      firstName: _firstNameController.text.trim(),
+      secondName: _middleNameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
+      dialingCode: student.dialingCode,
+      phone: _phoneController.text.trim(),
+      cityId: student.cityId,
+      birthdate: student.birthdate,
+      image: _imageValue(student),
+      institute: _instituteController.text.trim(),
+      degreeId: student.degreeId,
+      majorId: int.tryParse(student.major) ?? 0,
+      graduationDate: student.graduationDate,
+      gpaFile: student.gpaFile,
+      cvFile: student.cvFile,
+    );
   }
 
   String _imageValue(Student student) {
@@ -199,11 +199,11 @@ class _StudentProfileHeader extends StatelessWidget {
 
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.symmetric(vertical: 20.h, horizontal: 16.w),
+      padding: .symmetric(vertical: 20.h, horizontal: 16.w),
       decoration: BoxDecoration(
         color: colors.foreground,
-        borderRadius: BorderRadius.circular(16.r),
-        border: Border.all(color: colors.divider),
+        borderRadius: .circular(16.r),
+        border: .all(color: colors.divider),
       ),
       child: Column(
         children: [
@@ -217,14 +217,14 @@ class _StudentProfileHeader extends StatelessWidget {
           SizedBox(height: 12.h),
           Text(
             student.fullName,
-            style: TextStyles.of(size: 18, weight: FontWeight.w600),
-            textAlign: TextAlign.center,
+            style: TextStyles.of(size: 18, weight: .w600),
+            textAlign: .center,
           ),
           SizedBox(height: 4.h),
           Text(
             student.email,
             style: TextStyles.of(size: 14, color: colors.textSecondary),
-            textAlign: TextAlign.center,
+            textAlign: .center,
           ),
         ],
       ),

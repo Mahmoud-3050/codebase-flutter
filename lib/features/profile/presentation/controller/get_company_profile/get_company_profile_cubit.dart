@@ -13,17 +13,24 @@ part 'get_company_profile_states.dart';
 class GetCompanyProfileCubit extends Cubit<GetCompanyProfileState> {
   final GetCompanyProfileUseCase getCompanyProfileUseCase;
 
-  GetCompanyProfileCubit(this.getCompanyProfileUseCase) : super(const GetCompanyProfileInitialState());
-
+  GetCompanyProfileCubit(this.getCompanyProfileUseCase)
+    : super(const GetCompanyProfileInitialState());
 
   Future<void> fGetCompanyProfile() async {
     emit(const GetCompanyProfileLoadingState());
-    final Either<Failure, GetCompanyProfileResponse> eitherResult = await getCompanyProfileUseCase(NoParams());
-    eitherResult.fold((Failure failure) {
-      emit(GetCompanyProfileErrorState(message: failure.message?? Strings.pleaseTryAgainLater));
-    }, (GetCompanyProfileResponse response) {
-      emit(GetCompanyProfileSuccessState(data: response.data));
-    });
+    final Either<Failure, GetCompanyProfileResponse> eitherResult =
+        await getCompanyProfileUseCase(NoParams());
+    eitherResult.fold(
+      (Failure failure) {
+        emit(
+          GetCompanyProfileErrorState(
+            message: failure.message ?? Strings.pleaseTryAgainLater,
+          ),
+        );
+      },
+      (GetCompanyProfileResponse response) {
+        emit(GetCompanyProfileSuccessState(data: response.data));
+      },
+    );
   }
 }
-

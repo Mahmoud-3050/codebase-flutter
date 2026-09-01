@@ -20,9 +20,15 @@ class CubitTestRequestBuffers extends BaseRequestBuffers {
     buffer.writeln("import 'package:mockito/mockito.dart';");
     buffer.writeln();
     buffer.writeln("import 'package:base/core/error/failures.dart';");
-    buffer.writeln("import 'package:base/features/$featureNameSnakeCase/data/models/${requestNameSnakeCase}_model.dart';");
-    buffer.writeln("import 'package:base/features/$featureNameSnakeCase/domain/usecases/${requestNameSnakeCase}_usecase.dart';");
-    buffer.writeln("import 'package:base/features/$featureNameSnakeCase/presentation/controller/$requestNameSnakeCase/${requestNameSnakeCase}_cubit.dart';");
+    buffer.writeln(
+      "import 'package:base/features/$featureNameSnakeCase/data/models/${requestNameSnakeCase}_model.dart';",
+    );
+    buffer.writeln(
+      "import 'package:base/features/$featureNameSnakeCase/domain/usecases/${requestNameSnakeCase}_usecase.dart';",
+    );
+    buffer.writeln(
+      "import 'package:base/features/$featureNameSnakeCase/presentation/controller/$requestNameSnakeCase/${requestNameSnakeCase}_cubit.dart';",
+    );
     buffer.writeln();
     buffer.writeln("import '${requestNameSnakeCase}_cubit_test.mocks.dart';");
     return buffer;
@@ -59,8 +65,12 @@ class CubitTestRequestBuffers extends BaseRequestBuffers {
     buffer.writeln();
 
     ///--> Initial state test
-    buffer.writeln("  test('initial state is ${responseClassName}InitialState', () {");
-    buffer.writeln('    expect(cubit.state, const ${responseClassName}InitialState());');
+    buffer.writeln(
+      "  test('initial state is ${responseClassName}InitialState', () {",
+    );
+    buffer.writeln(
+      '    expect(cubit.state, const ${responseClassName}InitialState());',
+    );
     buffer.writeln('  });');
     buffer.writeln();
 
@@ -82,10 +92,14 @@ class CubitTestRequestBuffers extends BaseRequestBuffers {
 
     String dataJson = 'null';
     if (dataType != null) {
-      dataJson = dataType.isList ? '[]' : (dataType == DartType.model ? '<String, dynamic>{}' : "''");
+      dataJson = dataType.isList
+          ? '[]'
+          : (dataType == DartType.model ? '<String, dynamic>{}' : "''");
     }
 
-    buffer.writeln('    final tModel = ${responseClassName}Model.fromJson(const <String, dynamic>{');
+    buffer.writeln(
+      '    final tModel = ${responseClassName}Model.fromJson(const <String, dynamic>{',
+    );
     buffer.writeln("      'status': 'success',");
     buffer.writeln("      'message': 'Success',");
     if (dataType != null) {
@@ -96,10 +110,14 @@ class CubitTestRequestBuffers extends BaseRequestBuffers {
     buffer.writeln();
 
     ///--> Success test
-    buffer.writeln('    blocTest<${responseClassName}Cubit, ${responseClassName}State>(');
+    buffer.writeln(
+      '    blocTest<${responseClassName}Cubit, ${responseClassName}State>(',
+    );
     buffer.writeln("      'emits [Loading, Success] when usecase succeeds',");
     buffer.writeln('      build: () {');
-    buffer.writeln('        when(mockUseCase(any)).thenAnswer((_) async => Right(tResponse));');
+    buffer.writeln(
+      '        when(mockUseCase(any)).thenAnswer((_) async => Right(tResponse));',
+    );
     buffer.writeln('        return cubit;');
     buffer.writeln('      },');
     buffer.writeln('      act: (cubit) => cubit.f$responseClassName(');
@@ -108,14 +126,18 @@ class CubitTestRequestBuffers extends BaseRequestBuffers {
         final Names keyNames = Names.fromString(key);
         String dartType = getDartType(value);
         String fallback = _getFallbackValue(dartType);
-        buffer.writeln('        ${keyNames.camelCase}: tParams.${keyNames.camelCase} $fallback,');
+        buffer.writeln(
+          '        ${keyNames.camelCase}: tParams.${keyNames.camelCase} $fallback,',
+        );
       });
     }
     buffer.writeln('      ),');
     buffer.writeln('      expect: () => [');
     buffer.writeln('        const ${responseClassName}LoadingState(),');
     if (dataType != null) {
-      buffer.writeln('        ${responseClassName}SuccessState(data: tModel.data),');
+      buffer.writeln(
+        '        ${responseClassName}SuccessState(data: tModel.data),',
+      );
     } else {
       buffer.writeln('        const ${responseClassName}SuccessState(),');
     }
@@ -124,10 +146,14 @@ class CubitTestRequestBuffers extends BaseRequestBuffers {
     buffer.writeln();
 
     ///--> Error test
-    buffer.writeln('    blocTest<${responseClassName}Cubit, ${responseClassName}State>(');
+    buffer.writeln(
+      '    blocTest<${responseClassName}Cubit, ${responseClassName}State>(',
+    );
     buffer.writeln("      'emits [Loading, Error] when usecase fails',");
     buffer.writeln('      build: () {');
-    buffer.writeln("        when(mockUseCase(any)).thenAnswer((_) async => const Left(ServerFailure(message: 'Server error')));");
+    buffer.writeln(
+      "        when(mockUseCase(any)).thenAnswer((_) async => const Left(ServerFailure(message: 'Server error')));",
+    );
     buffer.writeln('        return cubit;');
     buffer.writeln('      },');
     buffer.writeln('      act: (cubit) => cubit.f$responseClassName(');
@@ -136,13 +162,17 @@ class CubitTestRequestBuffers extends BaseRequestBuffers {
         final Names keyNames = Names.fromString(key);
         String dartType = getDartType(value);
         String fallback = _getFallbackValue(dartType);
-        buffer.writeln('        ${keyNames.camelCase}: tParams.${keyNames.camelCase} $fallback,');
+        buffer.writeln(
+          '        ${keyNames.camelCase}: tParams.${keyNames.camelCase} $fallback,',
+        );
       });
     }
     buffer.writeln('      ),');
     buffer.writeln('      expect: () => [');
     buffer.writeln('        const ${responseClassName}LoadingState(),');
-    buffer.writeln("        const ${responseClassName}ErrorState(message: 'Server error'),");
+    buffer.writeln(
+      "        const ${responseClassName}ErrorState(message: 'Server error'),",
+    );
     buffer.writeln('      ],');
     buffer.writeln('    );');
 

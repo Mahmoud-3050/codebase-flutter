@@ -50,10 +50,7 @@ void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
 
   const testConfig = LanguageConfig(
-    jsonAssetPaths: [
-      'assets/lang/en.json',
-      'assets/lang/ar.json',
-    ],
+    jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar.json'],
   );
 
   setUp(() {
@@ -159,10 +156,10 @@ files:
 ''';
       Language.instance.applyConfig(LanguageYamlLoader.parse(yaml));
 
-      expect(
-        Language.instance.supportedLanguages,
-        [LanguageModel.en, LanguageModel.ar],
-      );
+      expect(Language.instance.supportedLanguages, [
+        LanguageModel.en,
+        LanguageModel.ar,
+      ]);
       expect(Language.instance.defaultLanguage, equals(LanguageModel.ar));
       expect(Language.instance.current, equals(LanguageModel.ar));
     });
@@ -177,10 +174,11 @@ files:
 ''';
       final config = LanguageYamlLoader.parse(yaml);
       expect(config.defaultLanguage?.fullCode, equals('ar_SA'));
-      expect(
-        config.declaredLanguages.map((language) => language.fullCode),
-        ['en', 'ar_EG', 'ar_SA'],
-      );
+      expect(config.declaredLanguages.map((language) => language.fullCode), [
+        'en',
+        'ar_EG',
+        'ar_SA',
+      ]);
     });
 
     test('default_language ar selects first Arabic country file', () {
@@ -243,19 +241,27 @@ files:
     });
 
     test('fromCode returns defaultLanguage for null/empty/unknown', () {
-      expect(Language.instance.fromCode(null),
-          equals(Language.instance.defaultLanguage));
-      expect(Language.instance.fromCode(''),
-          equals(Language.instance.defaultLanguage));
-      expect(Language.instance.fromCode('zz'),
-          equals(Language.instance.defaultLanguage));
+      expect(
+        Language.instance.fromCode(null),
+        equals(Language.instance.defaultLanguage),
+      );
+      expect(
+        Language.instance.fromCode(''),
+        equals(Language.instance.defaultLanguage),
+      );
+      expect(
+        Language.instance.fromCode('zz'),
+        equals(Language.instance.defaultLanguage),
+      );
     });
 
     test('fromLocale parses Locale correctly', () {
       Language.instance.applyConfig(testConfig);
 
       expect(
-          Language.instance.fromLocale(const Locale('en')).code, equals('en'));
+        Language.instance.fromLocale(const Locale('en')).code,
+        equals('en'),
+      );
       expect(
         Language.instance.fromLocale(const Locale('ar', 'EG')).code,
         equals('ar'),
@@ -317,10 +323,7 @@ files:
 
     test('init uses config default language when storage is empty', () async {
       const arConfig = LanguageConfig(
-        jsonAssetPaths: [
-          'assets/lang/en.json',
-          'assets/lang/ar.json',
-        ],
+        jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar.json'],
         defaultLanguage: LanguageModel.ar,
       );
       final storage = FakeLanguageStorage();
@@ -341,10 +344,7 @@ files:
     test('init restores language from storage', () async {
       final storage = FakeLanguageStorage()..languageCode = 'ar';
       const enDefaultConfig = LanguageConfig(
-        jsonAssetPaths: [
-          'assets/lang/en.json',
-          'assets/lang/ar.json',
-        ],
+        jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar.json'],
         defaultLanguage: LanguageModel.en,
       );
 
@@ -361,10 +361,7 @@ files:
       );
       final storage = FakeLanguageStorage()..languageCode = 'ar_EG';
       const countryConfig = LanguageConfig(
-        jsonAssetPaths: [
-          'assets/lang/en.json',
-          'assets/lang/ar_EG.json',
-        ],
+        jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar_EG.json'],
         defaultLanguage: LanguageModel.en,
       );
 
@@ -382,10 +379,7 @@ files:
       );
       final storage = FakeLanguageStorage()..languageCode = 'ar';
       const countryConfig = LanguageConfig(
-        jsonAssetPaths: [
-          'assets/lang/en.json',
-          'assets/lang/ar_EG.json',
-        ],
+        jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar_EG.json'],
         defaultLanguage: arEg,
       );
 
@@ -397,10 +391,7 @@ files:
     test('init ignores stored ar_EG when only ar.json exists', () async {
       final storage = FakeLanguageStorage()..languageCode = 'ar_EG';
       const languageOnlyConfig = LanguageConfig(
-        jsonAssetPaths: [
-          'assets/lang/en.json',
-          'assets/lang/ar.json',
-        ],
+        jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar.json'],
         defaultLanguage: LanguageModel.en,
       );
 
@@ -412,30 +403,29 @@ files:
       expect(Language.instance.current, equals(LanguageModel.en));
     });
 
-    test('init ignores stored codes that do not match file-name grammar',
-        () async {
-      const enDefaultConfig = LanguageConfig(
-        jsonAssetPaths: [
-          'assets/lang/en.json',
-          'assets/lang/ar.json',
-        ],
-        defaultLanguage: LanguageModel.en,
-      );
+    test(
+      'init ignores stored codes that do not match file-name grammar',
+      () async {
+        const enDefaultConfig = LanguageConfig(
+          jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar.json'],
+          defaultLanguage: LanguageModel.en,
+        );
 
-      for (final invalidCode in ['AR', 'ar-EG', 'ar_eg']) {
-        resetLanguage();
-        final storage = FakeLanguageStorage()..languageCode = invalidCode;
-        await Language.instance.init(
-          config: enDefaultConfig,
-          storage: storage,
-        );
-        expect(
-          Language.instance.current,
-          equals(LanguageModel.en),
-          reason: 'rejected stored code "$invalidCode"',
-        );
-      }
-    });
+        for (final invalidCode in ['AR', 'ar-EG', 'ar_eg']) {
+          resetLanguage();
+          final storage = FakeLanguageStorage()..languageCode = invalidCode;
+          await Language.instance.init(
+            config: enDefaultConfig,
+            storage: storage,
+          );
+          expect(
+            Language.instance.current,
+            equals(LanguageModel.en),
+            reason: 'rejected stored code "$invalidCode"',
+          );
+        }
+      },
+    );
   });
 
   group('Language changeLanguage Tests', () {
@@ -531,10 +521,7 @@ files:
   group('LanguageConfig Tests', () {
     test('assetPathFor prefers fullCode then language code', () {
       const config = LanguageConfig(
-        jsonAssetPaths: [
-          'assets/lang/ar.json',
-          'assets/lang/ar_EG.json',
-        ],
+        jsonAssetPaths: ['assets/lang/ar.json', 'assets/lang/ar_EG.json'],
       );
       const arEg = LanguageModel(
         code: 'ar',
@@ -544,16 +531,15 @@ files:
 
       expect(config.assetPathFor(arEg), equals('assets/lang/ar_EG.json'));
       expect(
-          config.assetPathFor(LanguageModel.ar), equals('assets/lang/ar.json'));
+        config.assetPathFor(LanguageModel.ar),
+        equals('assets/lang/ar.json'),
+      );
       expect(config.assetPathFor(LanguageModel.en), isNull);
     });
 
     test('declaredLanguages keeps country variants of the same language', () {
       const config = LanguageConfig(
-        jsonAssetPaths: [
-          'assets/lang/ar_EG.json',
-          'assets/lang/ar_SA.json',
-        ],
+        jsonAssetPaths: ['assets/lang/ar_EG.json', 'assets/lang/ar_SA.json'],
       );
       expect(config.declaredLanguages, [
         const LanguageModel(
@@ -583,8 +569,10 @@ files:
     test('applyConfig without defaultLanguage uses first files entry', () {
       Language.instance.applyConfig(testConfig);
 
-      expect(Language.instance.supportedLanguages,
-          [LanguageModel.en, LanguageModel.ar]);
+      expect(Language.instance.supportedLanguages, [
+        LanguageModel.en,
+        LanguageModel.ar,
+      ]);
       expect(Language.instance.defaultLanguage, equals(LanguageModel.en));
       expect(Language.instance.current, equals(LanguageModel.en));
       expect(Language.instance.config, equals(testConfig));
@@ -714,16 +702,13 @@ files:
     test('supportedLocales maps from Language.instance.supportedLanguages', () {
       Language.instance.applyConfig(
         const LanguageConfig(
-          jsonAssetPaths: [
-            'assets/lang/ar.json',
-            'assets/lang/en.json',
-          ],
+          jsonAssetPaths: ['assets/lang/ar.json', 'assets/lang/en.json'],
         ),
       );
-      expect(
-        LanguageLocalizationsSetup.supportedLocales,
-        [const Locale('ar'), const Locale('en')],
-      );
+      expect(LanguageLocalizationsSetup.supportedLocales, [
+        const Locale('ar'),
+        const Locale('en'),
+      ]);
     });
 
     test('localeResolutionCallback returns current when locale is missing', () {
@@ -742,44 +727,43 @@ files:
       );
     });
 
-    test('localeResolutionCallback prefers exact country then language-only',
-        () {
-      const supported = [
-        Locale('ar'),
-        Locale('ar', 'EG'),
-        Locale('ar', 'SA'),
-        Locale('en'),
-      ];
-      expect(
-        LanguageLocalizationsSetup.localeResolutionCallback(
-          const Locale('ar', 'SA'),
-          supported,
-        ),
-        equals(const Locale('ar', 'SA')),
-      );
-      expect(
-        LanguageLocalizationsSetup.localeResolutionCallback(
-          const Locale('ar', 'EG'),
-          supported,
-        ),
-        equals(const Locale('ar', 'EG')),
-      );
-      expect(
-        LanguageLocalizationsSetup.localeResolutionCallback(
-          const Locale('en', 'US'),
-          supported,
-        ),
-        equals(const Locale('en')),
-      );
-    });
+    test(
+      'localeResolutionCallback prefers exact country then language-only',
+      () {
+        const supported = [
+          Locale('ar'),
+          Locale('ar', 'EG'),
+          Locale('ar', 'SA'),
+          Locale('en'),
+        ];
+        expect(
+          LanguageLocalizationsSetup.localeResolutionCallback(
+            const Locale('ar', 'SA'),
+            supported,
+          ),
+          equals(const Locale('ar', 'SA')),
+        );
+        expect(
+          LanguageLocalizationsSetup.localeResolutionCallback(
+            const Locale('ar', 'EG'),
+            supported,
+          ),
+          equals(const Locale('ar', 'EG')),
+        );
+        expect(
+          LanguageLocalizationsSetup.localeResolutionCallback(
+            const Locale('en', 'US'),
+            supported,
+          ),
+          equals(const Locale('en')),
+        );
+      },
+    );
 
     test('localeResolutionCallback falls back to defaultLanguage', () {
       Language.instance.applyConfig(
         const LanguageConfig(
-          jsonAssetPaths: [
-            'assets/lang/en.json',
-            'assets/lang/ar.json',
-          ],
+          jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar.json'],
           defaultLanguage: LanguageModel.ar,
         ),
       );
@@ -812,9 +796,9 @@ files:
   group('LanguageLocalizations Tests', () {
     test('text and .tr return the key when translations are missing', () async {
       Language.instance.applyConfig(testConfig);
-      await LanguageLocalizations(const Locale('en')).load(
-        bundle: FakeAssetBundle({}),
-      );
+      await LanguageLocalizations(
+        const Locale('en'),
+      ).load(bundle: FakeAssetBundle({}));
 
       expect(LanguageLocalizations.instance.text('welcome'), equals('welcome'));
       expect('welcome'.tr, equals('welcome'));
@@ -856,30 +840,32 @@ files:
       );
     });
 
-    test('trParams leaves unmatched placeholders and ignores extra params',
-        () async {
-      Language.instance.applyConfig(testConfig);
-      await LanguageLocalizations(const Locale('en')).load(
-        bundle: FakeAssetBundle({
-          'assets/lang/en.json': '{"welcome":"welcome {username}"}',
-        }),
-      );
+    test(
+      'trParams leaves unmatched placeholders and ignores extra params',
+      () async {
+        Language.instance.applyConfig(testConfig);
+        await LanguageLocalizations(const Locale('en')).load(
+          bundle: FakeAssetBundle({
+            'assets/lang/en.json': '{"welcome":"welcome {username}"}',
+          }),
+        );
 
-      expect(
-        'welcome'.trParams({'other': 'x'}),
-        equals('welcome {username}'),
-      );
-      expect(
-        'welcome'.trParams({'username': 'Ahmed', 'extra': 'ignored'}),
-        equals('welcome Ahmed'),
-      );
-    });
+        expect(
+          'welcome'.trParams({'other': 'x'}),
+          equals('welcome {username}'),
+        );
+        expect(
+          'welcome'.trParams({'username': 'Ahmed', 'extra': 'ignored'}),
+          equals('welcome Ahmed'),
+        );
+      },
+    );
 
     test('trParams on a missing key still returns the key', () async {
       Language.instance.applyConfig(testConfig);
-      await LanguageLocalizations(const Locale('en')).load(
-        bundle: FakeAssetBundle({}),
-      );
+      await LanguageLocalizations(
+        const Locale('en'),
+      ).load(bundle: FakeAssetBundle({}));
 
       expect(
         'missing_key'.trParams({'username': 'Ahmed'}),
@@ -977,10 +963,11 @@ files:
 
       await Language.instance.init(config: countryConfig, bundle: bundle);
 
-      expect(
-        Language.instance.supportedLanguages,
-        [LanguageModel.en, arEg, arSa],
-      );
+      expect(Language.instance.supportedLanguages, [
+        LanguageModel.en,
+        arEg,
+        arSa,
+      ]);
       expect(Language.instance.fromCode('ar_SA'), equals(arSa));
       expect(Language.instance.fromCode('ar_EG'), equals(arEg));
       expect(Language.instance.fromCode('ar'), equals(arEg));
@@ -1006,7 +993,7 @@ files:
 
       await tester.pumpWidget(
         Directionality(
-          textDirection: TextDirection.ltr,
+          textDirection: .ltr,
           child: LanguageBuilder(
             builder: (context, language, locale) {
               return Text(

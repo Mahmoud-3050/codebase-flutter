@@ -12,47 +12,56 @@ part 'update_student_profile_states.dart';
 class UpdateStudentProfileCubit extends Cubit<UpdateStudentProfileState> {
   final UpdateStudentProfileUseCase updateStudentProfileUseCase;
 
-  UpdateStudentProfileCubit(this.updateStudentProfileUseCase) : super(const UpdateStudentProfileInitialState());
-
+  UpdateStudentProfileCubit(this.updateStudentProfileUseCase)
+    : super(const UpdateStudentProfileInitialState());
 
   Future<void> fUpdateStudentProfile({
-   required String firstName,
-   required String secondName,
-   required String lastName,
-   required String dialingCode,
-   required String phone,
-   required int cityId,
-   required String birthdate,
-   required String image,
-   required String institute,
-   required int degreeId,
-   required int majorId,
-   required String graduationDate,
-   required String gpaFile,
-   required String cvFile,
+    required String firstName,
+    required String secondName,
+    required String lastName,
+    required String dialingCode,
+    required String phone,
+    required int cityId,
+    required String birthdate,
+    required String image,
+    required String institute,
+    required int degreeId,
+    required int majorId,
+    required String graduationDate,
+    required String gpaFile,
+    required String cvFile,
   }) async {
     emit(const UpdateStudentProfileLoadingState());
-    final Either<Failure, UpdateStudentProfileResponse> eitherResult = await updateStudentProfileUseCase(UpdateStudentProfileParams(
-      firstName: firstName,
-      secondName: secondName,
-      lastName: lastName,
-      dialingCode: dialingCode,
-      phone: phone,
-      cityId: cityId,
-      birthdate: birthdate,
-      image: image,
-      institute: institute,
-      degreeId: degreeId,
-      majorId: majorId,
-      graduationDate: graduationDate,
-      gpaFile: gpaFile,
-      cvFile: cvFile,
-    ));
-    eitherResult.fold((Failure failure) {
-      emit(UpdateStudentProfileErrorState(message: failure.message?? Strings.pleaseTryAgainLater));
-    }, (UpdateStudentProfileResponse response) {
-      emit(UpdateStudentProfileSuccessState(data: response.data));
-    });
+    final Either<Failure, UpdateStudentProfileResponse> eitherResult =
+        await updateStudentProfileUseCase(
+          UpdateStudentProfileParams(
+            firstName: firstName,
+            secondName: secondName,
+            lastName: lastName,
+            dialingCode: dialingCode,
+            phone: phone,
+            cityId: cityId,
+            birthdate: birthdate,
+            image: image,
+            institute: institute,
+            degreeId: degreeId,
+            majorId: majorId,
+            graduationDate: graduationDate,
+            gpaFile: gpaFile,
+            cvFile: cvFile,
+          ),
+        );
+    eitherResult.fold(
+      (Failure failure) {
+        emit(
+          UpdateStudentProfileErrorState(
+            message: failure.message ?? Strings.pleaseTryAgainLater,
+          ),
+        );
+      },
+      (UpdateStudentProfileResponse response) {
+        emit(UpdateStudentProfileSuccessState(data: response.data));
+      },
+    );
   }
 }
-

@@ -53,9 +53,9 @@ class AppElevatedButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Container(
-      margin: EdgeInsets.symmetric(horizontal: sidePadding ?? 0.0),
+      margin: .symmetric(horizontal: sidePadding ?? 0.0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(borderRadius ?? 16.r),
+        borderRadius: .circular(borderRadius ?? 16.r),
         boxShadow: [
           BoxShadow(
             color: shadowColor ?? colors.secondary,
@@ -65,10 +65,9 @@ class AppElevatedButton extends StatelessWidget {
       ),
       child: ElevatedButton(
         onPressed: onPressed,
-        clipBehavior: Clip.antiAliasWithSaveLayer,
+        clipBehavior: .antiAliasWithSaveLayer,
         style: ElevatedButton.styleFrom(
-          padding:
-              padding ?? EdgeInsets.symmetric(horizontal: 16.w, vertical: 12.h),
+          padding: padding ?? .symmetric(horizontal: 16.w, vertical: 12.h),
           foregroundColor: colors.foreground,
           backgroundColor: buttonColor ?? colors.primary,
           elevation: 0,
@@ -76,7 +75,7 @@ class AppElevatedButton extends StatelessWidget {
               ? BorderSide(color: borderColor ?? colors.primary)
               : null,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(borderRadius ?? 16.r),
+            borderRadius: .circular(borderRadius ?? 16.r),
           ),
           minimumSize: minimumSize,
           maximumSize: maximumSize,
@@ -86,7 +85,7 @@ class AppElevatedButton extends StatelessWidget {
             builder: (BuildContext context) {
               if (icon != null || iconSvg != null) {
                 return Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: .center,
                   children: <Widget>[
                     Builder(
                       builder: (context) {
@@ -122,14 +121,15 @@ class AppElevatedButton extends StatelessWidget {
   }
 
   Widget _buttonText(ThemeColors colors) => Text(
-        text,
-        style: textStyle ??
-            TextStyles.of(
-              size: 16,
-              weight: FontWeight.w500,
-              color: textColor ?? colors.white,
-            ),
-        textAlign: TextAlign.center,
-        maxLines: 1,
-      );
+    text,
+    style:
+        textStyle ??
+        TextStyles.of(
+          size: 16,
+          weight: .w500,
+          color: textColor ?? colors.white,
+        ),
+    textAlign: .center,
+    maxLines: 1,
+  );
 }

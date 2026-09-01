@@ -52,7 +52,9 @@ String getDartType(dynamic value) {
 }
 
 Map<String, dynamic> getDataKeys(
-    Map<String, dynamic> jsonMap, bool isDataList) {
+  Map<String, dynamic> jsonMap,
+  bool isDataList,
+) {
   if (jsonMap['result'] == null || jsonMap['result']['data'] == null) {
     return <String, dynamic>{};
   }

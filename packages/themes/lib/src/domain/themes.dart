@@ -16,8 +16,8 @@ final class Themes extends ChangeNotifier {
   factory Themes() => instance;
 
   bool _initialized = false;
-  ThemeMode _mode = ThemeMode.light;
-  ThemeMode _defaultMode = ThemeMode.light;
+  ThemeMode _mode = .light;
+  ThemeMode _defaultMode = .light;
   ThemeConfig? _config;
   ThemeStorage _storage = InMemoryThemeStorage();
   ThemeChangeListener? _listener;
@@ -26,12 +26,12 @@ final class Themes extends ChangeNotifier {
   ThemeMode get mode => _mode;
   ThemeMode get defaultMode => _defaultMode;
   ThemeConfig? get config => _config;
-  bool get isLight => _mode == ThemeMode.light;
-  bool get isDark => _mode == ThemeMode.dark;
+  bool get isLight => _mode == .light;
+  bool get isDark => _mode == .dark;
 
   ThemeColors get colors {
     _assertInitialized();
-    return _mode == ThemeMode.dark ? _config!.dark : _config!.light;
+    return _mode == .dark ? _config!.dark : _config!.light;
   }
 
   ThemeColors get lightColors {
@@ -46,12 +46,12 @@ final class Themes extends ChangeNotifier {
 
   ThemeData get lightTheme {
     _assertInitialized();
-    return ThemeDataFactory.build(_config!.light, Brightness.light);
+    return ThemeDataFactory.build(_config!.light, .light);
   }
 
   ThemeData get darkTheme {
     _assertInitialized();
-    return ThemeDataFactory.build(_config!.dark, Brightness.dark);
+    return ThemeDataFactory.build(_config!.dark, .dark);
   }
 
   /// Must run after [WidgetsFlutterBinding.ensureInitialized] and before `runApp`.
@@ -75,7 +75,7 @@ final class Themes extends ChangeNotifier {
 
   Future<void> changeTheme(ThemeMode mode) async {
     _assertInitialized();
-    if (mode == ThemeMode.system) {
+    if (mode == .system) {
       throw const UnsupportedThemeException('system');
     }
     if (mode == _mode) return;
@@ -92,16 +92,16 @@ final class Themes extends ChangeNotifier {
   }
 
   ThemeMode _modeFromStored(String? value) {
-    if (value == ThemeMode.light.name) return ThemeMode.light;
-    if (value == ThemeMode.dark.name) return ThemeMode.dark;
+    if (value == ThemeMode.light.name) return .light;
+    if (value == ThemeMode.dark.name) return .dark;
     return _defaultMode;
   }
 
   /// Restores uninitialized defaults. Does not [dispose] this singleton.
   void _reset() {
     _initialized = false;
-    _mode = ThemeMode.light;
-    _defaultMode = ThemeMode.light;
+    _mode = .light;
+    _defaultMode = .light;
     _config = null;
     _storage = InMemoryThemeStorage();
     _listener = null;

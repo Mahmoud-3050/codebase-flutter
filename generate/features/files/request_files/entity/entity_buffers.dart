@@ -5,8 +5,7 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_buffers.dart';
 
-class EntityRequestBuffers extends BaseRequestBuffers{
-  
+class EntityRequestBuffers extends BaseRequestBuffers {
   @override
   StringBuffer generateImports({
     String featureNameSnakeCase = '',
@@ -18,7 +17,7 @@ class EntityRequestBuffers extends BaseRequestBuffers{
     buffer.writeln("import 'package:equatable/equatable.dart';");
     return buffer;
   }
-  
+
   @override
   StringBuffer generateBody({
     required Names featureNames,
@@ -30,24 +29,27 @@ class EntityRequestBuffers extends BaseRequestBuffers{
     DartType? dataType = request.dartType;
 
     ///-> Response Model
-    buffer.writeln(_generateResponseModel(
-      response: request.response,
-      responseClassName: responseClassName,
-      modelName: modelName,
-      dataType: dataType,
-    ).toString());
+    buffer.writeln(
+      _generateResponseModel(
+        response: request.response,
+        responseClassName: responseClassName,
+        modelName: modelName,
+        dataType: dataType,
+      ).toString(),
+    );
 
     ///-> Data Model
-    if(dataType != null && (dataType == DartType.model || dataType == DartType.listModel)){
+    if (dataType != null &&
+        (dataType == DartType.model || dataType == DartType.listModel)) {
       Map<String, dynamic> dataMap = <String, dynamic>{};
-      if(dataType == DartType.model){
+      if (dataType == DartType.model) {
         dataMap = request.response['data'];
       }
-      if(dataType == DartType.listModel){
+      if (dataType == DartType.listModel) {
         dataMap = request.response['data'][0];
       }
       fetchJsonKeys(modelName, dataMap);
-      for(int i=models.length-1; i>=0; i--){
+      for (int i = models.length - 1; i >= 0; i--) {
         buffer.writeln(models[i].entityBuffer.toString());
       }
 
@@ -60,19 +62,17 @@ class EntityRequestBuffers extends BaseRequestBuffers{
     return buffer;
   }
 
-
-
   StringBuffer _generateResponseModel({
     required String responseClassName,
     required Map<String, dynamic> response,
     required String modelName,
     DartType? dataType,
-  }){
+  }) {
     final StringBuffer buffer = StringBuffer();
     buffer.writeln('class ${responseClassName}Response extends Equatable{');
     Map<String, String> attributes = <String, String>{};
-    for(MapEntry<String, dynamic> entry in response.entries){
-      if(entry.key == 'data'){
+    for (MapEntry<String, dynamic> entry in response.entries) {
+      if (entry.key == 'data') {
         continue;
       }
       final Names keyNames = Names.fromString(entry.key);
@@ -91,27 +91,29 @@ class EntityRequestBuffers extends BaseRequestBuffers{
     //     buffer.writeln('  final $dataType data;');
     //   }
     // }
-    if(dataType != null){
-      buffer.writeln('  final ${dataType.typeName(modelClass: modelName)} data;');
+    if (dataType != null) {
+      buffer.writeln(
+        '  final ${dataType.typeName(modelClass: modelName)} data;',
+      );
     }
-
 
     buffer.writeln();
     buffer.writeln('  const ${responseClassName}Response({');
-    for(MapEntry<String, dynamic> attribute in attributes.entries){
+    for (MapEntry<String, dynamic> attribute in attributes.entries) {
       buffer.writeln('    required this.${attribute.key},');
     }
-    if(dataType != null){
+    if (dataType != null) {
       buffer.writeln('    required this.data,');
     }
     buffer.writeln('  });\n');
+
     ///Equatable props
     buffer.writeln('  @override');
     buffer.writeln('  List<Object?> get props => <Object?>[');
-    for(MapEntry<String, dynamic> attribute in attributes.entries){
+    for (MapEntry<String, dynamic> attribute in attributes.entries) {
       buffer.writeln('    ${attribute.key},');
     }
-    if(dataType != null){
+    if (dataType != null) {
       buffer.writeln('    data,');
     }
     buffer.writeln('  ];');
@@ -119,28 +121,26 @@ class EntityRequestBuffers extends BaseRequestBuffers{
     return buffer;
   }
 
-
   List<GenerateModel> models = <GenerateModel>[];
-  void fetchJsonKeys(String key, Map<String, dynamic> dataMap){
-    for(MapEntry<String, dynamic> entry in dataMap.entries){
-      if(entry.value is Map){
+  void fetchJsonKeys(String key, Map<String, dynamic> dataMap) {
+    for (MapEntry<String, dynamic> entry in dataMap.entries) {
+      if (entry.value is Map) {
         fetchJsonKeys(entry.key, entry.value);
       }
-      if(entry.value is List && entry.value.isNotEmpty && entry.value[0] is Map){
+      if (entry.value is List &&
+          entry.value.isNotEmpty &&
+          entry.value[0] is Map) {
         String key = entry.key;
-        if(entry.key.endsWith('s')){
-          String classNameWithoutSInLastChar = entry.key
-              .substring(0, entry.key.length - 1);
+        if (entry.key.endsWith('s')) {
+          String classNameWithoutSInLastChar = entry.key.substring(
+            0,
+            entry.key.length - 1,
+          );
           key = classNameWithoutSInLastChar;
         }
         fetchJsonKeys(key, entry.value[0]);
       }
     }
-    models.add(GenerateModel.generate(
-      name: key,
-      map: dataMap,
-      parent: key,
-    ));
+    models.add(GenerateModel.generate(name: key, map: dataMap, parent: key));
   }
-
 }

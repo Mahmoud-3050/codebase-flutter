@@ -23,9 +23,7 @@ import '../../domain/usecases/update_student_profile_usecase.dart';
 class ProfileRepositoryImpl implements ProfileRepository {
   final ProfileRemoteDataSource remote;
 
-  ProfileRepositoryImpl({
-    required this.remote,
-  });
+  ProfileRepositoryImpl({required this.remote});
 
   Future<Either<Failure, T>> _guard<T>(
     Future<T> Function() call,
@@ -48,17 +46,14 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, ChangeCompanyPasswordResponse>> changeCompanyPassword({
     required ChangeCompanyPasswordParams params,
-  }) =>
-      _guard(
-        () => remote.changeCompanyPassword(params: params),
-        'changeCompanyPassword',
-      );
+  }) => _guard(
+    () => remote.changeCompanyPassword(params: params),
+    'changeCompanyPassword',
+  );
 
   @override
   Future<Either<Failure, UpdateCompanyUserProfileResponse>>
-      updateCompanyUserProfile({
-    required UpdateCompanyUserProfileParams params,
-  }) =>
+  updateCompanyUserProfile({required UpdateCompanyUserProfileParams params}) =>
       _guard(
         () => remote.updateCompanyUserProfile(params: params),
         'updateCompanyUserProfile',
@@ -67,45 +62,34 @@ class ProfileRepositoryImpl implements ProfileRepository {
   @override
   Future<Either<Failure, ChangeStudentPasswordResponse>> changeStudentPassword({
     required ChangeStudentPasswordParams params,
-  }) =>
-      _guard(
-        () => remote.changeStudentPassword(params: params),
-        'changeStudentPassword',
-      );
+  }) => _guard(
+    () => remote.changeStudentPassword(params: params),
+    'changeStudentPassword',
+  );
 
   @override
   Future<Either<Failure, GetCompanyProfileResponse>> getCompanyProfile({
     required NoParams params,
-  }) =>
-      _guard(
-        () => remote.getCompanyProfile(),
-        'getCompanyProfile',
-      );
+  }) => _guard(() => remote.getCompanyProfile(), 'getCompanyProfile');
 
   @override
   Future<Either<Failure, GetStudentProfileResponse>> getStudentProfile({
     required NoParams params,
-  }) =>
-      _guard(
-        () => remote.getStudentProfile(),
-        'getStudentProfile',
-      );
+  }) => _guard(() => remote.getStudentProfile(), 'getStudentProfile');
 
   @override
   Future<Either<Failure, UpdateCompanyProfileResponse>> updateCompanyProfile({
     required UpdateCompanyProfileParams params,
-  }) =>
-      _guard(
-        () => remote.updateCompanyProfile(params: params),
-        'updateCompanyProfile',
-      );
+  }) => _guard(
+    () => remote.updateCompanyProfile(params: params),
+    'updateCompanyProfile',
+  );
 
   @override
   Future<Either<Failure, UpdateStudentProfileResponse>> updateStudentProfile({
     required UpdateStudentProfileParams params,
-  }) =>
-      _guard(
-        () => remote.updateStudentProfile(params: params),
-        'updateStudentProfile',
-      );
+  }) => _guard(
+    () => remote.updateStudentProfile(params: params),
+    'updateStudentProfile',
+  );
 }

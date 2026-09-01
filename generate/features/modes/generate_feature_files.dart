@@ -54,9 +54,7 @@ abstract class GenerateFeature {
     ).generate(featureNames: feature.names, requests: feature.requests);
 
     InjectionFile(
-      file: File(
-        '$featurePath/${feature.names.snakeCase}_injection.dart',
-      ),
+      file: File('$featurePath/${feature.names.snakeCase}_injection.dart'),
     ).generate(featureNames: feature.names, requests: feature.requests);
   }
 
@@ -65,42 +63,49 @@ abstract class GenerateFeature {
     required Request request,
     bool generateTest = false,
   }) {
-    EntityFile(file: request.files.entity)
-        .generate(featureNames: feature.names, request: request);
+    EntityFile(
+      file: request.files.entity,
+    ).generate(featureNames: feature.names, request: request);
 
-    ModelFile(file: request.files.model)
-        .generate(featureNames: feature.names, request: request);
+    ModelFile(
+      file: request.files.model,
+    ).generate(featureNames: feature.names, request: request);
 
-    UseCaseFile(file: request.files.useCase)
-        .generate(featureNames: feature.names, request: request);
+    UseCaseFile(
+      file: request.files.useCase,
+    ).generate(featureNames: feature.names, request: request);
 
     createDirectory(request.files.cubit.path.parentDirectoryPath);
-    CubitFile(file: request.files.cubit)
-        .generate(featureNames: feature.names, request: request);
+    CubitFile(
+      file: request.files.cubit,
+    ).generate(featureNames: feature.names, request: request);
 
-    CubitStatesFile(file: request.files.cubitStates)
-        .generate(featureNames: feature.names, request: request);
+    CubitStatesFile(
+      file: request.files.cubitStates,
+    ).generate(featureNames: feature.names, request: request);
 
     if (generateTest) {
       createDirectory(request.files.cubitTest.path.parentDirectoryPath);
-      CubitTestFile(file: request.files.cubitTest)
-          .generate(featureNames: feature.names, request: request);
+      CubitTestFile(
+        file: request.files.cubitTest,
+      ).generate(featureNames: feature.names, request: request);
 
       createDirectory(request.files.useCaseTest.path.parentDirectoryPath);
-      UseCaseTestFile(file: request.files.useCaseTest)
-          .generate(featureNames: feature.names, request: request);
+      UseCaseTestFile(
+        file: request.files.useCaseTest,
+      ).generate(featureNames: feature.names, request: request);
 
       createDirectory(request.files.repositoryTest.path.parentDirectoryPath);
-      RepositoryTestFile(file: request.files.repositoryTest)
-          .generate(featureNames: feature.names, request: request);
+      RepositoryTestFile(
+        file: request.files.repositoryTest,
+      ).generate(featureNames: feature.names, request: request);
 
       createDirectory(request.files.datasourceTest.path.parentDirectoryPath);
-      DatasourceTestFile(file: request.files.datasourceTest)
-          .generate(featureNames: feature.names, request: request);
+      DatasourceTestFile(
+        file: request.files.datasourceTest,
+      ).generate(featureNames: feature.names, request: request);
     }
 
     request.markAsProtected();
   }
 }
-
-

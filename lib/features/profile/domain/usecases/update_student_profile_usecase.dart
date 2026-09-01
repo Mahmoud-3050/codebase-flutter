@@ -6,18 +6,19 @@ import '../../../../core/usecases/usecase.dart';
 import '../entities/update_student_profile_response.dart';
 import '../repositories/profile_repo.dart';
 
-
-class UpdateStudentProfileUseCase extends UseCase<UpdateStudentProfileResponse, UpdateStudentProfileParams> {
+class UpdateStudentProfileUseCase
+    extends UseCase<UpdateStudentProfileResponse, UpdateStudentProfileParams> {
   final ProfileRepository repository;
 
   UpdateStudentProfileUseCase({required this.repository});
 
   @override
-  Future<Either<Failure, UpdateStudentProfileResponse>> call(UpdateStudentProfileParams params) async {
+  Future<Either<Failure, UpdateStudentProfileResponse>> call(
+    UpdateStudentProfileParams params,
+  ) async {
     return await repository.updateStudentProfile(params: params);
   }
 }
-
 
 class UpdateStudentProfileParams extends Equatable {
   final String? firstName;
@@ -116,8 +117,4 @@ class UpdateStudentProfileParams extends Equatable {
     gpaFile,
     cvFile,
   ];
-
 }
-
-
-

@@ -6,25 +6,35 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../project_file.dart';
 
-
-class InjectionFile extends ProjectFile{
+class InjectionFile extends ProjectFile {
   bool isOneRequestHasToken = false;
 
   InjectionFile({required super.file});
 
   @override
-  Future<void> generate({required Names featureNames, required List<Request> requests}) async{
+  Future<void> generate({
+    required Names featureNames,
+    required List<Request> requests,
+  }) async {
     final StringBuffer buffer = StringBuffer();
+
     ///-> File imports
     buffer.writeln("import 'package:flutter/material.dart';");
     buffer.writeln("import 'package:flutter_bloc/flutter_bloc.dart';");
     buffer.writeln();
     buffer.writeln("import '../../injection_container.dart';");
-    buffer.writeln("import 'data/datasources/${featureNames.snakeCase}_remote_datasource.dart';");
-    buffer.writeln("import 'data/repositories/${featureNames.snakeCase}_repo_impl.dart';");
-    buffer.writeln("import 'domain/repositories/${featureNames.snakeCase}_repo.dart';");
+    buffer.writeln(
+      "import 'data/datasources/${featureNames.snakeCase}_remote_datasource.dart';",
+    );
+    buffer.writeln(
+      "import 'data/repositories/${featureNames.snakeCase}_repo_impl.dart';",
+    );
+    buffer.writeln(
+      "import 'domain/repositories/${featureNames.snakeCase}_repo.dart';",
+    );
+
     ///-> Func imports
-    for(Request request in requests){
+    for (Request request in requests) {
       String imports = request.buffers.injection
           .generateImports(requestNameSnakeCase: request.names.snakeCase)
           .toString();
@@ -35,40 +45,51 @@ class InjectionFile extends ProjectFile{
     buffer.writeln();
     buffer.writeln('final _sl = ServiceLocator.instance;');
     buffer.writeln();
-    buffer.writeln('Future<void> init${featureNames.classCase}FeatureInjection() async {');
+    buffer.writeln(
+      'Future<void> init${featureNames.classCase}FeatureInjection() async {',
+    );
     buffer.writeln('  ///-> Cubits');
-    for(Request request in requests){
+    for (Request request in requests) {
       String cubit = request.buffers.injection
           .generateBody(featureNames: featureNames, request: request)
-          .toString().split('***')
+          .toString()
+          .split('***')
           .first;
       buffer.write(cubit);
     }
     buffer.writeln();
     buffer.write('  ///-> UseCases');
-    for(Request request in requests){
+    for (Request request in requests) {
       String useCase = request.buffers.injection
           .generateBody(featureNames: featureNames, request: request)
           .toString()
-          .split('***')[1].toString();
+          .split('***')[1]
+          .toString();
       buffer.write(useCase);
     }
     buffer.writeln('\n');
     buffer.writeln('  ///-> Repository');
-    buffer.writeln('  _sl.registerLazySingleton<${featureNames.classCase}Repository>(() => ${featureNames.classCase}RepositoryImpl(remote: _sl()));');
+    buffer.writeln(
+      '  _sl.registerLazySingleton<${featureNames.classCase}Repository>(() => ${featureNames.classCase}RepositoryImpl(remote: _sl()));',
+    );
     buffer.writeln();
     buffer.writeln('  ///-> DataSource');
-    buffer.writeln('  _sl.registerLazySingleton<${featureNames.classCase}RemoteDataSource>(() => ${featureNames.classCase}RemoteDataSourceImpl());');
+    buffer.writeln(
+      '  _sl.registerLazySingleton<${featureNames.classCase}RemoteDataSource>(() => ${featureNames.classCase}RemoteDataSourceImpl());',
+    );
     buffer.writeln('}');
     buffer.writeln();
 
     ///-> BlocProvider
     buffer.writeln('  ///-> BlocProvider');
-    buffer.write('List<BlocProvider> get ${featureNames.camelCase}Blocs => <BlocProvider>[');
-    for(Request request in requests){
+    buffer.write(
+      'List<BlocProvider> get ${featureNames.camelCase}Blocs => <BlocProvider>[',
+    );
+    for (Request request in requests) {
       String blocProvider = request.buffers.injection
           .generateBody(featureNames: featureNames, request: request)
-          .toString().split('***')
+          .toString()
+          .split('***')
           .last;
       buffer.write(blocProvider);
     }
@@ -80,8 +101,10 @@ class InjectionFile extends ProjectFile{
   }
 
   @override
-  Future<void> modify(
-      {required Names featureNames, required List<Request> requests}) async {
+  Future<void> modify({
+    required Names featureNames,
+    required List<Request> requests,
+  }) async {
     final List<String> lines = file.readAsLinesSync();
     final StringBuffer buffer = StringBuffer();
     if (requests.isEmpty) {
@@ -139,10 +162,12 @@ class InjectionFile extends ProjectFile{
         }
         if (isOneRequestHasToken) {
           buffer.writeln(
-              '  _sl.registerLazySingleton<${featureNames.classCase}Repository>(() => ${featureNames.classCase}RepositoryImpl(remote: _sl(), local: _sl()));');
+            '  _sl.registerLazySingleton<${featureNames.classCase}Repository>(() => ${featureNames.classCase}RepositoryImpl(remote: _sl(), local: _sl()));',
+          );
         } else {
           buffer.writeln(
-              '  _sl.registerLazySingleton<${featureNames.classCase}Repository>(() => ${featureNames.classCase}RepositoryImpl(remote: _sl()));');
+            '  _sl.registerLazySingleton<${featureNames.classCase}Repository>(() => ${featureNames.classCase}RepositoryImpl(remote: _sl()));',
+          );
         }
       }
 
@@ -161,7 +186,6 @@ class InjectionFile extends ProjectFile{
     await file.writeAsString(buffer.toString());
   }
 }
-
 
 // void generateFeatureInjectionFile({
 //   required String feature,
@@ -242,7 +266,6 @@ class InjectionFile extends ProjectFile{
 //   file.writeAsStringSync(buffer.toString());
 //   //print(buffer.toString());
 // }
-
 
 // void modifyFeatureInjectionFile({
 //   required File file,

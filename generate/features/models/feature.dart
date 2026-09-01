@@ -18,7 +18,9 @@ class Feature {
 
   const Feature({
     required this.names,
-    required this.settings, required this.modeType, this.requests = const <Request>[],
+    required this.settings,
+    required this.modeType,
+    this.requests = const <Request>[],
     this.jsonFiles = const <File>[],
     this.jsonMaps = const <Map<String, dynamic>>[],
   });
@@ -31,22 +33,21 @@ class Feature {
 
     Map<String, dynamic> settingsMap = <String, dynamic>{};
     if (settingsFile.existsSync()) {
-      settingsMap = jsonDecode(settingsFile.readAsStringSync()) as Map<String, dynamic>;
+      settingsMap =
+          jsonDecode(settingsFile.readAsStringSync()) as Map<String, dynamic>;
     } else {
       createFile(settingsFile.path);
       settingsMap = <String, dynamic>{'mode': 1};
       settingsFile.writeAsStringSync(jsonEncode(settingsMap));
     }
 
-    final Settings settingsModel =
-        Settings.fromJson(json: settingsMap, file: settingsFile);
+    final Settings settingsModel = Settings.fromJson(
+      json: settingsMap,
+      file: settingsFile,
+    );
     final ModeType modeType = ModeType.fromCode(settingsModel.mode);
 
-    return Feature(
-      names: names,
-      settings: settingsModel,
-      modeType: modeType,
-    );
+    return Feature(names: names, settings: settingsModel, modeType: modeType);
   }
 
   Feature markAsProtected() {

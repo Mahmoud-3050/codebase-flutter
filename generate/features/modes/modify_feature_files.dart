@@ -44,9 +44,7 @@ abstract class ModifyFeature {
     ).modify(featureNames: feature.names, requests: requests);
 
     InjectionFile(
-      file: File(
-        '$featurePath/${feature.names.snakeCase}_injection.dart',
-      ),
+      file: File('$featurePath/${feature.names.snakeCase}_injection.dart'),
     ).modify(featureNames: feature.names, requests: requests);
   }
 }

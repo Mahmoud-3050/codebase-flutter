@@ -39,7 +39,6 @@ class PaginationMeta extends Equatable {
     currentPage,
     totalPages,
   ];
-
 }
 
 class PaginationMetaModel extends PaginationMeta {
@@ -51,12 +50,22 @@ class PaginationMetaModel extends PaginationMeta {
     required super.totalPages,
   });
 
-  factory PaginationMetaModel.fromJson(Map<String, dynamic> json) => PaginationMetaModel(
-    total: json['total'] != null? num.tryParse(json['total'].toString())?.toInt()?? 0: 0,
-    count: json['count'] != null? num.tryParse(json['count'].toString())?.toInt()?? 0: 0,
-    perPage: json['per_page'] != null? num.tryParse(json['per_page'].toString())?.toInt()?? 1: 1,
-    currentPage: json['current_page'] != null? num.tryParse(json['current_page'].toString())?.toInt()?? 1: 1,
-    totalPages: json['total_pages'] != null? num.tryParse(json['total_pages'].toString())?.toInt()?? 1: 1,
-  );
-
+  factory PaginationMetaModel.fromJson(Map<String, dynamic> json) =>
+      PaginationMetaModel(
+        total: json['total'] != null
+            ? num.tryParse(json['total'].toString())?.toInt() ?? 0
+            : 0,
+        count: json['count'] != null
+            ? num.tryParse(json['count'].toString())?.toInt() ?? 0
+            : 0,
+        perPage: json['per_page'] != null
+            ? num.tryParse(json['per_page'].toString())?.toInt() ?? 1
+            : 1,
+        currentPage: json['current_page'] != null
+            ? num.tryParse(json['current_page'].toString())?.toInt() ?? 1
+            : 1,
+        totalPages: json['total_pages'] != null
+            ? num.tryParse(json['total_pages'].toString())?.toInt() ?? 1
+            : 1,
+      );
 }

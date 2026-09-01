@@ -23,11 +23,11 @@ class ModalBottomSheetScaffold extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
+      padding: .symmetric(horizontal: 16.w, vertical: 8.h),
       decoration: BoxDecoration(
         borderRadius: BorderRadiusDirectional.only(
-          topStart: Radius.circular(24.r),
-          topEnd: Radius.circular(24.r),
+          topStart: .circular(24.r),
+          topEnd: .circular(24.r),
         ),
         color: colors.foreground,
       ),
@@ -35,7 +35,7 @@ class ModalBottomSheetScaffold extends StatelessWidget {
         children: [
           ///AppBar
           Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisAlignment: .center,
             children: [
               icon ??
                   IconButton(
@@ -49,8 +49,8 @@ class ModalBottomSheetScaffold extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyles.of(size: 18, weight: FontWeight.w500),
-                  textAlign: TextAlign.center,
+                  style: TextStyles.of(size: 18, weight: .w500),
+                  textAlign: .center,
                 ),
               ),
               IconButton(
@@ -70,7 +70,7 @@ class ModalBottomSheetScaffold extends StatelessWidget {
                   child: Text(
                     subTitle,
                     style: TextStyles.of(size: 14, color: colors.textSecondary),
-                    textAlign: TextAlign.center,
+                    textAlign: .center,
                   ),
                 )
               : const SizedBox(),

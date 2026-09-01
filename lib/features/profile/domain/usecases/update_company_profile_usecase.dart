@@ -6,18 +6,19 @@ import '../../../../core/usecases/usecase.dart';
 import '../entities/update_company_profile_response.dart';
 import '../repositories/profile_repo.dart';
 
-
-class UpdateCompanyProfileUseCase extends UseCase<UpdateCompanyProfileResponse, UpdateCompanyProfileParams> {
+class UpdateCompanyProfileUseCase
+    extends UseCase<UpdateCompanyProfileResponse, UpdateCompanyProfileParams> {
   final ProfileRepository repository;
 
   UpdateCompanyProfileUseCase({required this.repository});
 
   @override
-  Future<Either<Failure, UpdateCompanyProfileResponse>> call(UpdateCompanyProfileParams params) async {
+  Future<Either<Failure, UpdateCompanyProfileResponse>> call(
+    UpdateCompanyProfileParams params,
+  ) async {
     return await repository.updateCompanyProfile(params: params);
   }
 }
-
 
 class UpdateCompanyProfileParams extends Equatable {
   final String? companyName;
@@ -62,8 +63,4 @@ class UpdateCompanyProfileParams extends Equatable {
     logo,
     description,
   ];
-
 }
-
-
-

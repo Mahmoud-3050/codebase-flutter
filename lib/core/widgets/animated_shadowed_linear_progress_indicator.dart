@@ -44,11 +44,13 @@ class _AnimatedShadowedProgressIndicatorState
   void didUpdateWidget(covariant AnimatedShadowedProgressIndicator oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.targetValue != oldWidget.targetValue) {
-      _progressAnimation = Tween<double>(
-        begin: _progressAnimation.value,
-        end: widget.targetValue,
-      ).animate(
-          CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+      _progressAnimation =
+          Tween<double>(
+            begin: _progressAnimation.value,
+            end: widget.targetValue,
+          ).animate(
+            CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
+          );
       _controller
         ..reset()
         ..forward();
@@ -79,7 +81,7 @@ class _AnimatedShadowedProgressIndicatorState
                   height: 8.h,
                   decoration: BoxDecoration(
                     color: colors.progressBarBackground,
-                    borderRadius: BorderRadius.circular(8.r),
+                    borderRadius: .circular(8.r),
                   ),
                 ),
                 // Animated foreground with shadow
@@ -88,7 +90,7 @@ class _AnimatedShadowedProgressIndicatorState
                   height: 8.h,
                   decoration: BoxDecoration(
                     color: colors.primary,
-                    borderRadius: BorderRadius.circular(8.r),
+                    borderRadius: .circular(8.r),
                     boxShadow: [
                       BoxShadow(
                         color: colors.secondary,

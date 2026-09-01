@@ -29,6 +29,7 @@ class RequestBuffers {
     required this.useCaseTest,
     required this.repositoryTest,
     required this.datasourceTest,
-    required this.injection, this.blocConsumer,
+    required this.injection,
+    this.blocConsumer,
   });
 }

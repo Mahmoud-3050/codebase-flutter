@@ -11,8 +11,9 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
   final colorTheme = Themes.buildThemeData(colors, brightness);
   return colorTheme.copyWith(
     textTheme: colorTheme.textTheme.apply(fontFamily: Fonts.current),
-    primaryTextTheme:
-        colorTheme.primaryTextTheme.apply(fontFamily: Fonts.current),
+    primaryTextTheme: colorTheme.primaryTextTheme.apply(
+      fontFamily: Fonts.current,
+    ),
     dividerTheme: DividerThemeData(
       thickness: 1,
       indent: 4,
@@ -21,15 +22,15 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
     ),
     iconButtonTheme: IconButtonThemeData(
       style: ButtonStyle(
-        padding: WidgetStateProperty.all<EdgeInsetsGeometry>(EdgeInsets.zero),
-        alignment: Alignment.center,
+        padding: WidgetStateProperty.all<EdgeInsetsGeometry>(.zero),
+        alignment: .center,
         foregroundColor: WidgetStateProperty.all<Color>(colors.primary),
         iconColor: WidgetStateProperty.all<Color>(colors.textPrimary),
       ),
     ),
     bottomNavigationBarTheme: BottomNavigationBarThemeData(
       backgroundColor: colors.foreground,
-      type: BottomNavigationBarType.fixed,
+      type: .fixed,
       selectedItemColor: colors.primary,
       unselectedItemColor: colors.hint,
       selectedLabelStyle: TextStyles.of(
@@ -51,7 +52,7 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
       iconTheme: IconThemeData(color: colors.textPrimary),
       titleTextStyle: TextStyles.of(
         size: 18,
-        weight: FontWeight.w600,
+        weight: .w600,
         fontFamily: Fonts.current,
       ),
     ),

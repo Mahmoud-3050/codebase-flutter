@@ -1,6 +1,5 @@
 part of 'change_company_password_cubit.dart';
 
-
 sealed class ChangeCompanyPasswordState extends Equatable {
   const ChangeCompanyPasswordState();
 
@@ -8,15 +7,18 @@ sealed class ChangeCompanyPasswordState extends Equatable {
   List<Object?> get props => <Object?>[];
 }
 
-final class ChangeCompanyPasswordInitialState extends ChangeCompanyPasswordState {
+final class ChangeCompanyPasswordInitialState
+    extends ChangeCompanyPasswordState {
   const ChangeCompanyPasswordInitialState();
 }
 
-final class ChangeCompanyPasswordLoadingState extends ChangeCompanyPasswordState {
+final class ChangeCompanyPasswordLoadingState
+    extends ChangeCompanyPasswordState {
   const ChangeCompanyPasswordLoadingState();
 }
 
-final class ChangeCompanyPasswordSuccessState extends ChangeCompanyPasswordState {
+final class ChangeCompanyPasswordSuccessState
+    extends ChangeCompanyPasswordState {
   const ChangeCompanyPasswordSuccessState();
 }
 
@@ -28,4 +30,3 @@ final class ChangeCompanyPasswordErrorState extends ChangeCompanyPasswordState {
   @override
   List<Object?> get props => <Object?>[message];
 }
-

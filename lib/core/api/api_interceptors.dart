@@ -15,13 +15,13 @@ class ApiInterceptors extends Interceptor {
     RefreshTokenHelper? refreshTokenHelper,
     String Function()? languageCode,
     String Function()? noInternetMessage,
-  })  : _retryClient = retryClient,
-        refreshTokenHelper = refreshTokenHelper ?? RefreshTokenHelper.instance,
-        languageCode = languageCode ?? (() => Language.instance.currentCode),
-        _mapper = DioExceptionMapper(
-          noInternetMessage:
-              noInternetMessage ?? () => Strings.noInternetConnection,
-        );
+  }) : _retryClient = retryClient,
+       refreshTokenHelper = refreshTokenHelper ?? RefreshTokenHelper.instance,
+       languageCode = languageCode ?? (() => Language.instance.currentCode),
+       _mapper = DioExceptionMapper(
+         noInternetMessage:
+             noInternetMessage ?? () => Strings.noInternetConnection,
+       );
 
   static final ApiInterceptors instance = ApiInterceptors();
 

@@ -6,25 +6,21 @@ part of 'router.dart';
 // GoRouterGenerator
 // **************************************************************************
 
-List<RouteBase> get $appRoutes => [
-      $studentProfileRoute,
-    ];
+List<RouteBase> get $appRoutes => [$studentProfileRoute];
 
 RouteBase get $studentProfileRoute => GoRouteData.$route(
-      path: '/student-profile',
-      name: '/student-profile',
-      hasOverriddenOnExit: false,
-      factory: $StudentProfileRoute._fromState,
-    );
+  path: '/student-profile',
+  name: '/student-profile',
+  hasOverriddenOnExit: false,
+  factory: $StudentProfileRoute._fromState,
+);
 
 mixin $StudentProfileRoute on GoRouteData {
   static StudentProfileRoute _fromState(GoRouterState state) =>
       const StudentProfileRoute();
 
   @override
-  String get location => GoRouteData.$location(
-        '/student-profile',
-      );
+  String get location => GoRouteData.$location('/student-profile');
 
   @override
   void go(BuildContext context) => context.go(location);

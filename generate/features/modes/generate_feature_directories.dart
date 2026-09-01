@@ -3,17 +3,25 @@ import '../../utils/functions.dart';
 import '../models/layer.dart';
 import '../models/sub_layer.dart';
 
-void generateFeatureDirectories(String feature, String featurePath,
-    {bool generateTest = false}) {
+void generateFeatureDirectories(
+  String feature,
+  String featurePath, {
+  bool generateTest = false,
+}) {
   try {
     createDirectory(featurePath);
 
-    final List<Layer> layers = _buildCleanArchitectureLayers(feature, featurePath);
+    final List<Layer> layers = _buildCleanArchitectureLayers(
+      feature,
+      featurePath,
+    );
     _createLayerDirectories(layers);
 
     if (generateTest) {
-      final String testFeaturePath =
-          featurePath.replaceAll('lib/features', 'test/features');
+      final String testFeaturePath = featurePath.replaceAll(
+        'lib/features',
+        'test/features',
+      );
       createDirectory(testFeaturePath);
 
       final List<Layer> testLayers = _buildTestLayers(testFeaturePath);
@@ -49,10 +57,13 @@ List<Layer> _buildCleanArchitectureLayers(String feature, String featurePath) {
       path: '$featurePath/data',
       subLayers: [
         SubLayer(
-            title: 'datasources',
-            filesName: ['${feature}_remote_datasource.dart']),
+          title: 'datasources',
+          filesName: ['${feature}_remote_datasource.dart'],
+        ),
         SubLayer(
-            title: 'repositories', filesName: ['${feature}_repo_impl.dart']),
+          title: 'repositories',
+          filesName: ['${feature}_repo_impl.dart'],
+        ),
         const SubLayer(title: 'models', filesName: []),
       ],
     ),
@@ -64,16 +75,12 @@ List<Layer> _buildTestLayers(String testFeaturePath) {
     Layer(
       title: 'presentation',
       path: '$testFeaturePath/presentation',
-      subLayers: const [
-        SubLayer(title: 'controller', filesName: []),
-      ],
+      subLayers: const [SubLayer(title: 'controller', filesName: [])],
     ),
     Layer(
       title: 'domain',
       path: '$testFeaturePath/domain',
-      subLayers: const [
-        SubLayer(title: 'usecases', filesName: []),
-      ],
+      subLayers: const [SubLayer(title: 'usecases', filesName: [])],
     ),
     Layer(
       title: 'data',
@@ -94,9 +101,3 @@ void _createLayerDirectories(List<Layer> layers) {
     }
   }
 }
-
-
-
-
-
-

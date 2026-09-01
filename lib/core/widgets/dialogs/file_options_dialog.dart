@@ -14,14 +14,15 @@ class FileOptionsDialog extends StatelessWidget {
   const FileOptionsDialog({
     required this.buttonUploadTitle,
     required this.buttonShowTitle,
-    required this.onFilePickerResult, this.fileUrl,
+    required this.onFilePickerResult,
+    this.fileUrl,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 16.h),
+      padding: .symmetric(horizontal: 16.w, vertical: 16.h),
       child: Wrap(
         runSpacing: 32.h,
         children: [
@@ -38,13 +39,14 @@ class FileOptionsDialog extends StatelessWidget {
             },
             text: buttonUploadTitle,
           ),
-          if(fileUrl != null && fileUrl!.isNotEmpty) AppOutlinedButton(
-            onPressed: () async {
-              Navigator.pop(context);
-              await fileUrl?.launcherUrl;
-            },
-            text: buttonShowTitle,
-          ),
+          if (fileUrl != null && fileUrl!.isNotEmpty)
+            AppOutlinedButton(
+              onPressed: () async {
+                Navigator.pop(context);
+                await fileUrl?.launcherUrl;
+              },
+              text: buttonShowTitle,
+            ),
         ],
       ),
     );

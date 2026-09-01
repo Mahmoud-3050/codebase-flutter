@@ -15,14 +15,12 @@ Future<dynamic> showAppDialog({
     builder: (BuildContext context) {
       return Dialog(
         backgroundColor: backgroundColor,
-        insetPadding: insetPadding?? EdgeInsets.symmetric(horizontal: 40.w, vertical: 24.h),
+        insetPadding:
+            insetPadding ?? .symmetric(horizontal: 40.w, vertical: 24.h),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(borderRadius ?? 12.r),
+          borderRadius: .circular(borderRadius ?? 12.r),
         ),
-        child: PopScope(
-          canPop: isDismissible,
-          child: child,
-        ),
+        child: PopScope(canPop: isDismissible, child: child),
       );
     },
   );

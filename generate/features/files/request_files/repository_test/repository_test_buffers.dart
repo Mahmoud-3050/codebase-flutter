@@ -4,7 +4,6 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_buffers.dart';
 
-
 class RepositoryTestRequestBuffers extends BaseRequestBuffers {
   @override
   StringBuffer generateImports({
@@ -24,13 +23,23 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
     if (!hasParams) {
       buffer.writeln("import 'package:base/core/usecases/usecase.dart';");
     } else {
-      buffer.writeln("import 'package:base/features/$featureNameSnakeCase/domain/usecases/${requestNameSnakeCase}_usecase.dart';");
+      buffer.writeln(
+        "import 'package:base/features/$featureNameSnakeCase/domain/usecases/${requestNameSnakeCase}_usecase.dart';",
+      );
     }
-    buffer.writeln("import 'package:base/features/$featureNameSnakeCase/data/datasources/${featureNameSnakeCase}_remote_datasource.dart';");
-    buffer.writeln("import 'package:base/features/$featureNameSnakeCase/data/repositories/${featureNameSnakeCase}_repo_impl.dart';");
-    buffer.writeln("import 'package:base/features/$featureNameSnakeCase/data/models/${requestNameSnakeCase}_model.dart';");
+    buffer.writeln(
+      "import 'package:base/features/$featureNameSnakeCase/data/datasources/${featureNameSnakeCase}_remote_datasource.dart';",
+    );
+    buffer.writeln(
+      "import 'package:base/features/$featureNameSnakeCase/data/repositories/${featureNameSnakeCase}_repo_impl.dart';",
+    );
+    buffer.writeln(
+      "import 'package:base/features/$featureNameSnakeCase/data/models/${requestNameSnakeCase}_model.dart';",
+    );
     buffer.writeln();
-    buffer.writeln("import '${requestNameSnakeCase}_repository_test.mocks.dart';");
+    buffer.writeln(
+      "import '${requestNameSnakeCase}_repository_test.mocks.dart';",
+    );
     return buffer;
   }
 
@@ -48,11 +57,17 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
     buffer.writeln('@GenerateMocks([${featureClassName}RemoteDataSource])');
     buffer.writeln('void main() {');
     buffer.writeln('  late ${featureClassName}RepositoryImpl repository;');
-    buffer.writeln('  late Mock${featureClassName}RemoteDataSource mockRemoteDataSource;');
+    buffer.writeln(
+      '  late Mock${featureClassName}RemoteDataSource mockRemoteDataSource;',
+    );
     buffer.writeln();
     buffer.writeln('  setUp(() {');
-    buffer.writeln('    mockRemoteDataSource = Mock${featureClassName}RemoteDataSource();');
-    buffer.writeln('    repository = ${featureClassName}RepositoryImpl(remote: mockRemoteDataSource);');
+    buffer.writeln(
+      '    mockRemoteDataSource = Mock${featureClassName}RemoteDataSource();',
+    );
+    buffer.writeln(
+      '    repository = ${featureClassName}RepositoryImpl(remote: mockRemoteDataSource);',
+    );
     buffer.writeln('  });');
     buffer.writeln();
 
@@ -70,10 +85,14 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
 
     String dataJson = 'null';
     if (dataType != null) {
-      dataJson = dataType.isList ? '[]' : (dataType == DartType.model ? '<String, dynamic>{}' : "''");
+      dataJson = dataType.isList
+          ? '[]'
+          : (dataType == DartType.model ? '<String, dynamic>{}' : "''");
     }
 
-    buffer.writeln('  final tModel = ${responseClassName}Model.fromJson(const <String, dynamic>{');
+    buffer.writeln(
+      '  final tModel = ${responseClassName}Model.fromJson(const <String, dynamic>{',
+    );
     buffer.writeln("    'status': 'success',");
     buffer.writeln("    'message': 'Success',");
     if (dataType != null) {
@@ -83,47 +102,81 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
     buffer.writeln();
 
     buffer.writeln("  group('${request.names.camelCase}', () {");
-    buffer.writeln("    test('should return remote data when call to remote data source is successful', () async {");
+    buffer.writeln(
+      "    test('should return remote data when call to remote data source is successful', () async {",
+    );
     if (hasParams) {
-      buffer.writeln('      when(mockRemoteDataSource.${request.names.camelCase}(params: anyNamed(\'params\')))');
+      buffer.writeln(
+        '      when(mockRemoteDataSource.${request.names.camelCase}(params: anyNamed(\'params\')))',
+      );
       buffer.writeln('          .thenAnswer((_) async => tModel);');
       buffer.writeln();
-      buffer.writeln('      final result = await repository.${request.names.camelCase}(params: tParams);');
+      buffer.writeln(
+        '      final result = await repository.${request.names.camelCase}(params: tParams);',
+      );
     } else {
-      buffer.writeln('      when(mockRemoteDataSource.${request.names.camelCase}())');
+      buffer.writeln(
+        '      when(mockRemoteDataSource.${request.names.camelCase}())',
+      );
       buffer.writeln('          .thenAnswer((_) async => tModel);');
       buffer.writeln();
-      buffer.writeln('      final result = await repository.${request.names.camelCase}(params: NoParams());');
+      buffer.writeln(
+        '      final result = await repository.${request.names.camelCase}(params: NoParams());',
+      );
     }
     buffer.writeln();
     buffer.writeln('      expect(result, Right(tModel));');
     if (hasParams) {
-      buffer.writeln('      verify(mockRemoteDataSource.${request.names.camelCase}(params: tParams));');
+      buffer.writeln(
+        '      verify(mockRemoteDataSource.${request.names.camelCase}(params: tParams));',
+      );
     } else {
-      buffer.writeln('      verify(mockRemoteDataSource.${request.names.camelCase}());');
+      buffer.writeln(
+        '      verify(mockRemoteDataSource.${request.names.camelCase}());',
+      );
     }
     buffer.writeln('      verifyNoMoreInteractions(mockRemoteDataSource);');
     buffer.writeln('    });');
     buffer.writeln();
 
-    buffer.writeln("    test('should return ServerFailure when call to remote data source throws ServerException', () async {");
+    buffer.writeln(
+      "    test('should return ServerFailure when call to remote data source throws ServerException', () async {",
+    );
     if (hasParams) {
-      buffer.writeln('      when(mockRemoteDataSource.${request.names.camelCase}(params: anyNamed(\'params\')))');
-      buffer.writeln("          .thenThrow(const ServerException(message: 'Server error'));");
+      buffer.writeln(
+        '      when(mockRemoteDataSource.${request.names.camelCase}(params: anyNamed(\'params\')))',
+      );
+      buffer.writeln(
+        "          .thenThrow(const ServerException(message: 'Server error'));",
+      );
       buffer.writeln();
-      buffer.writeln('      final result = await repository.${request.names.camelCase}(params: tParams);');
+      buffer.writeln(
+        '      final result = await repository.${request.names.camelCase}(params: tParams);',
+      );
     } else {
-      buffer.writeln('      when(mockRemoteDataSource.${request.names.camelCase}())');
-      buffer.writeln("          .thenThrow(const ServerException(message: 'Server error'));");
+      buffer.writeln(
+        '      when(mockRemoteDataSource.${request.names.camelCase}())',
+      );
+      buffer.writeln(
+        "          .thenThrow(const ServerException(message: 'Server error'));",
+      );
       buffer.writeln();
-      buffer.writeln('      final result = await repository.${request.names.camelCase}(params: NoParams());');
+      buffer.writeln(
+        '      final result = await repository.${request.names.camelCase}(params: NoParams());',
+      );
     }
     buffer.writeln();
-    buffer.writeln("      expect(result, const Left(ServerFailure(message: 'Server error')));");
+    buffer.writeln(
+      "      expect(result, const Left(ServerFailure(message: 'Server error')));",
+    );
     if (hasParams) {
-      buffer.writeln('      verify(mockRemoteDataSource.${request.names.camelCase}(params: tParams));');
+      buffer.writeln(
+        '      verify(mockRemoteDataSource.${request.names.camelCase}(params: tParams));',
+      );
     } else {
-      buffer.writeln('      verify(mockRemoteDataSource.${request.names.camelCase}());');
+      buffer.writeln(
+        '      verify(mockRemoteDataSource.${request.names.camelCase}());',
+      );
     }
     buffer.writeln('      verifyNoMoreInteractions(mockRemoteDataSource);');
     buffer.writeln('    });');

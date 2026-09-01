@@ -5,39 +5,48 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_file.dart';
 
-
-class BlocConsumerFile extends RequestFile{
-
+class BlocConsumerFile extends RequestFile {
   BlocConsumerFile({required super.file});
 
   @override
-  Future<void> generate({required Names featureNames, required Request request}) async {
+  Future<void> generate({
+    required Names featureNames,
+    required Request request,
+  }) async {
     final StringBuffer buffer = StringBuffer();
+
     ///-> File imports
-    buffer.writeln(request.buffers.blocConsumer?.generateImports(
-      requestNameSnakeCase: request.names.snakeCase,
-      isDataModel: request.response['data'] != null && request.response['data'] is List<dynamic>,
-    ).toString());
+    buffer.writeln(
+      request.buffers.blocConsumer
+          ?.generateImports(
+            requestNameSnakeCase: request.names.snakeCase,
+            isDataModel:
+                request.response['data'] != null &&
+                request.response['data'] is List<dynamic>,
+          )
+          .toString(),
+    );
 
     buffer.writeln();
 
     ///-> Class UseCase
-    buffer.writeln(request.buffers.blocConsumer?.generateBody(featureNames: featureNames, request: request).toString());
+    buffer.writeln(
+      request.buffers.blocConsumer
+          ?.generateBody(featureNames: featureNames, request: request)
+          .toString(),
+    );
 
     ///-> Write file
     final File targetFile = createFile(file.path);
     await targetFile.writeAsString(buffer.toString());
   }
 
-
   @override
   Future<void> modify({required Names featureNames, required Request request}) {
     // TODO: implement modify
     throw UnimplementedError();
   }
-
 }
-
 
 // void generateBlocConsumerFile({
 //   required String name,

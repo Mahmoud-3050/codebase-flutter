@@ -2,9 +2,12 @@
 class Assets {
   Assets._();
 
-  static const String animClockLoadingDark = 'assets/anim/clock-loading-dark.json';
-  static const String animClockLoadingLight = 'assets/anim/clock-loading-light.json';
-  static const String animSuccess1732061823350 = 'assets/anim/success-1732061823350.json';
+  static const String animClockLoadingDark =
+      'assets/anim/clock-loading-dark.json';
+  static const String animClockLoadingLight =
+      'assets/anim/clock-loading-light.json';
+  static const String animSuccess1732061823350 =
+      'assets/anim/success-1732061823350.json';
   static const String iconsAddBookmark = 'assets/icons/add-bookmark.svg';
   static const String iconsBookmark = 'assets/icons/bookmark.svg';
   static const String iconsBookmarks = 'assets/icons/bookmarks.svg';
@@ -40,21 +43,32 @@ class Assets {
   static const String imagesLogoBlack = 'assets/images/logo-black.png';
   static const String imagesLogoSBlack = 'assets/images/logo-s-black.png';
   static const String imagesLogoSWhite = 'assets/images/logo-s-white.png';
-  static const String imagesLogoSWhiteShadow = 'assets/images/logo-s-white-shadow.png';
+  static const String imagesLogoSWhiteShadow =
+      'assets/images/logo-s-white-shadow.png';
   static const String imagesLogoWhite = 'assets/images/logo-white.png';
   static const String imagesPlaceholder = 'assets/images/placeholder.jpg';
-  static const String imagesPlaceholderCompany = 'assets/images/placeholder-company.png';
-  static const String imagesPlaceholderUser = 'assets/images/placeholder-user.png';
+  static const String imagesPlaceholderCompany =
+      'assets/images/placeholder-company.png';
+  static const String imagesPlaceholderUser =
+      'assets/images/placeholder-user.png';
   static const String langAr = 'assets/lang/ar.json';
   static const String langEn = 'assets/lang/en.json';
-  static const String poppinsPoppinsBlack = 'assets/fonts/Poppins/Poppins-Black.ttf';
-  static const String poppinsPoppinsBold = 'assets/fonts/Poppins/Poppins-Bold.ttf';
-  static const String poppinsPoppinsExtraBold = 'assets/fonts/Poppins/Poppins-ExtraBold.ttf';
-  static const String poppinsPoppinsExtraLight = 'assets/fonts/Poppins/Poppins-ExtraLight.ttf';
-  static const String poppinsPoppinsLight = 'assets/fonts/Poppins/Poppins-Light.ttf';
-  static const String poppinsPoppinsMedium = 'assets/fonts/Poppins/Poppins-Medium.ttf';
-  static const String poppinsPoppinsRegular = 'assets/fonts/Poppins/Poppins-Regular.ttf';
-  static const String poppinsPoppinsSemiBold = 'assets/fonts/Poppins/Poppins-SemiBold.ttf';
-  static const String poppinsPoppinsThin = 'assets/fonts/Poppins/Poppins-Thin.ttf';
-
+  static const String poppinsPoppinsBlack =
+      'assets/fonts/Poppins/Poppins-Black.ttf';
+  static const String poppinsPoppinsBold =
+      'assets/fonts/Poppins/Poppins-Bold.ttf';
+  static const String poppinsPoppinsExtraBold =
+      'assets/fonts/Poppins/Poppins-ExtraBold.ttf';
+  static const String poppinsPoppinsExtraLight =
+      'assets/fonts/Poppins/Poppins-ExtraLight.ttf';
+  static const String poppinsPoppinsLight =
+      'assets/fonts/Poppins/Poppins-Light.ttf';
+  static const String poppinsPoppinsMedium =
+      'assets/fonts/Poppins/Poppins-Medium.ttf';
+  static const String poppinsPoppinsRegular =
+      'assets/fonts/Poppins/Poppins-Regular.ttf';
+  static const String poppinsPoppinsSemiBold =
+      'assets/fonts/Poppins/Poppins-SemiBold.ttf';
+  static const String poppinsPoppinsThin =
+      'assets/fonts/Poppins/Poppins-Thin.ttf';
 }

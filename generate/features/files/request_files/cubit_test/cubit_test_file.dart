@@ -5,24 +5,33 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_file.dart';
 
-
-
-class CubitTestFile extends RequestFile{
-
+class CubitTestFile extends RequestFile {
   CubitTestFile({required super.file});
 
   @override
-  Future<void> generate({required Names featureNames, required Request request}) async {
+  Future<void> generate({
+    required Names featureNames,
+    required Request request,
+  }) async {
     final StringBuffer buffer = StringBuffer();
+
     ///--> File imports
-    buffer.writeln(request.buffers.cubitTest.generateImports(
-      featureNameSnakeCase: featureNames.snakeCase,
-      requestNameSnakeCase: request.names.snakeCase,
-      hasParams: request.params != null,
-    ).toString());
+    buffer.writeln(
+      request.buffers.cubitTest
+          .generateImports(
+            featureNameSnakeCase: featureNames.snakeCase,
+            requestNameSnakeCase: request.names.snakeCase,
+            hasParams: request.params != null,
+          )
+          .toString(),
+    );
 
     ///--> Test body
-    buffer.writeln(request.buffers.cubitTest.generateBody(featureNames: featureNames, request: request).toString());
+    buffer.writeln(
+      request.buffers.cubitTest
+          .generateBody(featureNames: featureNames, request: request)
+          .toString(),
+    );
 
     ///-> Write file
     final File targetFile = createFile(file.path);
@@ -34,5 +43,4 @@ class CubitTestFile extends RequestFile{
     // TODO: implement modify
     throw UnimplementedError();
   }
-
 }

@@ -1,6 +1,5 @@
 part of 'update_student_profile_cubit.dart';
 
-
 sealed class UpdateStudentProfileState extends Equatable {
   const UpdateStudentProfileState();
 
@@ -33,4 +32,3 @@ final class UpdateStudentProfileErrorState extends UpdateStudentProfileState {
   @override
   List<Object?> get props => <Object?>[message];
 }
-

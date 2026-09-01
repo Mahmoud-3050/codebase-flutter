@@ -2,7 +2,8 @@ import 'dart:io';
 
 class GlobalChecker {
   static Future<Map<String, String>?> findScreenDefinitionGlobally(
-      String screenClass) async {
+    String screenClass,
+  ) async {
     final Directory dir = Directory('lib/features');
     if (!dir.existsSync()) return null;
     final String pattern = '=> ${screenClass.toLowerCase()}(';

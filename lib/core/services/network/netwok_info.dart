@@ -5,7 +5,6 @@ abstract class NetworkInfo {
 }
 
 class NetworkInfoImpl implements NetworkInfo {
-
   @override
   // Future<bool> get isConnected async => await InternetConnection().hasInternetAccess;
   Future<bool> get isConnected async => true;

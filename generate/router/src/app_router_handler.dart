@@ -20,7 +20,8 @@ class AppRouterHandler {
 
     // 1. Add export if not present
     if (!content.contains(
-        "features/$feature/presentation/navigation/router.dart' hide")) {
+      "features/$feature/presentation/navigation/router.dart' hide",
+    )) {
       // Insert export after last existing export or after package imports
       int insertPos = _findExportInsertPosition(content);
       content =
@@ -30,7 +31,8 @@ class AppRouterHandler {
 
     // 2. Add import if not present
     if (!content.contains(
-        "features/$feature/presentation/navigation/router.dart' as $feature")) {
+      "features/$feature/presentation/navigation/router.dart' as $feature",
+    )) {
       int insertPos = _findImportInsertPosition(content);
       content =
           '${content.substring(0, insertPos)}$importLine\n${content.substring(insertPos)}';
@@ -54,7 +56,8 @@ class AppRouterHandler {
       content = content.replaceAll(RegExp(r'\n{3,}'), '\n\n');
       await file.writeAsString(content);
       print(
-          '${GenerateConstants.greenColorCode}Registered feature $feature in app_router.dart${GenerateConstants.resetColorCode}');
+        '${GenerateConstants.greenColorCode}Registered feature $feature in app_router.dart${GenerateConstants.resetColorCode}',
+      );
     }
 
     return changed;
@@ -102,22 +105,25 @@ class AppRouterHandler {
       content = content.replaceAll(RegExp(r'\n{3,}'), '\n\n');
       await file.writeAsString(content);
       print(
-          '${GenerateConstants.greenColorCode}Cleaned up feature $feature from app_router.dart${GenerateConstants.resetColorCode}');
+        '${GenerateConstants.greenColorCode}Cleaned up feature $feature from app_router.dart${GenerateConstants.resetColorCode}',
+      );
     }
   }
 
   /// Find position to insert an export line (after last export, or after imports).
   static int _findExportInsertPosition(String content) {
     // After last export line
-    int lastExport =
-        content.lastIndexOf(RegExp(r"^export\s+'", multiLine: true));
+    int lastExport = content.lastIndexOf(
+      RegExp(r"^export\s+'", multiLine: true),
+    );
     if (lastExport != -1) {
       int endOfLine = content.indexOf('\n', lastExport);
       return endOfLine + 1;
     }
     // After last import line
-    int lastImport =
-        content.lastIndexOf(RegExp(r"^import\s+'", multiLine: true));
+    int lastImport = content.lastIndexOf(
+      RegExp(r"^import\s+'", multiLine: true),
+    );
     if (lastImport != -1) {
       int endOfLine = content.indexOf('\n', lastImport);
       return endOfLine + 1;
@@ -129,11 +135,13 @@ class AppRouterHandler {
   static int _findImportInsertPosition(String content) {
     // Find the last import line before the class definition
     int classIndex = content.indexOf('class AppRouter');
-    String beforeClass =
-        classIndex != -1 ? content.substring(0, classIndex) : content;
+    String beforeClass = classIndex != -1
+        ? content.substring(0, classIndex)
+        : content;
 
-    int lastImport =
-        beforeClass.lastIndexOf(RegExp(r"^import\s+'", multiLine: true));
+    int lastImport = beforeClass.lastIndexOf(
+      RegExp(r"^import\s+'", multiLine: true),
+    );
     if (lastImport != -1) {
       int endOfLine = beforeClass.indexOf('\n', lastImport);
       return endOfLine + 1;

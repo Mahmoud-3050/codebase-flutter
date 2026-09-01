@@ -11,7 +11,6 @@ import 'package:permission_handler/permission_handler.dart';
 import '../../injection_container.dart';
 import '../widgets/dialogs/loading_dialog.dart';
 import '../widgets/dialogs/show_dialog.dart';
-import 'enums.dart';
 
 Future<DateTime?> selectDate({
   required BuildContext context,
@@ -28,11 +27,12 @@ Future<DateTime?> selectDate({
   return selectedDate;
 }
 
-void showAppLoadingDialog({
-  required BuildContext context,
-  String? title,
-}){
-  showAppDialog(context: context, child: LoadingDialog(title: title), isDismissible: false);
+void showAppLoadingDialog({required BuildContext context, String? title}) {
+  showAppDialog(
+    context: context,
+    child: LoadingDialog(title: title),
+    isDismissible: false,
+  );
 }
 
 // Future<Uint8List?> downloadFileFromUrl(String url) async {
@@ -82,12 +82,12 @@ Future<File?> writeTemporaryFile({
 }
 
 Future<String?> getDeviceId() async {
-final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
-  if (deviceType == DeviceType.android) {
+  final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
+  if (deviceType == .android) {
     AndroidDeviceInfo androidInfo = await deviceInfo.androidInfo;
     return androidInfo.id; // Use the Android ID as a fallback
   }
-  if (deviceType == DeviceType.ios) {
+  if (deviceType == .ios) {
     IosDeviceInfo iosInfo = await deviceInfo.iosInfo;
     return iosInfo.identifierForVendor; // Use the iOS identifierForVendor
   }
@@ -97,43 +97,40 @@ final DeviceInfoPlugin deviceInfo = DeviceInfoPlugin();
 String linkifyHtml(String html) {
   // Detect links that are not already inside <a href="">
   final regex = RegExp(
-      r'''((?:(?:https?:\/\/)|(?:www\.))?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?(?:\:\d{1,5})?(?:\/[^\s<>"\'\),]*)?)''',
-  caseSensitive: false,
+    r'''((?:(?:https?:\/\/)|(?:www\.))?[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}(?:\.[a-zA-Z]{2,})?(?:\:\d{1,5})?(?:\/[^\s<>"\'\),]*)?)''',
+    caseSensitive: false,
   );
 
   final buffer = StringBuffer();
   int lastIndex = 0;
 
   for (final match in regex.allMatches(html)) {
-  final url = match.group(0)!;
+    final url = match.group(0)!;
 
-  // Check if match is inside existing <a> tag
-  final before = html.lastIndexOf('<a', match.start);
-  final after = html.lastIndexOf('</a>', match.start);
-  if (before != -1 && after < before) continue;
+    // Check if match is inside existing <a> tag
+    final before = html.lastIndexOf('<a', match.start);
+    final after = html.lastIndexOf('</a>', match.start);
+    if (before != -1 && after < before) continue;
 
-  // Write everything before the match
-  buffer.write(html.substring(lastIndex, match.start));
+    // Write everything before the match
+    buffer.write(html.substring(lastIndex, match.start));
 
-  // Remove trailing punctuation
-  final trimmed = url.replaceAll(RegExp(r'[.,)]+$'), '');
+    // Remove trailing punctuation
+    final trimmed = url.replaceAll(RegExp(r'[.,)]+$'), '');
 
-  // Determine the href (add https:// if missing)
-  final href = trimmed.startsWith(RegExp(r'https?://'))
-  ? trimmed
-      : trimmed.startsWith('www.')
-  ? 'https://$trimmed'
-      : 'https://$trimmed';
+    // Determine the href (add https:// if missing)
+    final href = trimmed.startsWith(RegExp(r'https?://'))
+        ? trimmed
+        : trimmed.startsWith('www.')
+        ? 'https://$trimmed'
+        : 'https://$trimmed';
 
-  // Write linkified version
-  buffer.write('<a href="$href">$trimmed</a>');
+    // Write linkified version
+    buffer.write('<a href="$href">$trimmed</a>');
 
-  lastIndex = match.end;
+    lastIndex = match.end;
   }
 
   buffer.write(html.substring(lastIndex));
   return buffer.toString();
-  }
-
-
-
+}

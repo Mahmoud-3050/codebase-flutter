@@ -10,7 +10,7 @@ import 'package:themes/themes.dart';
 abstract final class TextStyles {
   static TextStyle of({
     required double size,
-    FontWeight weight = FontWeight.w400,
+    FontWeight weight = .w400,
     Color? color,
     Color? backgroundColor,
     FontStyle? fontStyle,
@@ -28,7 +28,7 @@ abstract final class TextStyles {
     double? decorationThickness,
     String? fontFamily,
     List<String>? fontFamilyFallback,
-    TextOverflow overflow = TextOverflow.ellipsis,
+    TextOverflow overflow = .ellipsis,
     bool inherit = true,
     Paint? foreground,
     Paint? background,

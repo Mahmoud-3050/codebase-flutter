@@ -11,9 +11,9 @@ enum ValidatorLocale {
   /// Parse locale code string to [ValidatorLocale] enum (defaults to [ValidatorLocale.en]).
   static ValidatorLocale fromCode(String code) {
     if (code.trim().toLowerCase().startsWith('ar')) {
-      return ValidatorLocale.ar;
+      return .ar;
     }
-    return ValidatorLocale.en;
+    return .en;
   }
 
   // convert Locale dart:ui into ValidatorLocale

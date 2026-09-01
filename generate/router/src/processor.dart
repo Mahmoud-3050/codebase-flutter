@@ -26,7 +26,8 @@ class RouteProcessor {
       }
     } catch (e) {
       print(
-          '${GenerateConstants.redColorCode}Configuration Error: $e${GenerateConstants.resetColorCode}');
+        '${GenerateConstants.redColorCode}Configuration Error: $e${GenerateConstants.resetColorCode}',
+      );
       return false;
     }
 
@@ -52,17 +53,24 @@ class RouteProcessor {
         routeNames?.dashedCase ?? screenNames.dashedCase;
 
     print(
-        '${GenerateConstants.blueColorCode}Processing route update for $screenClass in feature $featureName...${GenerateConstants.resetColorCode}');
+      '${GenerateConstants.blueColorCode}Processing route update for $screenClass in feature $featureName...${GenerateConstants.resetColorCode}',
+    );
 
     bool changed = false;
 
     // 0. Handle Mode (6. Delete)
     if (data['delete'] == true) {
       print(
-          '${GenerateConstants.redColorCode}Mode: Delete. Removing $screenClass from $featureName...${GenerateConstants.resetColorCode}');
+        '${GenerateConstants.redColorCode}Mode: Delete. Removing $screenClass from $featureName...${GenerateConstants.resetColorCode}',
+      );
       changed = await CleanupHandler.cleanupOldRoute(
-          featureName, screenClass, screenSnake);
-      if (await CleanupHandler.cleanupAppRouteConstant(uniqueAppRouteConstant)) {
+        featureName,
+        screenClass,
+        screenSnake,
+      );
+      if (await CleanupHandler.cleanupAppRouteConstant(
+        uniqueAppRouteConstant,
+      )) {
         changed = true;
       }
       return changed;
@@ -74,33 +82,47 @@ class RouteProcessor {
       final String searchFeature = (oldFeatureNames ?? featureNames).snakeCase;
 
       print(
-          '${GenerateConstants.blueColorCode}Cleaning up old definition of $searchScreen in $searchFeature...${GenerateConstants.resetColorCode}');
-      bool cleaned = await CleanupHandler.cleanupOldRoute(searchFeature,
-          searchScreen, (oldScreenNames ?? screenNames).snakeCase);
+        '${GenerateConstants.blueColorCode}Cleaning up old definition of $searchScreen in $searchFeature...${GenerateConstants.resetColorCode}',
+      );
+      bool cleaned = await CleanupHandler.cleanupOldRoute(
+        searchFeature,
+        searchScreen,
+        (oldScreenNames ?? screenNames).snakeCase,
+      );
       if (cleaned) changed = true;
     }
 
     // 2. Global Check for existing
-    final existingInfo =
-        await GlobalChecker.findScreenDefinitionGlobally(screenClass);
+    final existingInfo = await GlobalChecker.findScreenDefinitionGlobally(
+      screenClass,
+    );
     if (existingInfo != null) {
       final String existingFeature = existingInfo['feature']!;
       if (existingFeature != featureName) {
         print(
-            '${GenerateConstants.orangeColorCode}Screen $screenClass is already routed in feature $existingFeature. Use "old_feature" if you want to move it.${GenerateConstants.resetColorCode}');
+          '${GenerateConstants.orangeColorCode}Screen $screenClass is already routed in feature $existingFeature. Use "old_feature" if you want to move it.${GenerateConstants.resetColorCode}',
+        );
         return changed;
       }
     }
 
     // 3. Update AppRoutes
     if (await AppRoutesHandler.updateAppRoutes(
-        uniqueAppRouteConstant, routePathValue)) {
+      uniqueAppRouteConstant,
+      routePathValue,
+    )) {
       changed = true;
     }
 
     // 4. Update/Create Feature Router
-    if (await FeatureRouterHandler.updateFeatureRouter(featureName, screenClass,
-        screenSnake, uniqueAppRouteConstant, uniqueRouteClass, argsMap)) {
+    if (await FeatureRouterHandler.updateFeatureRouter(
+      featureName,
+      screenClass,
+      screenSnake,
+      uniqueAppRouteConstant,
+      uniqueRouteClass,
+      argsMap,
+    )) {
       changed = true;
     }
 
@@ -111,7 +133,11 @@ class RouteProcessor {
 
     // 6. Generate/Update Screen File
     if (await ScreenGenerator.generateScreenFile(
-        featureName, screenClass, screenSnake, argsMap)) {
+      featureName,
+      screenClass,
+      screenSnake,
+      argsMap,
+    )) {
       changed = true;
     }
 

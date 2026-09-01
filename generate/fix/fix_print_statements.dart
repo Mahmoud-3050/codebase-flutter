@@ -43,22 +43,16 @@ Future<void> processFile(File file) async {
     final hasDartDeveloperImport = content.contains("import 'dart:developer';");
 
     // Replace print( with log(
-    content = content.replaceAllMapped(
-      RegExp(r'\bprint\s*\('),
-          (match) {
-        hasChanges = true;
-        return 'log(';
-      },
-    );
+    content = content.replaceAllMapped(RegExp(r'\bprint\s*\('), (match) {
+      hasChanges = true;
+      return 'log(';
+    });
 
     // Replace debugPrint( with log(
-    content = content.replaceAllMapped(
-      RegExp(r'\bdebugPrint\s*\('),
-          (match) {
-        hasChanges = true;
-        return 'log(';
-      },
-    );
+    content = content.replaceAllMapped(RegExp(r'\bdebugPrint\s*\('), (match) {
+      hasChanges = true;
+      return 'log(';
+    });
 
     // Add dart:developer import if needed and changes were made
     if (hasChanges && !hasDartDeveloperImport) {
@@ -68,7 +62,8 @@ Future<void> processFile(File file) async {
 
       if (match != null) {
         // Insert before the first import
-        content = "${content.substring(0, match.start)}import 'dart:developer';\n${content.substring(match.start)}";
+        content =
+            "${content.substring(0, match.start)}import 'dart:developer';\n${content.substring(match.start)}";
       } else {
         // No imports found, add at the beginning (after comments if any)
         final libraryPattern = RegExp(r'^library\s+\w+;', multiLine: true);
@@ -76,7 +71,8 @@ Future<void> processFile(File file) async {
 
         if (libraryMatch != null) {
           // Add after library declaration
-          content = "${content.substring(0, libraryMatch.end)}\n\nimport 'dart:developer';\n${content.substring(libraryMatch.end)}";
+          content =
+              "${content.substring(0, libraryMatch.end)}\n\nimport 'dart:developer';\n${content.substring(libraryMatch.end)}";
         } else {
           // Add at the very top
           content = "import 'dart:developer';\n\n$content";

@@ -17,9 +17,11 @@ void main() {
       expect(content, contains('class LoginRoute extends GoRouteData'));
       expect(content, contains('final String token;'));
       expect(
-          content,
-          contains(
-              'Widget build(BuildContext context, GoRouterState state) => LoginScreen(token: token);'));
+        content,
+        contains(
+          'Widget build(BuildContext context, GoRouterState state) => LoginScreen(token: token);',
+        ),
+      );
     });
 
     test('should handle empty args', () {
@@ -56,10 +58,14 @@ void main() {
         {},
       );
 
-      expect(content,
-          contains('void goSettings() => const SettingsRoute().go(this);'));
-      expect(content,
-          contains('void pushSettings() => const SettingsRoute().push(this);'));
+      expect(
+        content,
+        contains('void goSettings() => const SettingsRoute().go(this);'),
+      );
+      expect(
+        content,
+        contains('void pushSettings() => const SettingsRoute().push(this);'),
+      );
     });
   });
 }

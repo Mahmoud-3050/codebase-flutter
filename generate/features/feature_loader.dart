@@ -16,8 +16,9 @@ abstract class FeatureLoader {
       final Directory requestsDirectory = Directory(paths.featureJsonFilesPath);
 
       final List<File> jsonFiles = _getJsonFiles(requestsDirectory).toList();
-      final List<Map<String, dynamic>> jsonFilesData =
-          _getJsonFilesData(jsonFiles);
+      final List<Map<String, dynamic>> jsonFilesData = _getJsonFilesData(
+        jsonFiles,
+      );
 
       final List<Request> requests = _getFeatureRequests(
         jsonFiles: jsonFiles,
@@ -50,7 +51,8 @@ abstract class FeatureLoader {
   }
 
   static List<Map<String, dynamic>> _getJsonFilesData(
-      Iterable<File> jsonFiles) {
+    Iterable<File> jsonFiles,
+  ) {
     final List<Map<String, dynamic>> jsonDataList = [];
     for (final File file in jsonFiles) {
       final String jsonContent = file.readAsStringSync();

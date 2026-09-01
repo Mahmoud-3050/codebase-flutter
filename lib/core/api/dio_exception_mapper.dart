@@ -6,7 +6,7 @@ import 'status_code.dart';
 
 final class DioExceptionMapper {
   const DioExceptionMapper({String Function()? noInternetMessage})
-      : noInternetMessage = noInternetMessage ?? _defaultNoInternetMessage;
+    : noInternetMessage = noInternetMessage ?? _defaultNoInternetMessage;
 
   static final DioExceptionMapper instance = const DioExceptionMapper();
 
@@ -21,15 +21,15 @@ final class DioExceptionMapper {
       DioExceptionType.receiveTimeout ||
       DioExceptionType.transformTimeout ||
       DioExceptionType.connectionError ||
-      DioExceptionType.unknown =>
-        InternetConnectionException(message: noInternetMessage()),
+      DioExceptionType.unknown => InternetConnectionException(
+        message: noInternetMessage(),
+      ),
       DioExceptionType.badResponse => _mapResponse(error),
       DioExceptionType.badCertificate ||
-      DioExceptionType.cancel =>
-        ServerException(
-          message: error.message,
-          statusCode: error.response?.statusCode,
-        ),
+      DioExceptionType.cancel => ServerException(
+        message: error.message,
+        statusCode: error.response?.statusCode,
+      ),
     };
   }
 
@@ -42,10 +42,8 @@ final class DioExceptionMapper {
     }
     if (statusCode == StatusCode.movedPermanently) {
       return ServerException(
-        message: extractErrorMessage(
-              error.response?.data,
-              preferDataField: true,
-            ) ??
+        message:
+            extractErrorMessage(error.response?.data, preferDataField: true) ??
             message,
         statusCode: statusCode,
       );
@@ -54,10 +52,7 @@ final class DioExceptionMapper {
   }
 }
 
-String? extractErrorMessage(
-  dynamic data, {
-  bool preferDataField = false,
-}) {
+String? extractErrorMessage(dynamic data, {bool preferDataField = false}) {
   if (data is Map) {
     if (preferDataField && data['data'] != null) {
       return data['data'].toString();

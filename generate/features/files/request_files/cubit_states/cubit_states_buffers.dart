@@ -3,9 +3,7 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_buffers.dart';
 
-
-class CubitStatesRequestBuffers extends BaseRequestBuffers{
-  
+class CubitStatesRequestBuffers extends BaseRequestBuffers {
   @override
   StringBuffer generateImports({
     String featureNameSnakeCase = '',
@@ -17,7 +15,7 @@ class CubitStatesRequestBuffers extends BaseRequestBuffers{
     buffer.writeln("part of '${requestNameSnakeCase}_cubit.dart';");
     return buffer;
   }
-  
+
   @override
   StringBuffer generateBody({
     required Names featureNames,
@@ -28,38 +26,54 @@ class CubitStatesRequestBuffers extends BaseRequestBuffers{
     DartType? dataType = request.dartType;
     String modelClassName = request.modelClassNames.classCase;
 
-    buffer.writeln('sealed class ${responseClassName}State extends Equatable {');
+    buffer.writeln(
+      'sealed class ${responseClassName}State extends Equatable {',
+    );
     buffer.writeln('  const ${responseClassName}State();');
     buffer.writeln();
     buffer.writeln('  @override');
     buffer.writeln('  List<Object?> get props => <Object?>[];');
     buffer.writeln('}');
     buffer.writeln();
-    buffer.writeln('final class ${responseClassName}InitialState extends ${responseClassName}State {');
+    buffer.writeln(
+      'final class ${responseClassName}InitialState extends ${responseClassName}State {',
+    );
     buffer.writeln('  const ${responseClassName}InitialState();');
     buffer.writeln('}');
     buffer.writeln();
-    buffer.writeln('final class ${responseClassName}LoadingState extends ${responseClassName}State {');
+    buffer.writeln(
+      'final class ${responseClassName}LoadingState extends ${responseClassName}State {',
+    );
     buffer.writeln('  const ${responseClassName}LoadingState();');
     buffer.writeln('}');
     buffer.writeln();
-    buffer.writeln('final class ${responseClassName}SuccessState extends ${responseClassName}State {');
-    if(dataType != null){
-      buffer.writeln('  final ${dataType.typeName(modelClass: modelClassName)}${!dataType.isList? '?' : ''} data;');
+    buffer.writeln(
+      'final class ${responseClassName}SuccessState extends ${responseClassName}State {',
+    );
+    if (dataType != null) {
+      buffer.writeln(
+        '  final ${dataType.typeName(modelClass: modelClassName)}${!dataType.isList ? '?' : ''} data;',
+      );
       buffer.writeln();
-      buffer.writeln('  const ${responseClassName}SuccessState({required this.data});');
+      buffer.writeln(
+        '  const ${responseClassName}SuccessState({required this.data});',
+      );
       buffer.writeln();
       buffer.writeln('  @override');
       buffer.writeln('  List<Object?> get props => <Object?>[data];');
-    }else{
+    } else {
       buffer.writeln('  const ${responseClassName}SuccessState();');
     }
     buffer.writeln('}');
     buffer.writeln();
-    buffer.writeln('final class ${responseClassName}ErrorState extends ${responseClassName}State {');
+    buffer.writeln(
+      'final class ${responseClassName}ErrorState extends ${responseClassName}State {',
+    );
     buffer.writeln('  final String message;');
     buffer.writeln();
-    buffer.writeln('  const ${responseClassName}ErrorState({required this.message});');
+    buffer.writeln(
+      '  const ${responseClassName}ErrorState({required this.message});',
+    );
     buffer.writeln();
     buffer.writeln('  @override');
     buffer.writeln('  List<Object?> get props => <Object?>[message];');
@@ -67,5 +81,4 @@ class CubitStatesRequestBuffers extends BaseRequestBuffers{
 
     return buffer;
   }
-
 }

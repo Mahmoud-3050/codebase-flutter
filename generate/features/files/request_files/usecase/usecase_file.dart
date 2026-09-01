@@ -5,37 +5,47 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_file.dart';
 
-
-
-class UseCaseFile extends RequestFile{
-
+class UseCaseFile extends RequestFile {
   UseCaseFile({required super.file});
 
   @override
-  Future<void> generate({required Names featureNames, required Request request}) async {
+  Future<void> generate({
+    required Names featureNames,
+    required Request request,
+  }) async {
     final StringBuffer buffer = StringBuffer();
+
     ///-> File imports
-    buffer.writeln(request.buffers.useCase.generateImports(featureNameSnakeCase: featureNames.snakeCase, requestNameSnakeCase: request.names.snakeCase, hasParams: request.params != null).toString());
+    buffer.writeln(
+      request.buffers.useCase
+          .generateImports(
+            featureNameSnakeCase: featureNames.snakeCase,
+            requestNameSnakeCase: request.names.snakeCase,
+            hasParams: request.params != null,
+          )
+          .toString(),
+    );
 
     buffer.writeln();
 
     ///-> Class UseCase
-    buffer.writeln(request.buffers.useCase.generateBody(featureNames: featureNames, request: request).toString());
+    buffer.writeln(
+      request.buffers.useCase
+          .generateBody(featureNames: featureNames, request: request)
+          .toString(),
+    );
 
     ///-> Write file
     final File targetFile = createFile(file.path);
     await targetFile.writeAsString(buffer.toString());
   }
 
-
   @override
   Future<void> modify({required Names featureNames, required Request request}) {
     // TODO: implement modify
     throw UnimplementedError();
   }
-
 }
-
 
 // String generateUseCaseFile({
 //   required String name,

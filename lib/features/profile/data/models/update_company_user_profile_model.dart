@@ -15,7 +15,6 @@ class UpdateCompanyUserProfileModel extends UpdateCompanyUserProfileResponse {
       );
 }
 
-
 class CompanyModel extends Company {
   const CompanyModel({
     required super.id,
@@ -39,7 +38,9 @@ class CompanyModel extends Company {
   });
 
   factory CompanyModel.fromJson(Map<String, dynamic> json) => CompanyModel(
-    id: json['id'] != null? num.tryParse(json['id'].toString())?.toInt()?? 0: 0,
+    id: json['id'] != null
+        ? num.tryParse(json['id'].toString())?.toInt() ?? 0
+        : 0,
     firstName: json['first_name'] ?? '',
     secondName: json['second_name'] ?? '',
     lastName: json['last_name'] ?? '',
@@ -48,7 +49,9 @@ class CompanyModel extends Company {
     phone: json['phone'] ?? '',
     email: json['email'] ?? '',
     birthdate: json['birthdate'] ?? '',
-    cityId: json['city_id'] != null? num.tryParse(json['city_id'].toString())?.toInt()?? 0: 0,
+    cityId: json['city_id'] != null
+        ? num.tryParse(json['city_id'].toString())?.toInt() ?? 0
+        : 0,
     verifiedAt: json['verified_at'] ?? '',
     companyName: json['company_name'] ?? '',
     industry: json['industry'] ?? '',
@@ -58,8 +61,4 @@ class CompanyModel extends Company {
     createdAt: json['created_at'] ?? '',
     accessToken: json['access_token'] ?? '',
   );
-
 }
-
-
-

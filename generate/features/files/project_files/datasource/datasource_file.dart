@@ -5,34 +5,47 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../project_file.dart';
 
-class DatasourceFile extends ProjectFile{
+class DatasourceFile extends ProjectFile {
   bool isNoParamsImports = false;
 
   DatasourceFile({required super.file});
 
-
   @override
-  Future<void> generate({required Names featureNames, required List<Request> requests}) async{
+  Future<void> generate({
+    required Names featureNames,
+    required List<Request> requests,
+  }) async {
     final StringBuffer buffer = StringBuffer();
+
     ///-> File imports
     buffer.writeln("import '../../../../core/error/exceptions.dart';");
     buffer.writeln("import '../../../../injection_container.dart';");
 
     ///-> Func imports
-    for(Request request in requests){
-      buffer.write(request.buffers.datasource
-          .generateImports(featureNameSnakeCase: featureNames.snakeCase, requestNameSnakeCase: request.names.snakeCase, hasParams: request.params != null)
-          .toString());
+    for (Request request in requests) {
+      buffer.write(
+        request.buffers.datasource
+            .generateImports(
+              featureNameSnakeCase: featureNames.snakeCase,
+              requestNameSnakeCase: request.names.snakeCase,
+              hasParams: request.params != null,
+            )
+            .toString(),
+      );
     }
 
     ///-> Class Datasource
     buffer.writeln();
-    buffer.writeln('abstract class ${featureNames.classCase}RemoteDataSource {');
+    buffer.writeln(
+      'abstract class ${featureNames.classCase}RemoteDataSource {',
+    );
 
     ///-> Func
-    for(Request request in requests){
-      String func = request.buffers.datasource.generateBody(featureNames: featureNames, request: request)
-          .toString().split('***')
+    for (Request request in requests) {
+      String func = request.buffers.datasource
+          .generateBody(featureNames: featureNames, request: request)
+          .toString()
+          .split('***')
           .first;
       buffer.write(func);
     }
@@ -40,12 +53,16 @@ class DatasourceFile extends ProjectFile{
     buffer.writeln();
 
     ///-> Class Datasource impl
-    buffer.writeln('class ${featureNames.classCase}RemoteDataSourceImpl implements ${featureNames.classCase}RemoteDataSource {');
+    buffer.writeln(
+      'class ${featureNames.classCase}RemoteDataSourceImpl implements ${featureNames.classCase}RemoteDataSource {',
+    );
 
     ///-> Func impl
-    for(Request request in requests){
-      String funcImpl = request.buffers.datasource.generateBody(featureNames: featureNames, request: request)
-          .toString().split('***')
+    for (Request request in requests) {
+      String funcImpl = request.buffers.datasource
+          .generateBody(featureNames: featureNames, request: request)
+          .toString()
+          .split('***')
           .last;
       buffer.write(funcImpl);
     }
@@ -56,29 +73,34 @@ class DatasourceFile extends ProjectFile{
     await targetFile.writeAsString(buffer.toString());
   }
 
-
   @override
-  Future<void> modify({required Names featureNames, required List<Request> requests}) async{
+  Future<void> modify({
+    required Names featureNames,
+    required List<Request> requests,
+  }) async {
     List<String> lines = file.readAsLinesSync();
     final StringBuffer buffer = StringBuffer();
-    if(requests.isEmpty){
+    if (requests.isEmpty) {
       return;
     }
 
-    for(String line in lines){
+    for (String line in lines) {
       ///-> Func imports
-      if(line.contains('abstract class')){
-        for(Request request in requests){
-          List<String> importsLines = request
-              .buffers
-              .datasource
-              .generateImports(featureNameSnakeCase: featureNames.snakeCase, requestNameSnakeCase: request.names.snakeCase, hasParams: request.params != null)
+      if (line.contains('abstract class')) {
+        for (Request request in requests) {
+          List<String> importsLines = request.buffers.datasource
+              .generateImports(
+                featureNameSnakeCase: featureNames.snakeCase,
+                requestNameSnakeCase: request.names.snakeCase,
+                hasParams: request.params != null,
+              )
               .toString()
               .split('\n');
+
           ///-> Filter duplicated imports
-          for(String line in importsLines){
-            if(line.contains('core/usecases/usecases.dart')){
-              if(isNoParamsImports){
+          for (String line in importsLines) {
+            if (line.contains('core/usecases/usecases.dart')) {
+              if (isNoParamsImports) {
                 continue;
               }
               isNoParamsImports = true;
@@ -91,34 +113,34 @@ class DatasourceFile extends ProjectFile{
       buffer.writeln(line);
 
       ///-> Func
-      if(line.contains('abstract class')){
-        for(Request request in requests){
-          String func = request.buffers.datasource.generateBody(featureNames: featureNames, request: request)
-              .toString().split('***')
+      if (line.contains('abstract class')) {
+        for (Request request in requests) {
+          String func = request.buffers.datasource
+              .generateBody(featureNames: featureNames, request: request)
+              .toString()
+              .split('***')
               .first;
           buffer.write(func);
         }
       }
 
       ///-> Func impl
-      if(line.contains('implements')){
-        for(Request request in requests){
-          String funcImpl = request.buffers.datasource.generateBody(featureNames: featureNames, request: request)
-              .toString().split('***')
+      if (line.contains('implements')) {
+        for (Request request in requests) {
+          String funcImpl = request.buffers.datasource
+              .generateBody(featureNames: featureNames, request: request)
+              .toString()
+              .split('***')
               .last;
           buffer.write(funcImpl);
         }
       }
     }
 
-
     ///-> Rewrite file
     await file.writeAsString(buffer.toString());
   }
-
-
 }
-
 
 // void generateRemoteDatasourceFile({
 //   required String feature,
@@ -171,7 +193,6 @@ class DatasourceFile extends ProjectFile{
 //   //print('File generated: ${file.path}');
 // }
 
-
 void modifyRemoteDatasourceFile({
   required File file,
   required String feature,
@@ -183,32 +204,35 @@ void modifyRemoteDatasourceFile({
   List<String> lines = file.readAsLinesSync();
   int importsIndex = -1, functionsIndex = -1, functionsImplIndex = -1;
   int index = -1;
-  for(String line in lines){
+  for (String line in lines) {
     index++;
-    if(line == 'import \'../../../../core/error/exceptions.dart\';'){
+    if (line == 'import \'../../../../core/error/exceptions.dart\';') {
       importsIndex = index + 1;
     }
-    if(line == 'abstract class ${className}RemoteDataSource {'){
+    if (line == 'abstract class ${className}RemoteDataSource {') {
       functionsIndex = index + 1;
     }
 
-    if(line == 'class ${className}RemoteDataSourceImpl implements ${className}RemoteDataSource {'){
+    if (line ==
+        'class ${className}RemoteDataSourceImpl implements ${className}RemoteDataSource {') {
       functionsImplIndex = index + 1;
     }
 
-    if(line == 'import \'../../../../core/usecases/usecase.dart\';'){
+    if (line == 'import \'../../../../core/usecases/usecase.dart\';') {
       isCoreUseCaseImports = true;
     }
-
   }
 
   ///Imports StringBuffer
   final StringBuffer importsBuffer = StringBuffer();
-  for(Map<String, String?> item in filesImport){
-    if(item['entity'] != null){
-      importsBuffer.writeln('import \'../../domain/entities/${item['entity']}.dart\';');
+  for (Map<String, String?> item in filesImport) {
+    if (item['entity'] != null) {
+      importsBuffer.writeln(
+        'import \'../../domain/entities/${item['entity']}.dart\';',
+      );
     }
-    if(item['usecase'] == '../../../../core/usecases/usecases' && isCoreUseCaseImports){
+    if (item['usecase'] == '../../../../core/usecases/usecases' &&
+        isCoreUseCaseImports) {
       continue;
     }
     importsBuffer.writeln('import \'${item['usecase']}.dart\';');
@@ -216,25 +240,25 @@ void modifyRemoteDatasourceFile({
 
   ///Functions StringBuffer
   final StringBuffer functionsBuffer = StringBuffer();
-  for(final Map<String, StringBuffer> item in functions){
+  for (final Map<String, StringBuffer> item in functions) {
     functionsBuffer.write(item['datasourceFunc']);
   }
 
   ///FunctionsImpl StringBuffer
   final StringBuffer functionsImplBuffer = StringBuffer();
-  for(final Map<String, StringBuffer> item in functions){
+  for (final Map<String, StringBuffer> item in functions) {
     functionsImplBuffer.write(item['datasourceImplFunc']);
   }
 
   final StringBuffer contentsBuffer = StringBuffer();
   int i = -1;
-  for(String line in lines){
+  for (String line in lines) {
     i++;
-    if(i == importsIndex){
+    if (i == importsIndex) {
       contentsBuffer.write(importsBuffer.toString());
-    } else if(i == functionsIndex){
+    } else if (i == functionsIndex) {
       contentsBuffer.write(functionsBuffer.toString());
-    } else if(i == functionsImplIndex){
+    } else if (i == functionsImplIndex) {
       contentsBuffer.write(functionsImplBuffer.toString());
     }
     contentsBuffer.writeln(line);

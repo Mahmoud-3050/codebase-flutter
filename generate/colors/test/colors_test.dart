@@ -32,7 +32,7 @@ abstract final class ColorsPalettes {
   );
 
   static const ThemeConfig config = ThemeConfig(
-    defaultMode: ThemeMode.dark,
+    defaultMode: .dark,
     light: _light,
     dark: _dark,
   );
@@ -708,7 +708,7 @@ abstract final class ColorsPalettes {}
         colorKeys: _colorKeysFixture,
         json: <String, dynamic>{'testColor': '#5F17ED;#5F17FF'},
       );
-      expect(result.palettes.contains('defaultMode: ThemeMode.dark,'), isTrue);
+      expect(result.palettes.contains('defaultMode: .dark,'), isTrue);
     });
 
     test('creates _sharedExtra when missing and json has a single hex', () {

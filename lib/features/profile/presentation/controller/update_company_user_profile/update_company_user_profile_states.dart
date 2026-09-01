@@ -1,6 +1,5 @@
 part of 'update_company_user_profile_cubit.dart';
 
-
 sealed class UpdateCompanyUserProfileState extends Equatable {
   const UpdateCompanyUserProfileState();
 
@@ -8,15 +7,18 @@ sealed class UpdateCompanyUserProfileState extends Equatable {
   List<Object?> get props => <Object?>[];
 }
 
-final class UpdateCompanyUserProfileInitialState extends UpdateCompanyUserProfileState {
+final class UpdateCompanyUserProfileInitialState
+    extends UpdateCompanyUserProfileState {
   const UpdateCompanyUserProfileInitialState();
 }
 
-final class UpdateCompanyUserProfileLoadingState extends UpdateCompanyUserProfileState {
+final class UpdateCompanyUserProfileLoadingState
+    extends UpdateCompanyUserProfileState {
   const UpdateCompanyUserProfileLoadingState();
 }
 
-final class UpdateCompanyUserProfileSuccessState extends UpdateCompanyUserProfileState {
+final class UpdateCompanyUserProfileSuccessState
+    extends UpdateCompanyUserProfileState {
   final Company? data;
 
   const UpdateCompanyUserProfileSuccessState({required this.data});
@@ -25,7 +27,8 @@ final class UpdateCompanyUserProfileSuccessState extends UpdateCompanyUserProfil
   List<Object?> get props => <Object?>[data];
 }
 
-final class UpdateCompanyUserProfileErrorState extends UpdateCompanyUserProfileState {
+final class UpdateCompanyUserProfileErrorState
+    extends UpdateCompanyUserProfileState {
   final String message;
 
   const UpdateCompanyUserProfileErrorState({required this.message});
@@ -33,4 +36,3 @@ final class UpdateCompanyUserProfileErrorState extends UpdateCompanyUserProfileS
   @override
   List<Object?> get props => <Object?>[message];
 }
-

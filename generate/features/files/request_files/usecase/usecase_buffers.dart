@@ -3,8 +3,7 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_buffers.dart';
 
-class UseCaseRequestBuffers extends BaseRequestBuffers{
-  
+class UseCaseRequestBuffers extends BaseRequestBuffers {
   @override
   StringBuffer generateImports({
     String featureNameSnakeCase = '',
@@ -13,18 +12,22 @@ class UseCaseRequestBuffers extends BaseRequestBuffers{
     bool isDataModel = false,
   }) {
     final StringBuffer buffer = StringBuffer();
-    if(hasParams){
+    if (hasParams) {
       buffer.writeln('import \'package:equatable/equatable.dart\';');
     }
     buffer.writeln('import \'package:either/either.dart\';');
     buffer.writeln();
     buffer.writeln('import \'../../../../core/error/failures.dart\';');
     buffer.writeln('import \'../../../../core/usecases/usecase.dart\';');
-    buffer.writeln('import \'../entities/${requestNameSnakeCase}_response.dart\';');
-    buffer.writeln('import \'../repositories/${featureNameSnakeCase}_repo.dart\';');
+    buffer.writeln(
+      'import \'../entities/${requestNameSnakeCase}_response.dart\';',
+    );
+    buffer.writeln(
+      'import \'../repositories/${featureNameSnakeCase}_repo.dart\';',
+    );
     return buffer;
   }
-  
+
   @override
   StringBuffer generateBody({
     required Names featureNames,
@@ -34,56 +37,66 @@ class UseCaseRequestBuffers extends BaseRequestBuffers{
     String responseClassName = request.names.classCase;
     bool hasParams = request.params != null;
 
-
     ///-> UseCase Model
-    buffer.writeln(_generateUseCaseModel(
-      featureClassName: featureNames.classCase,
-      responseClassName: responseClassName,
-      responseNameCamelCase: request.names.camelCase,
-      hasParams: hasParams,
-    ).toString());
+    buffer.writeln(
+      _generateUseCaseModel(
+        featureClassName: featureNames.classCase,
+        responseClassName: responseClassName,
+        responseNameCamelCase: request.names.camelCase,
+        hasParams: hasParams,
+      ).toString(),
+    );
 
     ///-> Params Model
-    if(hasParams){
-      buffer.writeln(_generateParamsModel(
-        responseClassName: responseClassName,
-        params: request.params?? <String, dynamic>{},
-        paramsTerms: request.endpoint.terms,
-      ).toString());
+    if (hasParams) {
+      buffer.writeln(
+        _generateParamsModel(
+          responseClassName: responseClassName,
+          params: request.params ?? <String, dynamic>{},
+          paramsTerms: request.endpoint.terms,
+        ).toString(),
+      );
     }
-
 
     return buffer;
   }
-
-
 
   StringBuffer _generateUseCaseModel({
     required String featureClassName,
     required String responseClassName,
     required String responseNameCamelCase,
     required bool hasParams,
-  }){
+  }) {
     final StringBuffer buffer = StringBuffer();
     if (hasParams) {
-      buffer.writeln('class ${responseClassName}UseCase extends UseCase<${responseClassName}Response, ${responseClassName}Params> {');
+      buffer.writeln(
+        'class ${responseClassName}UseCase extends UseCase<${responseClassName}Response, ${responseClassName}Params> {',
+      );
     } else {
-      buffer.writeln('class ${responseClassName}UseCase extends UseCase<${responseClassName}Response, NoParams> {');
+      buffer.writeln(
+        'class ${responseClassName}UseCase extends UseCase<${responseClassName}Response, NoParams> {',
+      );
     }
 
     buffer.writeln('  final ${featureClassName}Repository repository;');
     buffer.writeln();
-    buffer.writeln('  ${responseClassName}UseCase({required this.repository});');
+    buffer.writeln(
+      '  ${responseClassName}UseCase({required this.repository});',
+    );
     buffer.writeln();
     buffer.writeln('  @override');
     if (hasParams) {
       buffer.writeln(
-          '  Future<Either<Failure, ${responseClassName}Response>> call(${responseClassName}Params params) async {');
+        '  Future<Either<Failure, ${responseClassName}Response>> call(${responseClassName}Params params) async {',
+      );
     } else {
       buffer.writeln(
-          '  Future<Either<Failure, ${responseClassName}Response>> call(NoParams params) async {');
+        '  Future<Either<Failure, ${responseClassName}Response>> call(NoParams params) async {',
+      );
     }
-    buffer.writeln('    return await repository.$responseNameCamelCase(params: params);');
+    buffer.writeln(
+      '    return await repository.$responseNameCamelCase(params: params);',
+    );
     buffer.writeln('  }');
     buffer.writeln('}');
     buffer.writeln();
@@ -94,12 +107,13 @@ class UseCaseRequestBuffers extends BaseRequestBuffers{
     required List<String> paramsTerms,
     required String responseClassName,
     required Map<String, dynamic> params,
-  }){
+  }) {
     final StringBuffer buffer = StringBuffer();
     buffer.writeln('class ${responseClassName}Params extends Equatable {');
 
     ///Attributes
-    Map<String, String> attributes = <String, String>{}; // example: key = id, value = int
+    Map<String, String> attributes =
+        <String, String>{}; // example: key = id, value = int
     params.forEach((String key, dynamic value) {
       final Names keyNames = Names.fromString(key);
       String valueInStr = getDartType(value);
@@ -118,16 +132,16 @@ class UseCaseRequestBuffers extends BaseRequestBuffers{
     ///ToJson
     buffer.writeln('  Map<String, dynamic> toJson() {');
     buffer.writeln('    final Map<String, dynamic> map = {};');
-    attributes.forEach((String key, String value){
+    attributes.forEach((String key, String value) {
       bool isParam = false;
-      for(String term in paramsTerms){
+      for (String term in paramsTerms) {
         // print('line[123]loop: key: $key, term: $term');
-        if(key == term.split('.').last.replaceAll('}', '')){
+        if (key == term.split('.').last.replaceAll('}', '')) {
           isParam = true;
           break;
         }
       }
-      if(!isParam){
+      if (!isParam) {
         final Names keyNames = Names.fromString(key);
         buffer.writeln('    if ($key != null) {');
         buffer.writeln("      map['${keyNames.snakeCase}'] = $key;");
@@ -150,5 +164,4 @@ class UseCaseRequestBuffers extends BaseRequestBuffers{
 
     return buffer;
   }
-
 }

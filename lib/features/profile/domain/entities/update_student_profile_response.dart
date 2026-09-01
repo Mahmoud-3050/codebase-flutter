@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class UpdateStudentProfileResponse extends Equatable{
+class UpdateStudentProfileResponse extends Equatable {
   final String status;
   final String message;
   final Student data;
@@ -12,13 +12,8 @@ class UpdateStudentProfileResponse extends Equatable{
   });
 
   @override
-  List<Object?> get props => <Object?>[
-    status,
-    message,
-    data,
-  ];
+  List<Object?> get props => <Object?>[status, message, data];
 }
-
 
 class Student extends Equatable {
   final int id;
@@ -134,7 +129,4 @@ class Student extends Equatable {
     verifiedAt,
     accessToken,
   ];
-
 }
-
-

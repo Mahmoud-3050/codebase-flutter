@@ -37,11 +37,9 @@ abstract class ProfileRemoteDataSource {
   Future<UpdateStudentProfileModel> updateStudentProfile({
     required UpdateStudentProfileParams params,
   });
-
 }
 
 class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
-
   @override
   Future<ChangeCompanyPasswordModel> changeCompanyPassword({
     required ChangeCompanyPasswordParams params,
@@ -53,15 +51,14 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         body: params.toJson(),
       );
 
-      if(response['status'] == 'success'){
+      if (response['status'] == 'success') {
         return ChangeCompanyPasswordModel.fromJson(response);
       }
-      throw ServerException(message: response['message']?? '');
+      throw ServerException(message: response['message'] ?? '');
     } catch (error) {
       rethrow;
     }
   }
-
 
   @override
   Future<UpdateCompanyUserProfileModel> updateCompanyUserProfile({
@@ -74,15 +71,14 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         body: params.toJson(),
       );
 
-      if(response['status'] == 'success'){
+      if (response['status'] == 'success') {
         return UpdateCompanyUserProfileModel.fromJson(response);
       }
-      throw ServerException(message: response['message']?? '');
+      throw ServerException(message: response['message'] ?? '');
     } catch (error) {
       rethrow;
     }
   }
-
 
   @override
   Future<ChangeStudentPasswordModel> changeStudentPassword({
@@ -95,51 +91,44 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         body: params.toJson(),
       );
 
-      if(response['status'] == 'success'){
+      if (response['status'] == 'success') {
         return ChangeStudentPasswordModel.fromJson(response);
       }
-      throw ServerException(message: response['message']?? '');
+      throw ServerException(message: response['message'] ?? '');
     } catch (error) {
       rethrow;
     }
   }
-
 
   @override
   Future<GetCompanyProfileModel> getCompanyProfile() async {
     try {
       const String getCompanyProfileEndpoint = '/company/profile/edit';
-      final dynamic response = await dioConsumer.get(
-        getCompanyProfileEndpoint,
-      );
+      final dynamic response = await dioConsumer.get(getCompanyProfileEndpoint);
 
-      if(response['status'] == 'success'){
+      if (response['status'] == 'success') {
         return GetCompanyProfileModel.fromJson(response);
       }
-      throw ServerException(message: response['message']?? '');
+      throw ServerException(message: response['message'] ?? '');
     } catch (error) {
       rethrow;
     }
   }
-
 
   @override
   Future<GetStudentProfileModel> getStudentProfile() async {
     try {
       const String getStudentProfileEndpoint = '/student/profile/edit';
-      final dynamic response = await dioConsumer.get(
-        getStudentProfileEndpoint,
-      );
+      final dynamic response = await dioConsumer.get(getStudentProfileEndpoint);
 
-      if(response['status'] == 'success'){
+      if (response['status'] == 'success') {
         return GetStudentProfileModel.fromJson(response);
       }
-      throw ServerException(message: response['message']?? '');
+      throw ServerException(message: response['message'] ?? '');
     } catch (error) {
       rethrow;
     }
   }
-
 
   @override
   Future<UpdateCompanyProfileModel> updateCompanyProfile({
@@ -152,15 +141,14 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         body: params.toJson(),
       );
 
-      if(response['status'] == 'success'){
+      if (response['status'] == 'success') {
         return UpdateCompanyProfileModel.fromJson(response);
       }
-      throw ServerException(message: response['message']?? '');
+      throw ServerException(message: response['message'] ?? '');
     } catch (error) {
       rethrow;
     }
   }
-
 
   @override
   Future<UpdateStudentProfileModel> updateStudentProfile({
@@ -173,13 +161,12 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
         body: params.toJson(),
       );
 
-      if(response['status'] == 'success'){
+      if (response['status'] == 'success') {
         return UpdateStudentProfileModel.fromJson(response);
       }
-      throw ServerException(message: response['message']?? '');
+      throw ServerException(message: response['message'] ?? '');
     } catch (error) {
       rethrow;
     }
   }
-
 }

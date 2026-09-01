@@ -1,6 +1,12 @@
 enum DeviceType {
   android,
-  ios,
+  ios;
+
+  bool get isAndroid => this == android;
+  bool get isIOS => this == ios;
+
+  static DeviceType fromString(String value) =>
+      DeviceType.values.firstWhere((DeviceType element) => element.name == value, orElse: () => .android);
 }
 
 enum UserType {
@@ -13,24 +19,11 @@ enum UserType {
 
 enum AppUpdateType {
   flexible,
-  immediately,
-}
+  immediately;
 
-enum JobLocationType {
-  inPerson(title: 'In-Person', paramKey: 'in-person'),
-  remote(title: 'Remote', paramKey: 'remote');
+  bool get isFlexible => this == flexible;
+  bool get isImmediately => this == immediately;
 
-  final String title;
-  final String paramKey;
-
-  const JobLocationType({
-    required this.title,
-    required this.paramKey,
-  });
-
-  bool get isRemote => this == remote;
-
-  static JobLocationType fromString(String value) => JobLocationType.values
-      .firstWhere((JobLocationType element) => element.paramKey == value,
-          orElse: () => JobLocationType.inPerson);
+  static AppUpdateType fromString(String value) =>
+      AppUpdateType.values.firstWhere((AppUpdateType element) => element.name == value, orElse: () => .flexible);
 }

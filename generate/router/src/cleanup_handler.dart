@@ -6,7 +6,10 @@ import 'app_router_handler.dart';
 
 class CleanupHandler {
   static Future<bool> cleanupOldRoute(
-      String feature, String screenClass, String screenSnake) async {
+    String feature,
+    String screenClass,
+    String screenSnake,
+  ) async {
     bool changed = false;
     final String routerPath =
         'lib/features/$feature/presentation/navigation/router.dart';
@@ -16,38 +19,52 @@ class CleanupHandler {
       String content = await routerFile.readAsString();
       int initialLen = content.length;
 
-      final String screenBase =
-          screenClass.replaceAll('Screen', '').replaceAll('Page', '');
+      final String screenBase = screenClass
+          .replaceAll('Screen', '')
+          .replaceAll('Page', '');
 
       // Try multiple class name patterns
-      content = RouterUtils.removeBlock(content,
-          'class ${NamesHelper.snakeToClassCase(feature)}${screenClass}Route');
-      content = RouterUtils.removeBlock(content,
-          'class ${NamesHelper.snakeToClassCase(feature)}${screenBase}Route');
+      content = RouterUtils.removeBlock(
+        content,
+        'class ${NamesHelper.snakeToClassCase(feature)}${screenClass}Route',
+      );
+      content = RouterUtils.removeBlock(
+        content,
+        'class ${NamesHelper.snakeToClassCase(feature)}${screenBase}Route',
+      );
       content = RouterUtils.removeBlock(content, 'class ${screenClass}Route');
       content = RouterUtils.removeBlock(content, 'class ${screenBase}Route');
 
       // Remove Import
-      content =
-          content.replaceFirst("import '../pages/$screenSnake.dart';", '');
       content = content.replaceFirst(
-          "import '../pages/${screenSnake.replaceAll('_screen', '')}.dart';",
-          '');
+        "import '../pages/$screenSnake.dart';",
+        '',
+      );
       content = content.replaceFirst(
-          "import '../pages/${screenSnake.replaceAll('_page', '')}.dart';", '');
+        "import '../pages/${screenSnake.replaceAll('_screen', '')}.dart';",
+        '',
+      );
+      content = content.replaceFirst(
+        "import '../pages/${screenSnake.replaceAll('_page', '')}.dart';",
+        '',
+      );
 
       // Remove old navigation methods (to, go, push)
       content = content.replaceAll(
-          RegExp('void (to|go|push)$screenBase\\s*\\(.*?\\)\\s*(=>|{).*?;',
-              dotAll: true),
-          '');
+        RegExp(
+          'void (to|go|push)$screenBase\\s*\\(.*?\\)\\s*(=>|{).*?;',
+          dotAll: true,
+        ),
+        '',
+      );
 
       content = content.replaceAll(RegExp(r'\n{3,}'), '\n\n');
 
       if (content.length != initialLen) {
         await routerFile.writeAsString(content);
         print(
-            '${GenerateConstants.greenColorCode}Removed $screenClass from $routerPath${GenerateConstants.resetColorCode}');
+          '${GenerateConstants.greenColorCode}Removed $screenClass from $routerPath${GenerateConstants.resetColorCode}',
+        );
         changed = true;
       }
 
@@ -56,8 +73,10 @@ class CleanupHandler {
         bool featureChanged = false;
 
         // Remove part directive
-        String updatedContent =
-            content.replaceAll(RegExp(r"part\s+'router\.g\.dart';\s*\n?"), '');
+        String updatedContent = content.replaceAll(
+          RegExp(r"part\s+'router\.g\.dart';\s*\n?"),
+          '',
+        );
         if (updatedContent.length != content.length) {
           featureChanged = true;
           content = updatedContent;
@@ -70,17 +89,20 @@ class CleanupHandler {
         }
 
         // Delete the .g.dart file
-        final File gFile =
-            File('lib/features/$feature/presentation/navigation/router.g.dart');
+        final File gFile = File(
+          'lib/features/$feature/presentation/navigation/router.g.dart',
+        );
         if (gFile.existsSync()) {
           gFile.deleteSync();
           print(
-              '${GenerateConstants.greenColorCode}Deleted router.g.dart for $feature${GenerateConstants.resetColorCode}');
+            '${GenerateConstants.greenColorCode}Deleted router.g.dart for $feature${GenerateConstants.resetColorCode}',
+          );
           changed = true;
         }
 
         print(
-            '${GenerateConstants.orangeColorCode}Feature $feature has no more routes. Cleaning up app_router.dart...${GenerateConstants.resetColorCode}');
+          '${GenerateConstants.orangeColorCode}Feature $feature has no more routes. Cleaning up app_router.dart...${GenerateConstants.resetColorCode}',
+        );
         await AppRouterHandler.cleanupFeatureFromAppRouter(feature);
       }
     }
@@ -91,7 +113,8 @@ class CleanupHandler {
     if (screenFile.existsSync()) {
       screenFile.deleteSync();
       print(
-          '${GenerateConstants.greenColorCode}Deleted old screen file $screenPath${GenerateConstants.resetColorCode}');
+        '${GenerateConstants.greenColorCode}Deleted old screen file $screenPath${GenerateConstants.resetColorCode}',
+      );
       changed = true;
     }
 
@@ -123,7 +146,8 @@ class CleanupHandler {
       content = content.replaceAll(RegExp(r'\n{3,}'), '\n\n');
       await file.writeAsString(content);
       print(
-          '${GenerateConstants.greenColorCode}Removed AppRoutes constant(s)${GenerateConstants.resetColorCode}');
+        '${GenerateConstants.greenColorCode}Removed AppRoutes constant(s)${GenerateConstants.resetColorCode}',
+      );
       return true;
     }
     return false;

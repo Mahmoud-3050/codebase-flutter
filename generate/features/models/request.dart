@@ -43,7 +43,11 @@ class Request {
     required this.endpoint,
     required this.type,
     required this.hasToken,
-    required this.response, required this.buffers, required this.files, required this.mode, this.params,
+    required this.response,
+    required this.buffers,
+    required this.files,
+    required this.mode,
+    this.params,
   });
 
   factory Request.init({
@@ -52,7 +56,10 @@ class Request {
     required Map<String, dynamic> json,
   }) {
     final Names names = Names.fromString(json['name']?.toString() ?? '');
-    final Names modelClassNames = _resolveModelClassNames(names, json['model_class']);
+    final Names modelClassNames = _resolveModelClassNames(
+      names,
+      json['model_class'],
+    );
 
     DartType? dartType;
     if (json['response'] != null && json['response']['data'] != null) {
@@ -67,8 +74,10 @@ class Request {
       terms: const [],
     );
 
-    final String testProjectPath =
-        featureProjectPath.replaceAll('lib/features', 'test/features');
+    final String testProjectPath = featureProjectPath.replaceAll(
+      'lib/features',
+      'test/features',
+    );
 
     final RequestBuffers buffers = _buildRequestBuffers();
     final RequestFiles files = _buildRequestFiles(
@@ -86,11 +95,13 @@ class Request {
       modelClassNames: modelClassNames,
       dartType: dartType,
       endpoint: endpointModel,
-      type: RequestTypeExtension.fromString(json['type']?.toString() ?? '') ??
+      type:
+          RequestTypeExtension.fromString(json['type']?.toString() ?? '') ??
           RequestType.get,
       hasToken: (json['token'] as bool?) ?? false,
       params: json['params'] as Map<String, dynamic>?,
-      response: (json['response'] as Map<String, dynamic>?) ??
+      response:
+          (json['response'] as Map<String, dynamic>?) ??
           <String, dynamic>{'status': true, 'message': '', 'data': null},
       buffers: buffers,
       files: files,
@@ -102,12 +113,13 @@ class Request {
     final Map<String, dynamic> jsonMap =
         jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
     jsonMap['mode'] = 0;
-    file.writeAsStringSync(
-      const JsonEncoder.withIndent('  ').convert(jsonMap),
-    );
+    file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(jsonMap));
   }
 
-  static Names _resolveModelClassNames(Names requestNames, dynamic rawModelClass) {
+  static Names _resolveModelClassNames(
+    Names requestNames,
+    dynamic rawModelClass,
+  ) {
     if (rawModelClass != null && rawModelClass.toString().trim().isNotEmpty) {
       return Names.fromString(rawModelClass.toString());
     }
@@ -139,22 +151,31 @@ class Request {
   }) {
     final String snake = names.snakeCase;
     return RequestFiles(
-      entity: File('$featureProjectPath/domain/entities/${snake}_response.dart'),
+      entity: File(
+        '$featureProjectPath/domain/entities/${snake}_response.dart',
+      ),
       model: File('$featureProjectPath/data/models/${snake}_model.dart'),
-      useCase: File('$featureProjectPath/domain/usecases/${snake}_usecase.dart'),
+      useCase: File(
+        '$featureProjectPath/domain/usecases/${snake}_usecase.dart',
+      ),
       cubit: File(
-          '$featureProjectPath/presentation/controller/$snake/${snake}_cubit.dart'),
+        '$featureProjectPath/presentation/controller/$snake/${snake}_cubit.dart',
+      ),
       cubitStates: File(
-          '$featureProjectPath/presentation/controller/$snake/${snake}_states.dart'),
+        '$featureProjectPath/presentation/controller/$snake/${snake}_states.dart',
+      ),
       cubitTest: File(
-          '$testProjectPath/presentation/controller/$snake/${snake}_cubit_test.dart'),
-      useCaseTest: File('$testProjectPath/domain/usecases/${snake}_usecase_test.dart'),
-      repositoryTest:
-          File('$testProjectPath/data/repositories/${snake}_repository_test.dart'),
-      datasourceTest:
-          File('$testProjectPath/data/datasources/${snake}_datasource_test.dart'),
+        '$testProjectPath/presentation/controller/$snake/${snake}_cubit_test.dart',
+      ),
+      useCaseTest: File(
+        '$testProjectPath/domain/usecases/${snake}_usecase_test.dart',
+      ),
+      repositoryTest: File(
+        '$testProjectPath/data/repositories/${snake}_repository_test.dart',
+      ),
+      datasourceTest: File(
+        '$testProjectPath/data/datasources/${snake}_datasource_test.dart',
+      ),
     );
   }
 }
-
-

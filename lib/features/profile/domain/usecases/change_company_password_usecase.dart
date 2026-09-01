@@ -6,18 +6,20 @@ import '../../../../core/usecases/usecase.dart';
 import '../entities/change_company_password_response.dart';
 import '../repositories/profile_repo.dart';
 
-
-class ChangeCompanyPasswordUseCase extends UseCase<ChangeCompanyPasswordResponse, ChangeCompanyPasswordParams> {
+class ChangeCompanyPasswordUseCase
+    extends
+        UseCase<ChangeCompanyPasswordResponse, ChangeCompanyPasswordParams> {
   final ProfileRepository repository;
 
   ChangeCompanyPasswordUseCase({required this.repository});
 
   @override
-  Future<Either<Failure, ChangeCompanyPasswordResponse>> call(ChangeCompanyPasswordParams params) async {
+  Future<Either<Failure, ChangeCompanyPasswordResponse>> call(
+    ChangeCompanyPasswordParams params,
+  ) async {
     return await repository.changeCompanyPassword(params: params);
   }
 }
-
 
 class ChangeCompanyPasswordParams extends Equatable {
   final String? oldPassword;
@@ -50,8 +52,4 @@ class ChangeCompanyPasswordParams extends Equatable {
     newPassword,
     newPasswordConfirmation,
   ];
-
 }
-
-
-

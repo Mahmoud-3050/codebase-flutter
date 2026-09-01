@@ -13,14 +13,13 @@ class DeleteAccountDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+      padding: .symmetric(horizontal: 16.w, vertical: 20.h),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           Text(
             Strings.deleteAccount,
-            style: TextStyles.of(
-                size: 18, weight: FontWeight.w600, color: colors.error),
+            style: TextStyles.of(size: 18, weight: .w600, color: colors.error),
           ),
           SizedBox(height: 16.h),
           Text(
@@ -68,14 +67,13 @@ class ConfirmDeleteAccountDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = context.colors;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+      padding: .symmetric(horizontal: 16.w, vertical: 20.h),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           Text(
             Strings.confirmDeleteAccount,
-            style: TextStyles.of(
-                size: 18, weight: FontWeight.w600, color: colors.error),
+            style: TextStyles.of(size: 18, weight: .w600, color: colors.error),
           ),
           SizedBox(height: 16.h),
           Text(

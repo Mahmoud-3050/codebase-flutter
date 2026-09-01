@@ -12,6 +12,3 @@ class ChangeCompanyPasswordModel extends ChangeCompanyPasswordResponse {
         message: json['message'] ?? '',
       );
 }
-
-
-

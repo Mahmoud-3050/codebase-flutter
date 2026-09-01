@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-class UpdateCompanyProfileResponse extends Equatable{
+class UpdateCompanyProfileResponse extends Equatable {
   final String status;
   final String message;
   final Company data;
@@ -12,13 +12,8 @@ class UpdateCompanyProfileResponse extends Equatable{
   });
 
   @override
-  List<Object?> get props => <Object?>[
-    status,
-    message,
-    data,
-  ];
+  List<Object?> get props => <Object?>[status, message, data];
 }
-
 
 class Company extends Equatable {
   final int id;
@@ -124,7 +119,4 @@ class Company extends Equatable {
     createdAt,
     accessToken,
   ];
-
 }
-
-

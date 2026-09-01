@@ -11,8 +11,7 @@ import 'enums.dart';
 String _padTwoDigits(int value) => value.toString().padLeft(2, '0');
 
 extension DateTimeExtension on DateTime {
-  String get displayFormat =>
-      '$year-${_padTwoDigits(month)}-${_padTwoDigits(day)}';
+  String get displayFormat => '$year-${_padTwoDigits(month)}-${_padTwoDigits(day)}';
 
   String get displayTimeFormat =>
       '$year-${_padTwoDigits(month)}-${_padTwoDigits(day)} '
@@ -54,10 +53,7 @@ extension StringExtension on String {
       throw Exception('Could not launch $this');
     }
     if (await canLaunchUrl(uri)) {
-      await launchUrl(
-        uri,
-        mode: LaunchMode.externalApplication,
-      );
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     } else {
       throw Exception('Could not launch $this');
     }
@@ -89,31 +85,21 @@ extension FormDataExtension on FormData {
 
 extension UserTypeExtension on UserType {
   static UserType fromString(String value) =>
-      UserType.values.firstWhere((UserType element) => element.name == value,
-          orElse: () => UserType.firstOpen);
+      UserType.values.firstWhere((UserType element) => element.name == value, orElse: () => .firstOpen);
 }
 
 extension AppUpdateTypeExtension on AppUpdateType {
-  static AppUpdateType fromString(String value) => AppUpdateType.values
-      .firstWhere((AppUpdateType element) => element.name == value,
-          orElse: () => AppUpdateType.immediately);
+  static AppUpdateType fromString(String value) =>
+      AppUpdateType.values.firstWhere((AppUpdateType element) => element.name == value, orElse: () => .immediately);
 }
 
 extension ColorFilterExtension on ColorFilter {
   static ColorFilter getFocusColor(FocusNode focusNode) {
-    return ColorFilter.mode(
-      focusNode.hasFocus
-          ? Themes.instance.colors.primary
-          : Themes.instance.colors.hint,
-      BlendMode.srcIn,
-    );
+    return ColorFilter.mode(focusNode.hasFocus ? Themes.instance.colors.primary : Themes.instance.colors.hint, .srcIn);
   }
 
   static ColorFilter setColor(Color color) {
-    return ColorFilter.mode(
-      color,
-      BlendMode.srcIn,
-    );
+    return ColorFilter.mode(color, .srcIn);
   }
 }
 
@@ -150,17 +136,8 @@ extension CircularProgressIndicatorExtension on CircularProgressIndicator {
 extension TextEditingControllerExtension on TextEditingController {
   void get fixCursorErrorOfLastIndex {
     addListener(() {
-      if (selection ==
-          TextSelection.fromPosition(
-            TextPosition(
-              offset: text.length - 1,
-            ),
-          )) {
-        selection = TextSelection.fromPosition(
-          TextPosition(
-            offset: text.length,
-          ),
-        );
+      if (selection == TextSelection.fromPosition(TextPosition(offset: text.length - 1))) {
+        selection = TextSelection.fromPosition(TextPosition(offset: text.length));
       }
     });
   }

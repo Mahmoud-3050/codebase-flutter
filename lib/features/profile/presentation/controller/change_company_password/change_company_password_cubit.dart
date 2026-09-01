@@ -12,25 +12,34 @@ part 'change_company_password_states.dart';
 class ChangeCompanyPasswordCubit extends Cubit<ChangeCompanyPasswordState> {
   final ChangeCompanyPasswordUseCase changeCompanyPasswordUseCase;
 
-  ChangeCompanyPasswordCubit(this.changeCompanyPasswordUseCase) : super(const ChangeCompanyPasswordInitialState());
-
+  ChangeCompanyPasswordCubit(this.changeCompanyPasswordUseCase)
+    : super(const ChangeCompanyPasswordInitialState());
 
   Future<void> fChangeCompanyPassword({
-   required String oldPassword,
-   required String newPassword,
-   required String newPasswordConfirmation,
+    required String oldPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
   }) async {
     emit(const ChangeCompanyPasswordLoadingState());
-    final Either<Failure, ChangeCompanyPasswordResponse> eitherResult = await changeCompanyPasswordUseCase(ChangeCompanyPasswordParams(
-      oldPassword: oldPassword,
-      newPassword: newPassword,
-      newPasswordConfirmation: newPasswordConfirmation,
-    ));
-    eitherResult.fold((Failure failure) {
-      emit(ChangeCompanyPasswordErrorState(message: failure.message?? Strings.pleaseTryAgainLater));
-    }, (ChangeCompanyPasswordResponse response) {
-      emit(const ChangeCompanyPasswordSuccessState());
-    });
+    final Either<Failure, ChangeCompanyPasswordResponse> eitherResult =
+        await changeCompanyPasswordUseCase(
+          ChangeCompanyPasswordParams(
+            oldPassword: oldPassword,
+            newPassword: newPassword,
+            newPasswordConfirmation: newPasswordConfirmation,
+          ),
+        );
+    eitherResult.fold(
+      (Failure failure) {
+        emit(
+          ChangeCompanyPasswordErrorState(
+            message: failure.message ?? Strings.pleaseTryAgainLater,
+          ),
+        );
+      },
+      (ChangeCompanyPasswordResponse response) {
+        emit(const ChangeCompanyPasswordSuccessState());
+      },
+    );
   }
 }
-

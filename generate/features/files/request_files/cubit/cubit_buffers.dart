@@ -4,8 +4,7 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_buffers.dart';
 
-class CubitRequestBuffers extends BaseRequestBuffers{
-  
+class CubitRequestBuffers extends BaseRequestBuffers {
   @override
   StringBuffer generateImports({
     String featureNameSnakeCase = '',
@@ -20,16 +19,20 @@ class CubitRequestBuffers extends BaseRequestBuffers{
     buffer.writeln();
     buffer.writeln("import '../../../../../core/error/failures.dart';");
     buffer.writeln("import '../../../../../config/language/strings.dart';");
-    if(!hasParams){
+    if (!hasParams) {
       buffer.writeln("import '../../../../../core/usecases/usecase.dart';");
     }
-    buffer.writeln("import '../../../domain/usecases/${requestNameSnakeCase}_usecase.dart';");
-    buffer.writeln("import '../../../domain/entities/${requestNameSnakeCase}_response.dart';");
+    buffer.writeln(
+      "import '../../../domain/usecases/${requestNameSnakeCase}_usecase.dart';",
+    );
+    buffer.writeln(
+      "import '../../../domain/entities/${requestNameSnakeCase}_response.dart';",
+    );
     buffer.writeln();
     buffer.writeln("part '${requestNameSnakeCase}_states.dart';");
     return buffer;
   }
-  
+
   @override
   StringBuffer generateBody({
     required Names featureNames,
@@ -40,10 +43,16 @@ class CubitRequestBuffers extends BaseRequestBuffers{
     String responseNameCamelCase = request.names.camelCase;
     bool hasParams = request.params != null;
     DartType? dataType = request.dartType;
-    buffer.writeln('class ${responseClassName}Cubit extends Cubit<${responseClassName}State> {');
-    buffer.writeln('  final ${responseClassName}UseCase ${responseNameCamelCase}UseCase;');
+    buffer.writeln(
+      'class ${responseClassName}Cubit extends Cubit<${responseClassName}State> {',
+    );
+    buffer.writeln(
+      '  final ${responseClassName}UseCase ${responseNameCamelCase}UseCase;',
+    );
     buffer.writeln();
-    buffer.writeln('  ${responseClassName}Cubit(this.${responseNameCamelCase}UseCase) : super(const ${responseClassName}InitialState());');
+    buffer.writeln(
+      '  ${responseClassName}Cubit(this.${responseNameCamelCase}UseCase) : super(const ${responseClassName}InitialState());',
+    );
     buffer.writeln();
     // if(dataType != null){
     //   if(dataType.startsWith('List')){
@@ -55,32 +64,39 @@ class CubitRequestBuffers extends BaseRequestBuffers{
     //   }
     // }
 
-
     buffer.writeln();
-    if(hasParams){
+    if (hasParams) {
       buffer.writeln('  Future<void> f$responseClassName({');
       request.params?.forEach((String key, dynamic value) {
         final Names keyNames = Names.fromString(key);
-        buffer.writeln('   required ${getDartType(value)} ${keyNames.camelCase},');
+        buffer.writeln(
+          '   required ${getDartType(value)} ${keyNames.camelCase},',
+        );
       });
       buffer.writeln('  }) async {');
-    }else{
+    } else {
       buffer.writeln('  Future<void> f$responseClassName() async {');
     }
 
     buffer.writeln('    emit(const ${responseClassName}LoadingState());');
-    if(hasParams){
-      buffer.writeln('    final Either<Failure, ${responseClassName}Response> eitherResult = await ${responseNameCamelCase}UseCase(${responseClassName}Params(');
+    if (hasParams) {
+      buffer.writeln(
+        '    final Either<Failure, ${responseClassName}Response> eitherResult = await ${responseNameCamelCase}UseCase(${responseClassName}Params(',
+      );
       request.params?.forEach((String key, dynamic value) {
         final Names keyNames = Names.fromString(key);
         buffer.writeln('      ${keyNames.camelCase}: ${keyNames.camelCase},');
       });
       buffer.writeln('    ));');
-    }else {
-      buffer.writeln('    final Either<Failure, ${responseClassName}Response> eitherResult = await ${responseNameCamelCase}UseCase(NoParams());');
+    } else {
+      buffer.writeln(
+        '    final Either<Failure, ${responseClassName}Response> eitherResult = await ${responseNameCamelCase}UseCase(NoParams());',
+      );
     }
     buffer.writeln('    eitherResult.fold((Failure failure) {');
-    buffer.writeln('      emit(${responseClassName}ErrorState(message: failure.message?? Strings.pleaseTryAgainLater));');
+    buffer.writeln(
+      '      emit(${responseClassName}ErrorState(message: failure.message?? Strings.pleaseTryAgainLater));',
+    );
     buffer.writeln('    }, (${responseClassName}Response response) {');
     // if(dataType != null){
     //   if(dataType.startsWith('List')){
@@ -95,9 +111,11 @@ class CubitRequestBuffers extends BaseRequestBuffers{
     //   buffer.writeln('      emit(const ${responseClassName}SuccessState());');
     // }
 
-    if(dataType != null){
-      buffer.writeln('      emit(${responseClassName}SuccessState(data: response.data));');
-    }else{
+    if (dataType != null) {
+      buffer.writeln(
+        '      emit(${responseClassName}SuccessState(data: response.data));',
+      );
+    } else {
       buffer.writeln('      emit(const ${responseClassName}SuccessState());');
     }
 
@@ -105,8 +123,6 @@ class CubitRequestBuffers extends BaseRequestBuffers{
     buffer.writeln('  }');
     buffer.writeln('}');
 
-
     return buffer;
   }
-
 }

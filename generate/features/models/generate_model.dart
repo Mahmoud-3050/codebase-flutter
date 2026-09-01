@@ -1,7 +1,6 @@
 import '../../utils/functions.dart';
 import 'names.dart';
 
-
 class GenerateModel {
   final Names names;
   final Map<String, dynamic> map;
@@ -39,8 +38,10 @@ class GenerateModel {
         if (list.isNotEmpty) {
           if (list[0] is Map) {
             keyNames = keyNames.copyWith(
-              classCase: keyNames.classCase
-                  .substring(0, keyNames.classCase.length - 1),
+              classCase: keyNames.classCase.substring(
+                0,
+                keyNames.classCase.length - 1,
+              ),
             );
             dartType = 'List<${keyNames.classCase}>';
           }
@@ -62,10 +63,14 @@ class GenerateModel {
     }
 
     ///-> Buffers
-    final StringBuffer entityBuffer =
-        _generateEntity(names: names, attributes: attributes);
-    final StringBuffer modelBuffer =
-        _generateModel(names: names, attributes: attributes);
+    final StringBuffer entityBuffer = _generateEntity(
+      names: names,
+      attributes: attributes,
+    );
+    final StringBuffer modelBuffer = _generateModel(
+      names: names,
+      attributes: attributes,
+    );
 
     return GenerateModel(
       names: names,
@@ -112,7 +117,8 @@ class GenerateModel {
     buffer.writeln('    return ${names.classCase}(');
     attributes.forEach((Names keyNames, String value) {
       buffer.writeln(
-          '      ${keyNames.camelCase}: ${keyNames.camelCase} ?? this.${keyNames.camelCase},');
+        '      ${keyNames.camelCase}: ${keyNames.camelCase} ?? this.${keyNames.camelCase},',
+      );
     });
     buffer.writeln('    );');
     buffer.writeln('  }\n');
@@ -139,8 +145,9 @@ class GenerateModel {
     final StringBuffer buffer = StringBuffer();
 
     ///-> Entity Class
-    buffer
-        .writeln('class ${names.classCase}Model extends ${names.classCase} {');
+    buffer.writeln(
+      'class ${names.classCase}Model extends ${names.classCase} {',
+    );
     buffer.writeln('  const ${names.classCase}Model({');
 
     ///-> Attributes
@@ -152,21 +159,25 @@ class GenerateModel {
 
     ///-> FromJson
     buffer.writeln(
-        '  factory ${names.classCase}Model.fromJson(Map<String, dynamic> json) => ${names.classCase}Model(');
+      '  factory ${names.classCase}Model.fromJson(Map<String, dynamic> json) => ${names.classCase}Model(',
+    );
     attributes.forEach((Names key, String value) {
       String jsonKeyName = 'json[\'${key.snakeCase}\']';
       if (value == 'int') {
         buffer.writeln(
-            '    ${key.camelCase}: $jsonKeyName != null? num.tryParse($jsonKeyName.toString())?.toInt()?? 0: 0,');
+          '    ${key.camelCase}: $jsonKeyName != null? num.tryParse($jsonKeyName.toString())?.toInt()?? 0: 0,',
+        );
       } else if (value == 'double') {
         buffer.writeln(
-            '    ${key.camelCase}: $jsonKeyName != null? num.tryParse($jsonKeyName.toString())?.toDouble()?? 0.0: 0.0,');
+          '    ${key.camelCase}: $jsonKeyName != null? num.tryParse($jsonKeyName.toString())?.toDouble()?? 0.0: 0.0,',
+        );
       } else if (value.contains('List')) {
         String fromJsonStr = '';
         String modelName = '';
         if (value == 'List<dynamic>') {
           buffer.writeln(
-              '    ${key.camelCase}: $jsonKeyName != null? $jsonKeyName as List<dynamic> : <dynamic>[]');
+            '    ${key.camelCase}: $jsonKeyName != null? $jsonKeyName as List<dynamic> : <dynamic>[]',
+          );
         } else if (value == 'List<String>') {
           modelName = 'String';
           fromJsonStr = "e?.toString()?? ''";
@@ -185,15 +196,18 @@ class GenerateModel {
         }
 
         buffer.writeln(
-            '    ${key.camelCase}: $jsonKeyName != null? ($jsonKeyName as List<dynamic>)'
-            '.map((dynamic e) => $fromJsonStr).toList() : '
-            'const <$modelName>[],');
+          '    ${key.camelCase}: $jsonKeyName != null? ($jsonKeyName as List<dynamic>)'
+          '.map((dynamic e) => $fromJsonStr).toList() : '
+          'const <$modelName>[],',
+        );
       } else if (value == key.classCase) {
         buffer.writeln(
-            '    ${key.camelCase}: $jsonKeyName != null? ${key.classCase}Model.fromJson($jsonKeyName) : null,');
+          '    ${key.camelCase}: $jsonKeyName != null? ${key.classCase}Model.fromJson($jsonKeyName) : null,',
+        );
       } else if (value == 'bool') {
         buffer.writeln(
-            "    ${key.camelCase}: $jsonKeyName != null? $jsonKeyName.toString() == 'true' ? true : false : false,");
+          "    ${key.camelCase}: $jsonKeyName != null? $jsonKeyName.toString() == 'true' ? true : false : false,",
+        );
       } else {
         buffer.writeln("    ${key.camelCase}: $jsonKeyName ?? '',");
       }

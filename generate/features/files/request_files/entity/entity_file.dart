@@ -5,36 +5,41 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_file.dart';
 
-
-
-class EntityFile extends RequestFile{
-
+class EntityFile extends RequestFile {
   EntityFile({required super.file});
 
-
   @override
-  Future<void> generate({required Names featureNames, required Request request}) async {
+  Future<void> generate({
+    required Names featureNames,
+    required Request request,
+  }) async {
     final StringBuffer buffer = StringBuffer();
+
     ///-> File imports
-    buffer.writeln(request.buffers.entity.generateImports(isDataModel: request.response['data'] != null).toString());
+    buffer.writeln(
+      request.buffers.entity
+          .generateImports(isDataModel: request.response['data'] != null)
+          .toString(),
+    );
 
     ///-> Class Response
-    buffer.writeln(request.buffers.entity.generateBody(featureNames: featureNames, request: request).toString());
+    buffer.writeln(
+      request.buffers.entity
+          .generateBody(featureNames: featureNames, request: request)
+          .toString(),
+    );
 
     ///-> Write file
     final File targetFile = createFile(file.path);
     await targetFile.writeAsString(buffer.toString());
   }
 
-
   @override
   Future<void> modify({required Names featureNames, required Request request}) {
     // TODO: implement modify
     throw UnimplementedError();
   }
-
 }
-
 
 //
 // List<String?> generateEntityFile({

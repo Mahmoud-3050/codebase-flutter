@@ -213,8 +213,10 @@ String _appendLangJsonEntries({
   final String content = existingJson.trim();
   final Map<String, dynamic> fileMap = _decodeLangObject(content);
   final List<String> lines = content.split('\n');
-  final List<String> linesWithoutLastCurlBrace =
-      lines.sublist(0, lines.length - 1);
+  final List<String> linesWithoutLastCurlBrace = lines.sublist(
+    0,
+    lines.length - 1,
+  );
   buffer.writeAll(linesWithoutLastCurlBrace, '\n');
   String bufferStringTrim = buffer.toString().trim();
   if (fileMap.isNotEmpty) {
@@ -288,10 +290,12 @@ String buildStringsClassSource(Map<String, dynamic> jsonMap) {
       if (params.isEmpty) {
         buffer.writeln("  static String get $dartName => '$trKey'.tr;");
       } else {
-        final String signature =
-            params.map((p) => 'required String ${p.dartName}').join(', ');
-        final String mapEntries =
-            params.map((p) => "'${p.placeholder}': ${p.dartName}").join(', ');
+        final String signature = params
+            .map((p) => 'required String ${p.dartName}')
+            .join(', ');
+        final String mapEntries = params
+            .map((p) => "'${p.placeholder}': ${p.dartName}")
+            .join(', ');
         buffer.writeln(
           "  static String $dartName({$signature}) => '$trKey'.trParams({$mapEntries});",
         );

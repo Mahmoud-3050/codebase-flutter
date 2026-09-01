@@ -37,13 +37,16 @@ Map<String, String> _translationsFor({
 }) {
   return <String, String>{
     for (final String lang in locales)
-      lang: (json.decode(
-        applyLangJsonEntries(
-          existingJson: _emptyLangJson,
-          incoming: incoming,
-          lang: lang,
-        ),
-      ) as Map<String, dynamic>)[jsonKey] as String,
+      lang:
+          (json.decode(
+                    applyLangJsonEntries(
+                      existingJson: _emptyLangJson,
+                      incoming: incoming,
+                      lang: lang,
+                    ),
+                  )
+                  as Map<String, dynamic>)[jsonKey]
+              as String,
   };
 }
 
@@ -117,9 +120,7 @@ void main() {
     test('keeps a trailing underscore on the stored JSON key', () {
       final String result = applyLangJsonEntries(
         existingJson: _existingLangJson,
-        incoming: <String, dynamic>{
-          'status_': _enAr(en: 'status', ar: 'حالة'),
-        },
+        incoming: <String, dynamic>{'status_': _enAr(en: 'status', ar: 'حالة')},
         lang: 'en',
       );
       final Map<String, dynamic> map =
@@ -131,26 +132,27 @@ void main() {
     });
 
     test(
-        'treats status_ as already present when status exists (lookup without trailing _)',
-        () {
-      const String existing = '''
+      'treats status_ as already present when status exists (lookup without trailing _)',
+      () {
+        const String existing = '''
 {
   "status": "ok"
 }
 ''';
-      final String result = applyLangJsonEntries(
-        existingJson: existing,
-        incoming: <String, dynamic>{
-          'status_': _enAr(en: 'status', ar: 'حالة'),
-        },
-        lang: 'en',
-      );
-      final Map<String, dynamic> map =
-          json.decode(result) as Map<String, dynamic>;
+        final String result = applyLangJsonEntries(
+          existingJson: existing,
+          incoming: <String, dynamic>{
+            'status_': _enAr(en: 'status', ar: 'حالة'),
+          },
+          lang: 'en',
+        );
+        final Map<String, dynamic> map =
+            json.decode(result) as Map<String, dynamic>;
 
-      expect(map.containsKey('status_'), isFalse);
-      expect(map['status'], 'ok');
-    });
+        expect(map.containsKey('status_'), isFalse);
+        expect(map['status'], 'ok');
+      },
+    );
 
     test('does not overwrite a key that already exists', () {
       final String result = applyLangJsonEntries(
@@ -251,9 +253,7 @@ void main() {
       expect(
         () => applyLangJsonEntries(
           existingJson: '[]',
-          incoming: <String, dynamic>{
-            'hello': _enAr(en: 'x', ar: 'س'),
-          },
+          incoming: <String, dynamic>{'hello': _enAr(en: 'x', ar: 'س')},
           lang: 'en',
         ),
         throwsA(isA<FormatException>()),
@@ -284,9 +284,7 @@ void main() {
 ''';
       final String result = applyLangJsonEntries(
         existingJson: existingAr,
-        incoming: <String, dynamic>{
-          'login': _enAr(en: 'Login', ar: 'تجاهل'),
-        },
+        incoming: <String, dynamic>{'login': _enAr(en: 'Login', ar: 'تجاهل')},
         lang: 'ar',
       );
       final Map<String, dynamic> map =
@@ -299,10 +297,7 @@ void main() {
   group('locale object fallbacks (6 country files)', () {
     test('en + ar fill all three English and all three Arabic files', () {
       const Map<String, dynamic> incoming = <String, dynamic>{
-        'welcome': <String, String>{
-          'en': 'Welcome',
-          'ar': 'مرحبا',
-        },
+        'welcome': <String, String>{'en': 'Welcome', 'ar': 'مرحبا'},
       };
 
       expect(
@@ -467,30 +462,28 @@ void main() {
   });
 
   group('buildStringsClassSource', () {
-    test('writes the language package import and an abstract Strings class',
-        () {
-      final String source = buildStringsClassSource(<String, dynamic>{
-        'login': 'Login',
-      });
+    test(
+      'writes the language package import and an abstract Strings class',
+      () {
+        final String source = buildStringsClassSource(<String, dynamic>{
+          'login': 'Login',
+        });
 
-      expect(source, startsWith(stringsClassImport));
-      expect(source, contains('abstract class Strings {'));
-      expect(source.trim(), endsWith('}'));
-    });
+        expect(source, startsWith(stringsClassImport));
+        expect(source, contains('abstract class Strings {'));
+        expect(source.trim(), endsWith('}'));
+      },
+    );
 
     test('emits a getter that looks up the JSON key via .tr', () {
       final String source = buildStringsClassSource(<String, dynamic>{
         'login': 'Login',
       });
 
-      expect(
-        source,
-        contains("static String get login => 'login'.tr;"),
-      );
+      expect(source, contains("static String get login => 'login'.tr;"));
     });
 
-    test('emits a named String method when the English value has placeholders',
-        () {
+    test('emits a named String method when the English value has placeholders', () {
       final String source = buildStringsClassSource(<String, dynamic>{
         'welcome': 'welcome {username}',
         'counts_from': '{current} counts from {total}',
@@ -537,23 +530,19 @@ void main() {
         'status_': 'Status',
       });
 
-      expect(
-        source,
-        contains("static String get status_ => 'status_'.tr;"),
-      );
+      expect(source, contains("static String get status_ => 'status_'.tr;"));
     });
 
-    test('strips every underscore before Names when the JSON key ends with _',
-        () {
-      final String source = buildStringsClassSource(<String, dynamic>{
-        'foo_bar_': 'x',
-      });
+    test(
+      'strips every underscore before Names when the JSON key ends with _',
+      () {
+        final String source = buildStringsClassSource(<String, dynamic>{
+          'foo_bar_': 'x',
+        });
 
-      expect(
-        source,
-        contains("static String get foobar_ => 'foobar_'.tr;"),
-      );
-    });
+        expect(source, contains("static String get foobar_ => 'foobar_'.tr;"));
+      },
+    );
 
     test('skips keys that cannot be turned into a Dart name', () {
       final String source = buildStringsClassSource(<String, dynamic>{
@@ -568,15 +557,12 @@ void main() {
     test('emits an empty class body when the map is empty', () {
       final String source = buildStringsClassSource(<String, dynamic>{});
 
-      expect(
-        source,
-        '''
+      expect(source, '''
 $stringsClassImport
 
 abstract class Strings {
 }
-''',
-      );
+''');
     });
 
     test('generates one getter per remaining key, in insertion order', () {
@@ -631,35 +617,35 @@ abstract class Strings {
       );
     });
 
-    test('rebuilds Strings from the full merged English map, not only new keys',
-        () {
-      final String enJson = applyLangJsonEntries(
-        existingJson: _existingLangJson,
-        incoming: <String, dynamic>{
-          'welcome_back': _enAr(en: 'Welcome back', ar: 'أهلا'),
-        },
-        lang: 'en',
-      );
-      final Map<String, dynamic> enMap =
-          json.decode(enJson) as Map<String, dynamic>;
-      final String source = buildStringsClassSource(enMap);
+    test(
+      'rebuilds Strings from the full merged English map, not only new keys',
+      () {
+        final String enJson = applyLangJsonEntries(
+          existingJson: _existingLangJson,
+          incoming: <String, dynamic>{
+            'welcome_back': _enAr(en: 'Welcome back', ar: 'أهلا'),
+          },
+          lang: 'en',
+        );
+        final Map<String, dynamic> enMap =
+            json.decode(enJson) as Map<String, dynamic>;
+        final String source = buildStringsClassSource(enMap);
 
-      expect(source, contains("static String get appName => 'app_name'.tr;"));
-      expect(source, contains("static String get login => 'login'.tr;"));
-      expect(
-        source,
-        contains("static String get welcomeBack => 'welcome_back'.tr;"),
-      );
-    });
+        expect(source, contains("static String get appName => 'app_name'.tr;"));
+        expect(source, contains("static String get login => 'login'.tr;"));
+        expect(
+          source,
+          contains("static String get welcomeBack => 'welcome_back'.tr;"),
+        );
+      },
+    );
   });
 
   group('applyLangJsonEntries — delete mode', () {
     test('removes a simple existing key and leaves the others', () {
       final String result = applyLangJsonEntries(
         existingJson: _existingLangJson,
-        incoming: <String, dynamic>{
-          'login': _enAr(en: 'x', ar: 'س'),
-        },
+        incoming: <String, dynamic>{'login': _enAr(en: 'x', ar: 'س')},
         lang: 'en',
         mode: StringsGenerateMode.delete,
       );
@@ -680,9 +666,7 @@ abstract class Strings {
 ''';
       final String result = applyLangJsonEntries(
         existingJson: existing,
-        incoming: <String, dynamic>{
-          'signUpNow': _enAr(en: 'x', ar: 'س'),
-        },
+        incoming: <String, dynamic>{'signUpNow': _enAr(en: 'x', ar: 'س')},
         lang: 'en',
         mode: StringsGenerateMode.delete,
       );
@@ -702,9 +686,7 @@ abstract class Strings {
 ''';
       final String result = applyLangJsonEntries(
         existingJson: existing,
-        incoming: <String, dynamic>{
-          'status_': _enAr(en: 'x', ar: 'س'),
-        },
+        incoming: <String, dynamic>{'status_': _enAr(en: 'x', ar: 'س')},
         lang: 'en',
         mode: StringsGenerateMode.delete,
       );
@@ -724,9 +706,7 @@ abstract class Strings {
 ''';
       final String result = applyLangJsonEntries(
         existingJson: existing,
-        incoming: <String, dynamic>{
-          'status_': _enAr(en: 'x', ar: 'س'),
-        },
+        incoming: <String, dynamic>{'status_': _enAr(en: 'x', ar: 'س')},
         lang: 'en',
         mode: StringsGenerateMode.delete,
       );
@@ -741,9 +721,7 @@ abstract class Strings {
     test('is a no-op when the key is not in the file', () {
       final String result = applyLangJsonEntries(
         existingJson: _existingLangJson,
-        incoming: <String, dynamic>{
-          'does_not_exist': _enAr(en: 'x', ar: 'س'),
-        },
+        incoming: <String, dynamic>{'does_not_exist': _enAr(en: 'x', ar: 'س')},
         lang: 'en',
         mode: StringsGenerateMode.delete,
       );
@@ -831,9 +809,7 @@ abstract class Strings {
 ''';
       final String result = applyLangJsonEntries(
         existingJson: existing,
-        incoming: <String, dynamic>{
-          'welcome': _enAr(en: 'x', ar: 'س'),
-        },
+        incoming: <String, dynamic>{'welcome': _enAr(en: 'x', ar: 'س')},
         lang: 'ar_EG',
         mode: StringsGenerateMode.delete,
       );
@@ -879,16 +855,19 @@ abstract class Strings {
 
   group('NamesHelper keywords used by the generator', () {
     test('dartKeywords includes the identifiers the generator skips', () {
-      expect(NamesHelper.dartKeywords,
-          containsAll(<String>['class', 'if', 'void', 'return']));
+      expect(
+        NamesHelper.dartKeywords,
+        containsAll(<String>['class', 'if', 'void', 'return']),
+      );
     });
   });
 
   group('NamesException', () {
     test('toString includes the message', () {
       expect(
-        const NamesException('Input name cannot be empty (input: "")')
-            .toString(),
+        const NamesException(
+          'Input name cannot be empty (input: "")',
+        ).toString(),
         contains('cannot be empty'),
       );
     });

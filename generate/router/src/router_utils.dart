@@ -31,7 +31,10 @@ class RouterUtils {
   }
 
   static bool argsMatch(
-      String content, String routeClass, Map<String, dynamic> args) {
+    String content,
+    String routeClass,
+    Map<String, dynamic> args,
+  ) {
     int classStart = content.indexOf('class $routeClass');
     if (classStart == -1) return false;
 
@@ -46,8 +49,9 @@ class RouterUtils {
     }
 
     for (var key in args.keys) {
-      final String argName =
-          NamesHelper.snakeToCamelCase(NamesHelper.toSnakeCase(key));
+      final String argName = NamesHelper.snakeToCamelCase(
+        NamesHelper.toSnakeCase(key),
+      );
       if (!classContent.contains('final ${getDartType(args[key])} $argName;')) {
         return false;
       }

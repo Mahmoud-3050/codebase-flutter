@@ -96,7 +96,7 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
     return StatefulBuilder(
       builder: (BuildContext context, Function setStateOverlay) {
         return ListView(
-          padding: EdgeInsets.zero,
+          padding: .zero,
           shrinkWrap: true,
           children: widget.values.map((T item) {
             final isSelected = _internalSelectedItems.contains(item);
@@ -113,12 +113,14 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
         widget.names[widget.values.indexOf(item)],
         style: TextStyles.of(
           size: 14,
-          weight: FontWeight.w500,
+          weight: .w500,
           color: isSelected ? context.colors.green : context.colors.textPrimary,
         ),
         maxLines: 3,
       ),
-      trailing: isSelected ? Icon(Icons.check, color: context.colors.green) : null,
+      trailing: isSelected
+          ? Icon(Icons.check, color: context.colors.green)
+          : null,
       onTap: () => _toggleItemSelection(item, setStateOverlay),
     );
   }
@@ -136,15 +138,12 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
 
   Widget _buildDropdownContainer() {
     return Container(
-      constraints: BoxConstraints(
-        minHeight: 48.h,
-        minWidth: 1.sw,
-      ),
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 6.h),
+      constraints: BoxConstraints(minHeight: 48.h, minWidth: 1.sw),
+      padding: .symmetric(horizontal: 16.w, vertical: 6.h),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.r),
+        borderRadius: .circular(8.r),
         color: widget.backgroundColor,
-        border: Border.all(color: widget.borderColor ?? context.colors.hint),
+        border: .all(color: widget.borderColor ?? context.colors.hint),
       ),
       child: _buildDropdownContent(),
     );
@@ -179,14 +178,10 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
       children: <Widget>[
         Text(
           widget.textItemBuilder!,
-          style: TextStyles.of(size: 14, weight: FontWeight.w500),
+          style: TextStyles.of(size: 14, weight: .w500),
         ),
         SizedBox(width: 8.w),
-        Container(
-          width: 2.w,
-          height: 32.h,
-          color: context.colors.divider,
-        ),
+        Container(width: 2.w, height: 32.h, color: context.colors.divider),
         SizedBox(width: 8.w),
         Expanded(child: _buildSelectedText()),
         _buildDropdownIcon(),
@@ -196,7 +191,7 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
 
   Widget _buildSelectedItemsRow() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: .spaceBetween,
       children: [
         Expanded(child: _buildSelectedText()),
         _buildDropdownIcon(),
@@ -205,16 +200,18 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
   }
 
   Widget _buildSelectedText() {
-    List<TextSpan> textSpans =
-        _internalSelectedItems.asMap().entries.map((entry) {
+    List<TextSpan> textSpans = _internalSelectedItems.asMap().entries.map((
+      entry,
+    ) {
       int index = entry.key;
       T item = entry.value;
       return TextSpan(
-        text: widget.names[widget.values.indexOf(item)] +
+        text:
+            widget.names[widget.values.indexOf(item)] +
             (index < _internalSelectedItems.length - 1 ? ', ' : ''),
         style: TextStyles.of(
           size: 14,
-          weight: FontWeight.w500,
+          weight: .w500,
           color: index.isEven
               ? context.colors.textPrimary
               : context.colors.textPrimary.withValues(alpha: 0.86),
@@ -224,7 +221,7 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
     return RichText(
       text: TextSpan(children: textSpans),
       maxLines: 100,
-      overflow: TextOverflow.ellipsis,
+      overflow: .ellipsis,
     );
   }
 
@@ -234,8 +231,8 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
       color: widget.values.isEmpty
           ? context.colors.hint
           : widget.onChanged != null
-              ? context.colors.textPrimary
-              : context.colors.hint,
+          ? context.colors.textPrimary
+          : context.colors.hint,
       size: 20.r,
     );
   }

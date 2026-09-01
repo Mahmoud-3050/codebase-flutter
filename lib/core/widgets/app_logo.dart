@@ -8,11 +8,7 @@ import 'app_image.dart';
 class AppLogo extends StatelessWidget {
   final double? width, height;
 
-  const AppLogo({
-    this.width,
-    this.height,
-    super.key,
-  });
+  const AppLogo({this.width, this.height, super.key});
 
   @override
   Widget build(BuildContext context) {

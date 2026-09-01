@@ -6,24 +6,20 @@ part of 'router.dart';
 // GoRouterGenerator
 // **************************************************************************
 
-List<RouteBase> get $appRoutes => [
-      $splashRoute,
-    ];
+List<RouteBase> get $appRoutes => [$splashRoute];
 
 RouteBase get $splashRoute => GoRouteData.$route(
-      path: '/splash',
-      name: '/splash',
-      hasOverriddenOnExit: false,
-      factory: $SplashRoute._fromState,
-    );
+  path: '/splash',
+  name: '/splash',
+  hasOverriddenOnExit: false,
+  factory: $SplashRoute._fromState,
+);
 
 mixin $SplashRoute on GoRouteData {
   static SplashRoute _fromState(GoRouterState state) => const SplashRoute();
 
   @override
-  String get location => GoRouteData.$location(
-        '/splash',
-      );
+  String get location => GoRouteData.$location('/splash');
 
   @override
   void go(BuildContext context) => context.go(location);

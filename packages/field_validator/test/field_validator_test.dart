@@ -19,15 +19,15 @@ void main() {
       FieldValidator.instance.init();
       expect(FieldValidator.instance.locale, equals(ValidatorLocale.en));
 
-      final validator = EmptyValidator();
+      final validator = const EmptyValidator();
       expect(validator.validate(''), equals('Field is required'));
     });
 
     test('Initializing with ar returns Arabic messages', () {
-      FieldValidator.instance.init(locale: ValidatorLocale.ar);
+      FieldValidator.instance.init(locale: .ar);
       expect(FieldValidator.instance.locale, equals(ValidatorLocale.ar));
 
-      final validator = EmptyValidator();
+      final validator = const EmptyValidator();
       expect(validator.validate(''), equals('حقل مطلوب'));
     });
 
@@ -37,10 +37,10 @@ void main() {
         'error_valid_email': 'Custom Email from JSON',
       };
 
-      FieldValidator.instance.initFromJson(jsonMap, locale: ValidatorLocale.en);
+      FieldValidator.instance.initFromJson(jsonMap);
 
-      final emptyVal = EmptyValidator();
-      final emailVal = EmailValidator();
+      final emptyVal = const EmptyValidator();
+      final emailVal = const EmailValidator();
 
       expect(emptyVal.validate(''), equals('Custom Required from JSON'));
       expect(emailVal.validate('invalid'), equals('Custom Email from JSON'));
@@ -48,34 +48,40 @@ void main() {
 
     test('Loading from custom AssetLoader loads strings correctly', () async {
       const fakePath = 'packages/field_validator/assets/lang/en.json';
-      final fakeLoader = FakeAssetLoader({
-        fakePath: '{"error_field_required": "Loaded via AssetLoader"}'
+      final fakeLoader = const FakeAssetLoader({
+        fakePath: '{"error_field_required": "Loaded via AssetLoader"}',
       });
 
-      await FieldValidator.instance.loadFromAsset(
-        ValidatorLocale.en,
-        assetLoader: fakeLoader,
-      );
+      await FieldValidator.instance.loadFromAsset(.en, assetLoader: fakeLoader);
 
-      final validator = EmptyValidator();
+      final validator = const EmptyValidator();
       expect(validator.validate(''), equals('Loaded via AssetLoader'));
     });
 
     test('Switching locale dynamically via setLocale updates messages', () {
-      FieldValidator.instance.init(locale: ValidatorLocale.en);
-      final validator = EmailValidator();
+      FieldValidator.instance.init();
+      final validator = const EmailValidator();
 
-      expect(validator.validate('invalid'), equals('Please enter a valid email address'));
+      expect(
+        validator.validate('invalid'),
+        equals('Please enter a valid email address'),
+      );
 
-      FieldValidator.instance.setLocale(ValidatorLocale.ar);
-      expect(validator.validate('invalid'), equals('يرجى إدخال عنوان بريد إلكتروني صحيح'));
+      FieldValidator.instance.setLocale(.ar);
+      expect(
+        validator.validate('invalid'),
+        equals('يرجى إدخال عنوان بريد إلكتروني صحيح'),
+      );
     });
 
-    test('Custom message override takes precedence over localized defaults', () {
-      FieldValidator.instance.init(locale: ValidatorLocale.ar);
+    test(
+      'Custom message override takes precedence over localized defaults',
+      () {
+        FieldValidator.instance.init(locale: .ar);
 
-      final validator = EmptyValidator(customErrorMessage: 'خطأ مخصص');
-      expect(validator.validate(''), equals('خطأ مخصص'));
-    });
+        final validator = const EmptyValidator(customErrorMessage: 'خطأ مخصص');
+        expect(validator.validate(''), equals('خطأ مخصص'));
+      },
+    );
   });
 }

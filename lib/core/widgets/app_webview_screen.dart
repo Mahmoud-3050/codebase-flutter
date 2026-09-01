@@ -33,7 +33,7 @@ class _AppWebViewScreenState extends State<AppWebViewScreen> {
         NavigationDelegate(
           onProgress: (int progress) {
             // Update loading bar.
-            if(progress == 100 && mounted){
+            if (progress == 100 && mounted) {
               setState(() {
                 isLoading = false;
               });
@@ -63,12 +63,10 @@ class _AppWebViewScreenState extends State<AppWebViewScreen> {
       ),
       body: Builder(
         builder: (context) {
-          if(isLoading){
+          if (isLoading) {
             return Center(child: const CircularProgressIndicator().appLoading);
           }
-          return WebViewWidget(
-            controller: controller,
-          );
+          return WebViewWidget(controller: controller);
         },
       ),
     );

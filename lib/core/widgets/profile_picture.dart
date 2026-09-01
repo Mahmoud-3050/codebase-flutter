@@ -29,39 +29,38 @@ class ProfilePicture extends StatelessWidget {
   Widget build(BuildContext context) {
     return Builder(
       builder: (context) {
-        if(imageUrl != null && imageUrl != ''){
+        if (imageUrl != null && imageUrl != '') {
           return AppImage.network(
             imageUrl: imageUrl,
-            width: width?? 80.w,
-            height: height?? 80.h,
+            width: width ?? 80.w,
+            height: height ?? 80.h,
             isCircle: true,
             isCached: false,
           );
         }
-        if(backgroundColor != null){
+        if (backgroundColor != null) {
           return Container(
-            padding: EdgeInsets.all(6.r),
-            decoration: BoxDecoration(
-              color: backgroundColor,
-              shape: BoxShape.circle,
-            ),
+            padding: .all(6.r),
+            decoration: BoxDecoration(color: backgroundColor, shape: .circle),
             child: SvgPicture.asset(
-              placeholderSvg?? Assets.iconsUser,
-              width: width?? 80.w,
-              height: height?? 80.h,
-              fit: BoxFit.fill,
+              placeholderSvg ?? Assets.iconsUser,
+              width: width ?? 80.w,
+              height: height ?? 80.h,
+              fit: .fill,
               colorFilter: ColorFilterExtension.setColor(
-                  placeholderColor ?? context.colors.textPrimary),
+                placeholderColor ?? context.colors.textPrimary,
+              ),
             ),
           );
         }
         return SvgPicture.asset(
-          placeholderSvg?? Assets.iconsUser,
-          width: width?? 80.w,
-          height: height?? 80.h,
-          fit: BoxFit.fill,
+          placeholderSvg ?? Assets.iconsUser,
+          width: width ?? 80.w,
+          height: height ?? 80.h,
+          fit: .fill,
           colorFilter: ColorFilterExtension.setColor(
-              placeholderColor ?? context.colors.textPrimary),
+            placeholderColor ?? context.colors.textPrimary,
+          ),
         );
       },
     );

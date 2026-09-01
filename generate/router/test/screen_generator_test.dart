@@ -24,9 +24,9 @@ void main() {
 
   group('ScreenGenerator.updateExistingScreenArgs', () {
     test(
-        'should update args and constructor while preserving custom build logic',
-        () {
-      const existing = '''
+      'should update args and constructor while preserving custom build logic',
+      () {
+        const existing = '''
 import 'package:flutter/material.dart';
 
 class ProfileScreen extends StatefulWidget {
@@ -44,20 +44,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 }
 ''';
-      final updated = ScreenGenerator.updateExistingScreenArgs(
-        existing,
-        'ProfileScreen',
-        {'newArg': 'string', 'userId': 123},
-      );
+        final updated = ScreenGenerator.updateExistingScreenArgs(
+          existing,
+          'ProfileScreen',
+          {'newArg': 'string', 'userId': 123},
+        );
 
-      expect(updated, contains('final String newArg;'));
-      expect(updated, contains('final int userId;'));
-      expect(updated, contains('required this.newArg'));
-      expect(updated, contains('required this.userId'));
-      expect(updated, isNot(contains('final String oldArg;')));
-      expect(updated,
-          contains('Scaffold(body: Text(widget.oldArg))')); // Preserved
-    });
+        expect(updated, contains('final String newArg;'));
+        expect(updated, contains('final int userId;'));
+        expect(updated, contains('required this.newArg'));
+        expect(updated, contains('required this.userId'));
+        expect(updated, isNot(contains('final String oldArg;')));
+        expect(
+          updated,
+          contains('Scaffold(body: Text(widget.oldArg))'),
+        ); // Preserved
+      },
+    );
 
     test('should handle constructor with no args', () {
       const existing = '''
@@ -68,7 +71,10 @@ class SimpleScreen extends StatefulWidget {
 }
 ''';
       final updated = ScreenGenerator.updateExistingScreenArgs(
-          existing, 'SimpleScreen', {'id': 'abc'});
+        existing,
+        'SimpleScreen',
+        {'id': 'abc'},
+      );
       expect(updated, contains('final String id;'));
       expect(updated, contains('const SimpleScreen({'));
       expect(updated, contains('required this.id'));

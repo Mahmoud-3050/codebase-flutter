@@ -10,7 +10,8 @@ void main() {
       expect(left.isRight, isFalse);
       expect(left.leftOrNull, equals('error'));
       expect(left.rightOrNull, isNull);
-      expect(left.fold((l) => 'Left: $l', (r) => 'Right: $r'), equals('Left: error'));
+      expect(left.fold((l) => 'Left: $l', (r) => 'Right: $r'),
+          equals('Left: error'));
       expect(left.getOrElse(() => 0), equals(0));
     });
 
@@ -21,7 +22,8 @@ void main() {
       expect(right.isRight, isTrue);
       expect(right.leftOrNull, isNull);
       expect(right.rightOrNull, equals(42));
-      expect(right.fold((l) => 'Left: $l', (r) => 'Right: $r'), equals('Right: 42'));
+      expect(right.fold((l) => 'Left: $l', (r) => 'Right: $r'),
+          equals('Right: 42'));
       expect(right.map((r) => r * 2), equals(const Right<String, int>(84)));
       expect(right.getOrElse(() => 0), equals(42));
     });

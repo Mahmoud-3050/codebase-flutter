@@ -16,9 +16,9 @@ final class RefreshTokenHelper {
     AccessTokenStorage? tokenStorage,
     Dio? refreshClient,
     String Function()? languageCode,
-  })  : _tokenStorage = tokenStorage,
-        _refreshClient = refreshClient,
-        _languageCode = languageCode;
+  }) : _tokenStorage = tokenStorage,
+       _refreshClient = refreshClient,
+       _languageCode = languageCode;
 
   static final RefreshTokenHelper instance = RefreshTokenHelper();
 
@@ -62,10 +62,7 @@ final class RefreshTokenHelper {
 
   RequestOptions retriedOptions(RequestOptions options) {
     return options.copyWith(
-      extra: <String, dynamic>{
-        ...options.extra,
-        retriedRequestExtraKey: true,
-      },
+      extra: <String, dynamic>{...options.extra, retriedRequestExtraKey: true},
     );
   }
 
@@ -77,18 +74,20 @@ final class RefreshTokenHelper {
 
     final Completer<void> completer = Completer<void>();
     _refreshLock = completer;
-    _performRefresh().then(
-      (_) {
-        completer.complete();
-      },
-      onError: (Object error, StackTrace stackTrace) {
-        completer.completeError(error, stackTrace);
-      },
-    ).whenComplete(() {
-      if (identical(_refreshLock, completer)) {
-        _refreshLock = null;
-      }
-    });
+    _performRefresh()
+        .then(
+          (_) {
+            completer.complete();
+          },
+          onError: (Object error, StackTrace stackTrace) {
+            completer.completeError(error, stackTrace);
+          },
+        )
+        .whenComplete(() {
+          if (identical(_refreshLock, completer)) {
+            _refreshLock = null;
+          }
+        });
     return completer.future;
   }
 
@@ -149,10 +148,11 @@ final class RefreshTokenHelper {
       return null;
     }
 
-    final String? parsedAccessToken = _readToken(
-      payload,
-      const <String>['access_token', 'accessToken', 'token'],
-    );
+    final String? parsedAccessToken = _readToken(payload, const <String>[
+      'access_token',
+      'accessToken',
+      'token',
+    ]);
     if (parsedAccessToken == null || parsedAccessToken.isEmpty) {
       return null;
     }

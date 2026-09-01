@@ -5,7 +5,6 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../../injection_container.dart';
-import '../../utils/enums.dart';
 import 'firebase_messaging.dart';
 import 'local_notifications.dart';
 
@@ -13,20 +12,21 @@ import 'local_notifications.dart';
 /// run: flutter pub add permission_handler
 
 abstract class AppNotificationsService {
-  static Future<void> initNotifications() async{
+  static Future<void> initNotifications() async {
     await Firebase.initializeApp();
     requestPermission();
-    final LocalNotificationService notificationService = LocalNotificationService();
+    final LocalNotificationService notificationService =
+        LocalNotificationService();
     await notificationService.initialize();
     bool requestFCMApis = true;
-    if(Platform.isIOS){
+    if (Platform.isIOS) {
       final apnsToken = await AppFirebaseMessaging.getAPNSToken();
       if (apnsToken == null) {
         // APNS token is available, make FCM plugin API requests...
         requestFCMApis = false;
       }
     }
-    if(requestFCMApis){
+    if (requestFCMApis) {
       AppFirebaseMessaging.setForegroundNotificationPresentationOptions();
       AppFirebaseMessaging.onMessage(notificationService);
       AppFirebaseMessaging.onMessageOpenedApp(notificationService);
@@ -35,13 +35,13 @@ abstract class AppNotificationsService {
       AppFirebaseMessaging.onTokenRefresh();
       AppFirebaseMessaging.subscribeToTopic(AppFirebaseMessagingTopics.all);
       AppFirebaseMessaging.subscribeToTopic(
-          deviceType == DeviceType.ios
-              ? AppFirebaseMessagingTopics.ios
-              : AppFirebaseMessagingTopics.android
+        deviceType == .ios
+            ? AppFirebaseMessagingTopics.ios
+            : AppFirebaseMessagingTopics.android,
       );
     }
   }
-  
+
   static Future<void> requestPermission() async {
     // final result = await FirebaseMessaging.instance.requestPermission();
     // log('requestPermission FirebaseMessaging: ${result.notificationCenter.name}');

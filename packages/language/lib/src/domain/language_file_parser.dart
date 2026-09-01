@@ -3,8 +3,9 @@ import 'language_exceptions.dart';
 
 /// Pure file-name grammar for language JSON assets (`ar.json`, `ar_EG.json`).
 abstract final class LanguageFileParser {
-  static final RegExp _fileNameRegex =
-      RegExp(r'^[a-z]{2,3}(_[A-Z]{2})?\.json$');
+  static final RegExp _fileNameRegex = RegExp(
+    r'^[a-z]{2,3}(_[A-Z]{2})?\.json$',
+  );
 
   static String fileNameFromPath(String assetPath) {
     final normalized = assetPath.trim().replaceAll('\\', '/');
@@ -31,8 +32,10 @@ abstract final class LanguageFileParser {
       );
     }
 
-    final nameWithoutExtension =
-        cleanFileName.substring(0, cleanFileName.length - 5);
+    final nameWithoutExtension = cleanFileName.substring(
+      0,
+      cleanFileName.length - 5,
+    );
     final parts = nameWithoutExtension.split('_');
     final languageCode = parts[0];
     final countryCode = parts.length > 1 ? parts[1] : null;

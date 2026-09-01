@@ -29,7 +29,7 @@ class AppImage extends StatelessWidget {
     this.imageAsset,
     this.width,
     this.height,
-    this.fit = BoxFit.fill,
+    this.fit = .fill,
     this.color,
     this.isCached = false,
     this.isCircle = false,
@@ -41,7 +41,7 @@ class AppImage extends StatelessWidget {
     String? imageUrl,
     double? width,
     double? height,
-    BoxFit fit = BoxFit.fill,
+    BoxFit fit = .fill,
     Color? color,
     bool? isCached,
     bool? isCircle,
@@ -64,7 +64,7 @@ class AppImage extends StatelessWidget {
     File? imageFile,
     double? width,
     double? height,
-    BoxFit fit = BoxFit.fill,
+    BoxFit fit = .fill,
     Color? color,
     bool? isCircle,
   }) {
@@ -83,7 +83,7 @@ class AppImage extends StatelessWidget {
     String? imageAsset,
     double? width,
     double? height,
-    BoxFit fit = BoxFit.fill,
+    BoxFit fit = .fill,
     Color? color,
     bool? isCircle,
   }) {
@@ -120,23 +120,20 @@ class AppImage extends StatelessWidget {
       width: width,
       height: height,
       decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        image: DecorationImage(
-          image: child,
-          fit: fit,
-        ),
+        shape: .circle,
+        image: DecorationImage(image: child, fit: fit),
       ),
     );
   }
 
   Image get _imageAssetItem => Image.asset(
-        imageAsset!,
-        width: width,
-        height: height,
-        fit: fit,
-        errorBuilder: (BuildContext context, Object url, StackTrace? error) =>
-            _errorWidget(context),
-      );
+    imageAsset!,
+    width: width,
+    height: height,
+    fit: fit,
+    errorBuilder: (BuildContext context, Object url, StackTrace? error) =>
+        _errorWidget(context),
+  );
 
   Widget get _imageAsset {
     if (isCircle == true) {
@@ -146,14 +143,14 @@ class AppImage extends StatelessWidget {
   }
 
   Image get _imageFileItem => Image.file(
-        key: imageKey,
-        imageFile!,
-        width: width,
-        height: height,
-        fit: fit,
-        errorBuilder: (BuildContext context, Object url, StackTrace? error) =>
-            _errorWidget(context),
-      );
+    key: imageKey,
+    imageFile!,
+    width: width,
+    height: height,
+    fit: fit,
+    errorBuilder: (BuildContext context, Object url, StackTrace? error) =>
+        _errorWidget(context),
+  );
 
   Widget get _imageFile {
     if (isCircle == true) {
@@ -163,43 +160,43 @@ class AppImage extends StatelessWidget {
   }
 
   Image get _imageNetworkItem => Image.network(
-        imageUrl!,
-        color: color,
-        width: width,
-        height: height,
-        fit: fit,
-        loadingBuilder: (BuildContext context, Widget child,
-            ImageChunkEvent? loadingProgress) {
+    imageUrl!,
+    color: color,
+    width: width,
+    height: height,
+    fit: fit,
+    loadingBuilder:
+        (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
           if (fadeDuration != null) {
             return child.animate().fadeIn(
-                  curve: Curves.easeInOut,
-                  duration: fadeDuration,
-                );
+              curve: Curves.easeInOut,
+              duration: fadeDuration,
+            );
           } else {
             return child;
           }
         },
-        errorBuilder: (BuildContext context, _, dynamic error) =>
-            _errorWidget(context),
-      );
+    errorBuilder: (BuildContext context, _, dynamic error) =>
+        _errorWidget(context),
+  );
 
   Widget get _imageNetwork {
     // Check if the imageUrl is null or empty
     if (imageUrl == null || imageUrl?.isEmpty == true) {
       if (isCircle == true) {
-        return _buildBaseCircle(
-          _placeholderImage.image,
-        );
+        return _buildBaseCircle(_placeholderImage.image);
       }
       return _placeholderImage;
     }
     if (isCached == true) {
       if (isCircle == true) {
-        return _buildBaseCircle(CachedNetworkImageProvider(
-          imageUrl!,
-          maxWidth: width?.toInt(),
-          maxHeight: height?.toInt(),
-        ));
+        return _buildBaseCircle(
+          CachedNetworkImageProvider(
+            imageUrl!,
+            maxWidth: width?.toInt(),
+            maxHeight: height?.toInt(),
+          ),
+        );
       }
       return CachedNetworkImage(
         imageUrl: imageUrl!,
@@ -221,14 +218,14 @@ class AppImage extends StatelessWidget {
   }
 
   Widget _loadingWidget(BuildContext context) => Center(
-        child: AppShimmer(
-          child: Container(
-            width: width,
-            height: height,
-            color: context.colors.baseColorShimmer,
-          ),
-        ),
-      );
+    child: AppShimmer(
+      child: Container(
+        width: width,
+        height: height,
+        color: context.colors.baseColorShimmer,
+      ),
+    ),
+  );
 
   // Widget _loadingProgressWidget(ImageChunkEvent loadingProgress) => Center(
   //   child: CircularProgressIndicator(
@@ -240,16 +237,13 @@ class AppImage extends StatelessWidget {
   // );
 
   Widget _errorWidget(BuildContext context) => Center(
-        child: Container(
-          width: width,
-          height: height,
-          color: context.colors.baseColorShimmer,
-          child: const Icon(
-            Icons.error,
-            color: Colors.grey,
-          ),
-        ),
-      );
+    child: Container(
+      width: width,
+      height: height,
+      color: context.colors.baseColorShimmer,
+      child: const Icon(Icons.error, color: Colors.grey),
+    ),
+  );
 
   Image get _placeholderImage {
     return Image.asset(

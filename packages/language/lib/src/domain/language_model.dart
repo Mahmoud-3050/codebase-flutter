@@ -44,10 +44,7 @@ class LanguageModel {
   /// Order: exact `fullCode` (`ar_EG`), then language-only (`ar.json`),
   /// then the first country variant of that language. Returns `null` when
   /// no language code matches.
-  static LanguageModel? lookup(
-    List<LanguageModel> languages,
-    String? code,
-  ) {
+  static LanguageModel? lookup(List<LanguageModel> languages, String? code) {
     if (languages.isEmpty) return null;
     if (code == null || code.trim().isEmpty) return null;
 

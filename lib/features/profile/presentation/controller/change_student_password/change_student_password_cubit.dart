@@ -12,25 +12,34 @@ part 'change_student_password_states.dart';
 class ChangeStudentPasswordCubit extends Cubit<ChangeStudentPasswordState> {
   final ChangeStudentPasswordUseCase changeStudentPasswordUseCase;
 
-  ChangeStudentPasswordCubit(this.changeStudentPasswordUseCase) : super(const ChangeStudentPasswordInitialState());
-
+  ChangeStudentPasswordCubit(this.changeStudentPasswordUseCase)
+    : super(const ChangeStudentPasswordInitialState());
 
   Future<void> fChangeStudentPassword({
-   required String oldPassword,
-   required String newPassword,
-   required String newPasswordConfirmation,
+    required String oldPassword,
+    required String newPassword,
+    required String newPasswordConfirmation,
   }) async {
     emit(const ChangeStudentPasswordLoadingState());
-    final Either<Failure, ChangeStudentPasswordResponse> eitherResult = await changeStudentPasswordUseCase(ChangeStudentPasswordParams(
-      oldPassword: oldPassword,
-      newPassword: newPassword,
-      newPasswordConfirmation: newPasswordConfirmation,
-    ));
-    eitherResult.fold((Failure failure) {
-      emit(ChangeStudentPasswordErrorState(message: failure.message?? Strings.pleaseTryAgainLater));
-    }, (ChangeStudentPasswordResponse response) {
-      emit(const ChangeStudentPasswordSuccessState());
-    });
+    final Either<Failure, ChangeStudentPasswordResponse> eitherResult =
+        await changeStudentPasswordUseCase(
+          ChangeStudentPasswordParams(
+            oldPassword: oldPassword,
+            newPassword: newPassword,
+            newPasswordConfirmation: newPasswordConfirmation,
+          ),
+        );
+    eitherResult.fold(
+      (Failure failure) {
+        emit(
+          ChangeStudentPasswordErrorState(
+            message: failure.message ?? Strings.pleaseTryAgainLater,
+          ),
+        );
+      },
+      (ChangeStudentPasswordResponse response) {
+        emit(const ChangeStudentPasswordSuccessState());
+      },
+    );
   }
 }
-

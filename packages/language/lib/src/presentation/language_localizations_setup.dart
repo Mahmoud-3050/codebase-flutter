@@ -10,12 +10,12 @@ class LanguageLocalizationsSetup {
 
   static const Iterable<LocalizationsDelegate<dynamic>> localizationsDelegates =
       [
-    LanguageLocalizations.delegate,
-    GlobalMaterialLocalizations.delegate,
-    GlobalWidgetsLocalizations.delegate,
-    GlobalCupertinoLocalizations.delegate,
-    DefaultCupertinoLocalizations.delegate,
-  ];
+        LanguageLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+        DefaultCupertinoLocalizations.delegate,
+      ];
 
   static Locale? localeResolutionCallback(
     Locale? locale,

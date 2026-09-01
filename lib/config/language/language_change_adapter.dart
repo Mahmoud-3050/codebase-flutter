@@ -10,8 +10,6 @@ class LanguageChangeAdapter implements LanguageChangeListener {
 
   @override
   void onLanguageChanged(LanguageModel language) {
-    FieldValidator.instance.setLocale(
-      ValidatorLocale.fromCode(language.code),
-    );
+    FieldValidator.instance.setLocale(.fromCode(language.code));
   }
 }
