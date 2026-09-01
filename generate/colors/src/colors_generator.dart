@@ -154,8 +154,8 @@ String ensureSharedExtraMap(String source) {
 ''';
     source = source.replaceRange(lightAt, lightAt, map);
   }
-  source = _ensureSharedExtraSpread(source, PaletteKind.light);
-  source = _ensureSharedExtraSpread(source, PaletteKind.dark);
+  source = _ensureSharedExtraSpread(source, .light);
+  source = _ensureSharedExtraSpread(source, .dark);
   return source;
 }
 
@@ -332,13 +332,13 @@ ColorApplyResult applyColors({
         nextPalettes,
         color.camelCase,
         color.lightHex,
-        PaletteKind.light,
+        .light,
       );
       nextPalettes = replaceTypedFieldInPalette(
         nextPalettes,
         color.camelCase,
         color.darkHex,
-        PaletteKind.dark,
+        .dark,
       );
     } else if (color.isShared) {
       if (hasExtraKey(nextPalettes, color.camelCase) &&
@@ -346,13 +346,9 @@ ColorApplyResult applyColors({
         nextPalettes = removePaletteExtra(
           nextPalettes,
           color.camelCase,
-          PaletteKind.light,
+          .light,
         );
-        nextPalettes = removePaletteExtra(
-          nextPalettes,
-          color.camelCase,
-          PaletteKind.dark,
-        );
+        nextPalettes = removePaletteExtra(nextPalettes, color.camelCase, .dark);
       }
       if (hasSharedExtraKey(nextPalettes, color.camelCase)) {
         nextPalettes = replaceExtraKey(
@@ -379,13 +375,13 @@ ColorApplyResult applyColors({
         nextPalettes,
         color.camelCase,
         color.lightHex,
-        PaletteKind.light,
+        .light,
       );
       nextPalettes = upsertPaletteExtra(
         nextPalettes,
         color.camelCase,
         color.darkHex,
-        PaletteKind.dark,
+        .dark,
       );
       nextExtras = ensureExtraGetter(nextExtras, color.camelCase);
       nextColorKeys = ensureColorKey(nextColorKeys, color.camelCase);
@@ -408,7 +404,7 @@ String _rewritePaletteBlock(
   PaletteKind kind,
   String Function(String block) rewrite,
 ) {
-  final String marker = kind == PaletteKind.light
+  final String marker = kind == .light
       ? 'static const ThemeColors _light = ThemeColors('
       : 'static const ThemeColors _dark = ThemeColors(';
   final int start = source.indexOf(marker);
@@ -483,7 +479,7 @@ String _insertExtraMap(String block, String extraBody) {
 }
 
 String _ensureSharedExtraSpread(String source, PaletteKind kind) {
-  final String marker = kind == PaletteKind.light
+  final String marker = kind == .light
       ? 'static const ThemeColors _light = ThemeColors('
       : 'static const ThemeColors _dark = ThemeColors(';
   if (!source.contains(marker)) return source;

@@ -112,7 +112,7 @@ DioException _unauthorizedError({
   );
   return DioException(
     requestOptions: requestOptions,
-    type: DioExceptionType.badResponse,
+    type: .badResponse,
     response: Response<dynamic>(
       requestOptions: requestOptions,
       statusCode: statusCode,

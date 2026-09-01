@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'dart:convert';
 import 'dart:io';
 
@@ -13,9 +14,7 @@ import 'src/strings_generator.dart';
 /// Delete keys listed in `lang.json` from those files and regenerate Strings:
 /// `dart generate/strings/main.dart --d`
 void main(List<String> args) async {
-  final StringsGenerateMode mode = args.contains('--d')
-      ? StringsGenerateMode.delete
-      : StringsGenerateMode.append;
+  final StringsGenerateMode mode = args.contains('--d') ? .delete : .append;
   const String filePath = GenerateConstants.langJsonAssetFilePath;
   final File file = File(filePath);
   await handleFileChange(file, mode: mode);
@@ -30,7 +29,7 @@ Future<void> handleFileChange(
   if (decoded is! Map) {
     throw const FormatException('lang.json must be a JSON object');
   }
-  final Map<String, dynamic> jsonMap = Map<String, dynamic>.from(decoded);
+  final Map<String, dynamic> jsonMap = .from(decoded);
 
   final List<File> localeFiles = existingLangJsonFiles();
   if (localeFiles.isEmpty) {
@@ -81,7 +80,7 @@ Future<Map<String, dynamic>> generateJsonTranslate({
   required File file,
   required String lang,
   required Map<String, dynamic> jsonMap,
-  StringsGenerateMode mode = StringsGenerateMode.append,
+  StringsGenerateMode mode = .append,
 }) async {
   try {
     final String updated = applyLangJsonEntries(
@@ -94,7 +93,7 @@ Future<Map<String, dynamic>> generateJsonTranslate({
     print(
       '${GenerateConstants.greenColorCode} lang.json Updated successfully at ${file.path} ${GenerateConstants.resetColorCode}',
     );
-    return Map<String, dynamic>.from(json.decode(updated) as Map);
+    return .from(json.decode(updated) as Map);
   } catch (e) {
     print('generateJsonTranslate Error: ${e.toString()}');
     rethrow;

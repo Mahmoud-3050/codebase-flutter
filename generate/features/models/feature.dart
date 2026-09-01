@@ -45,7 +45,7 @@ class Feature {
       json: settingsMap,
       file: settingsFile,
     );
-    final ModeType modeType = ModeType.fromCode(settingsModel.mode);
+    final ModeType modeType = .fromCode(settingsModel.mode);
 
     return Feature(names: names, settings: settingsModel, modeType: modeType);
   }
@@ -53,7 +53,7 @@ class Feature {
   Feature markAsProtected() {
     final Settings updatedSettings = settings.copyWith(mode: 0);
     updatedSettings.persist();
-    return copyWith(settings: updatedSettings, modeType: ModeType.protected);
+    return copyWith(settings: updatedSettings, modeType: .protected);
   }
 
   Feature copyWith({

@@ -8,7 +8,7 @@ import '../../../injection_container.dart';
 import 'firebase_messaging.dart';
 import 'local_notifications.dart';
 
-/// add: <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
+/// add: `<uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>`
 /// run: flutter pub add permission_handler
 
 abstract class AppNotificationsService {
@@ -50,7 +50,7 @@ abstract class AppNotificationsService {
     // }
     PermissionStatus status = await Permission.notification.status;
     log('requestPermission PermissionStatus: ${status.toString()}');
-    if (status != PermissionStatus.granted) {
+    if (status != .granted) {
       status = await Permission.notification.request();
       log('requestPermission PermissionStatus.request(): ${status.toString()}');
     }

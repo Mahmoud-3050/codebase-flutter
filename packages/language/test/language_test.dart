@@ -142,8 +142,8 @@ files:
         'assets/lang/ar.json',
       ]);
       expect(config.defaultLanguage, equals(LanguageModel.ar));
-      expect(config.assetPathFor(LanguageModel.en), 'assets/lang/en.json');
-      expect(config.assetPathFor(LanguageModel.ar), 'assets/lang/ar.json');
+      expect(config.assetPathFor(.en), 'assets/lang/en.json');
+      expect(config.assetPathFor(.ar), 'assets/lang/ar.json');
       expect(config.declaredLanguages, [LanguageModel.en, LanguageModel.ar]);
     });
 
@@ -274,7 +274,7 @@ files:
       Language.instance.applyConfig(
         const LanguageConfig(
           jsonAssetPaths: ['assets/lang/ar.json'],
-          defaultLanguage: LanguageModel.ar,
+          defaultLanguage: .ar,
         ),
       );
 
@@ -287,7 +287,7 @@ files:
       Language.instance.applyConfig(
         const LanguageConfig(
           jsonAssetPaths: ['assets/lang/en.json'],
-          defaultLanguage: LanguageModel.en,
+          defaultLanguage: .en,
         ),
       );
 
@@ -302,7 +302,7 @@ files:
       Language.instance.applyConfig(
         const LanguageConfig(
           jsonAssetPaths: ['assets/lang/ar.json'],
-          defaultLanguage: LanguageModel.ar,
+          defaultLanguage: .ar,
         ),
       );
 
@@ -315,7 +315,7 @@ files:
   group('Language.init Tests', () {
     test('changeLanguage throws before init', () {
       expect(
-        () => Language.instance.changeLanguage(LanguageModel.ar),
+        () => Language.instance.changeLanguage(.ar),
         throwsA(isA<LanguageNotInitializedException>()),
       );
       expect(Language.instance.isInitialized, isFalse);
@@ -324,7 +324,7 @@ files:
     test('init uses config default language when storage is empty', () async {
       const arConfig = LanguageConfig(
         jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar.json'],
-        defaultLanguage: LanguageModel.ar,
+        defaultLanguage: .ar,
       );
       final storage = FakeLanguageStorage();
       final listener = RecordingLanguageChangeListener();
@@ -345,7 +345,7 @@ files:
       final storage = FakeLanguageStorage()..languageCode = 'ar';
       const enDefaultConfig = LanguageConfig(
         jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar.json'],
-        defaultLanguage: LanguageModel.en,
+        defaultLanguage: .en,
       );
 
       await Language.instance.init(config: enDefaultConfig, storage: storage);
@@ -362,7 +362,7 @@ files:
       final storage = FakeLanguageStorage()..languageCode = 'ar_EG';
       const countryConfig = LanguageConfig(
         jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar_EG.json'],
-        defaultLanguage: LanguageModel.en,
+        defaultLanguage: .en,
       );
 
       await Language.instance.init(config: countryConfig, storage: storage);
@@ -392,7 +392,7 @@ files:
       final storage = FakeLanguageStorage()..languageCode = 'ar_EG';
       const languageOnlyConfig = LanguageConfig(
         jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar.json'],
-        defaultLanguage: LanguageModel.en,
+        defaultLanguage: .en,
       );
 
       await Language.instance.init(
@@ -408,7 +408,7 @@ files:
       () async {
         const enDefaultConfig = LanguageConfig(
           jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar.json'],
-          defaultLanguage: LanguageModel.en,
+          defaultLanguage: .en,
         );
 
         for (final invalidCode in ['AR', 'ar-EG', 'ar_eg']) {
@@ -440,7 +440,7 @@ files:
       );
       listener.calls.clear();
 
-      await Language.instance.changeLanguage(LanguageModel.ar);
+      await Language.instance.changeLanguage(.ar);
 
       expect(Language.instance.current, equals(LanguageModel.ar));
       expect(Language.instance.isArabic, isTrue);
@@ -478,7 +478,7 @@ files:
 
     test('changeLanguage throws before init', () {
       expect(
-        () => Language.instance.changeLanguage(LanguageModel.ar),
+        () => Language.instance.changeLanguage(.ar),
         throwsA(isA<LanguageNotInitializedException>()),
       );
     });
@@ -531,10 +531,10 @@ files:
 
       expect(config.assetPathFor(arEg), equals('assets/lang/ar_EG.json'));
       expect(
-        config.assetPathFor(LanguageModel.ar),
+        config.assetPathFor(.ar),
         equals('assets/lang/ar.json'),
       );
-      expect(config.assetPathFor(LanguageModel.en), isNull);
+      expect(config.assetPathFor(.en), isNull);
     });
 
     test('declaredLanguages keeps country variants of the same language', () {
@@ -715,7 +715,7 @@ files:
       Language.instance.applyConfig(
         const LanguageConfig(
           jsonAssetPaths: ['assets/lang/ar.json'],
-          defaultLanguage: LanguageModel.ar,
+          defaultLanguage: .ar,
         ),
       );
       expect(
@@ -764,7 +764,7 @@ files:
       Language.instance.applyConfig(
         const LanguageConfig(
           jsonAssetPaths: ['assets/lang/en.json', 'assets/lang/ar.json'],
-          defaultLanguage: LanguageModel.ar,
+          defaultLanguage: .ar,
         ),
       );
       expect(
@@ -907,7 +907,7 @@ files:
       await Language.instance.init(config: testConfig);
 
       expect(Language.instance.isInitialized, isTrue);
-      await Language.instance.changeLanguage(LanguageModel.ar);
+      await Language.instance.changeLanguage(.ar);
       expect(Language.instance.current, equals(LanguageModel.ar));
     });
 
@@ -1006,7 +1006,7 @@ files:
 
       expect(find.text('en:en:en'), findsOneWidget);
 
-      await Language.instance.changeLanguage(LanguageModel.ar);
+      await Language.instance.changeLanguage(.ar);
       await tester.pump();
 
       expect(find.text('ar:ar:ar'), findsOneWidget);

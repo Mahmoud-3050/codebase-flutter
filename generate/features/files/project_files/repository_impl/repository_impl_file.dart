@@ -103,7 +103,7 @@ class RepositoryImplFile extends ProjectFile {
       }
     }
 
-    List<String> fileLines = List<String>.from(lines);
+    List<String> fileLines = .from(lines);
     List<String> importsLines = <String>[];
     List<String> constructorLines = <String>[];
     List<String> functionsLines = <String>[];

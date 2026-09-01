@@ -14,7 +14,7 @@ abstract class ModifyFeature {
     required Feature feature,
     required List<Request> requests,
   }) async {
-    final Directory projectRoot = Directory.current;
+    final Directory projectRoot = .current;
     final String featurePath =
         '${projectRoot.absolute.path}/${GenerateConstants.projectFeaturesPath}/${feature.names.snakeCase}';
 

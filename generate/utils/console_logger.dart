@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 abstract class ConsoleLogger {
   static void info(String message) {
     print('\x1B[34m$message\x1B[0m');

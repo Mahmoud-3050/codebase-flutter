@@ -647,7 +647,7 @@ abstract class Strings {
         existingJson: _existingLangJson,
         incoming: <String, dynamic>{'login': _enAr(en: 'x', ar: 'س')},
         lang: 'en',
-        mode: StringsGenerateMode.delete,
+        mode: .delete,
       );
       final Map<String, dynamic> map =
           json.decode(result) as Map<String, dynamic>;
@@ -668,7 +668,7 @@ abstract class Strings {
         existingJson: existing,
         incoming: <String, dynamic>{'signUpNow': _enAr(en: 'x', ar: 'س')},
         lang: 'en',
-        mode: StringsGenerateMode.delete,
+        mode: .delete,
       );
       final Map<String, dynamic> map =
           json.decode(result) as Map<String, dynamic>;
@@ -688,7 +688,7 @@ abstract class Strings {
         existingJson: existing,
         incoming: <String, dynamic>{'status_': _enAr(en: 'x', ar: 'س')},
         lang: 'en',
-        mode: StringsGenerateMode.delete,
+        mode: .delete,
       );
       final Map<String, dynamic> map =
           json.decode(result) as Map<String, dynamic>;
@@ -708,7 +708,7 @@ abstract class Strings {
         existingJson: existing,
         incoming: <String, dynamic>{'status_': _enAr(en: 'x', ar: 'س')},
         lang: 'en',
-        mode: StringsGenerateMode.delete,
+        mode: .delete,
       );
       final Map<String, dynamic> map =
           json.decode(result) as Map<String, dynamic>;
@@ -723,7 +723,7 @@ abstract class Strings {
         existingJson: _existingLangJson,
         incoming: <String, dynamic>{'does_not_exist': _enAr(en: 'x', ar: 'س')},
         lang: 'en',
-        mode: StringsGenerateMode.delete,
+        mode: .delete,
       );
       final Map<String, dynamic> map =
           json.decode(result) as Map<String, dynamic>;
@@ -742,7 +742,7 @@ abstract class Strings {
           'login': _enAr(en: 'x', ar: 'س'),
         },
         lang: 'en',
-        mode: StringsGenerateMode.delete,
+        mode: .delete,
       );
       final Map<String, dynamic> map =
           json.decode(result) as Map<String, dynamic>;
@@ -759,7 +759,7 @@ abstract class Strings {
           'login': _enAr(en: 'x', ar: 'س'),
         },
         lang: 'en',
-        mode: StringsGenerateMode.delete,
+        mode: .delete,
       );
       final Map<String, dynamic> map =
           json.decode(result) as Map<String, dynamic>;
@@ -773,7 +773,7 @@ abstract class Strings {
         existingJson: _existingLangJson,
         incoming: <String, dynamic>{},
         lang: 'en',
-        mode: StringsGenerateMode.delete,
+        mode: .delete,
       );
       final Map<String, dynamic> map =
           json.decode(result) as Map<String, dynamic>;
@@ -792,7 +792,7 @@ abstract class Strings {
           'login': _enAr(en: 'y', ar: 'ص'),
         },
         lang: 'en',
-        mode: StringsGenerateMode.delete,
+        mode: .delete,
       );
       final Map<String, dynamic> map =
           json.decode(result) as Map<String, dynamic>;
@@ -811,7 +811,7 @@ abstract class Strings {
         existingJson: existing,
         incoming: <String, dynamic>{'welcome': _enAr(en: 'x', ar: 'س')},
         lang: 'ar_EG',
-        mode: StringsGenerateMode.delete,
+        mode: .delete,
       );
       final Map<String, dynamic> map =
           json.decode(result) as Map<String, dynamic>;

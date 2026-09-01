@@ -16,7 +16,7 @@ import 'language_storage.dart';
 final class Language extends ChangeNotifier {
   Language._();
 
-  static final Language instance = Language._();
+  static final Language instance = ._();
 
   factory Language() => instance;
 
@@ -36,7 +36,7 @@ final class Language extends ChangeNotifier {
   LanguageModel get current => _current;
   LanguageModel get defaultLanguage => _defaultLanguage;
   List<LanguageModel> get supportedLanguages =>
-      List.unmodifiable(_supportedLanguages);
+      .unmodifiable(_supportedLanguages);
   LanguageConfig? get config => _config;
   Locale get currentLocale => _current.locale;
   String get currentCode => _current.fullCode;

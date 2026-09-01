@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import '../../features/models/names.dart';
 import '../../utils/constants.dart';
 import '../../utils/names_helper.dart';
@@ -33,7 +34,7 @@ class RouteProcessor {
 
     Map<String, dynamic> argsMap = {};
     if (data['args'] != null && data['args'] is Map) {
-      argsMap = Map<String, dynamic>.from(data['args']);
+      argsMap = .from(data['args']);
     }
 
     final String featureName = featureNames.snakeCase;

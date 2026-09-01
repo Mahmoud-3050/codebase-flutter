@@ -175,9 +175,9 @@ String applyLangJsonEntries({
   required String existingJson,
   required Map<String, dynamic> incoming,
   required String lang,
-  StringsGenerateMode mode = StringsGenerateMode.append,
+  StringsGenerateMode mode = .append,
 }) {
-  if (mode == StringsGenerateMode.delete) {
+  if (mode == .delete) {
     return _removeLangJsonEntries(
       existingJson: existingJson,
       incoming: incoming,
@@ -265,7 +265,7 @@ Map<String, dynamic> _decodeLangObject(String source) {
   if (decoded is! Map) {
     throw const FormatException('lang JSON must be a JSON object');
   }
-  return Map<String, dynamic>.from(decoded);
+  return .from(decoded);
 }
 
 /// Builds `lib/config/language/strings.dart` from a translation map

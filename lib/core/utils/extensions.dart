@@ -142,3 +142,50 @@ extension TextEditingControllerExtension on TextEditingController {
     });
   }
 }
+
+/// ScreenUtil gaps. On `num` so integer literals work (`24.hGap`).
+extension ScreenUtilGapExtension on num {
+  /// Horizontal space: [SizedBox] width scaled with `.w`.
+  SizedBox get wGap => SizedBox(width: w);
+
+  /// Vertical space: [SizedBox] height scaled with `.h`.
+  SizedBox get hGap => SizedBox(height: h);
+
+  /// Horizontal sliver space (e.g. horizontal [CustomScrollView]).
+  SliverToBoxAdapter get wSliverGap => SliverToBoxAdapter(child: SizedBox(width: w));
+
+  /// Vertical sliver space (e.g. vertical [CustomScrollView]).
+  SliverToBoxAdapter get hSliverGap => SliverToBoxAdapter(child: SizedBox(height: h));
+}
+
+extension ObjectParsingX on Object? {
+  // ---- shared raw parsers (single source of truth per type) ----
+  num? _asNum() => num.tryParse(this?.toString() ?? '');
+
+  bool? _asBool() {
+    final value = this;
+    if (value == null) return null;
+    if (value is bool) return value;
+    if (value is num) return value == 1;
+
+    final normalized = value.toString().trim().toLowerCase();
+    if (normalized == 'true' || normalized == '1') return true;
+    if (normalized == 'false' || normalized == '0') return false;
+    return null;
+  }
+
+  // ---- int ----
+  int toIntOrZero() => _asNum()?.toInt() ?? 0;
+  int? toIntOrNull() => _asNum()?.toInt();
+
+  // ---- double ----
+  double toDoubleOrZero() => _asNum()?.toDouble() ?? 0.0;
+  double? toDoubleOrNull() => _asNum()?.toDouble();
+
+  // ---- String ----
+  String toStringOrEmpty() => this == null ? '' : toString();
+
+  // ---- bool ----
+  bool toBoolOrFalse() => _asBool() ?? false;
+  bool? toBoolOrNull() => _asBool();
+}

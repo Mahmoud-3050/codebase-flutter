@@ -247,7 +247,7 @@ class _ScriptedAdapter implements HttpClientAdapter {
 }
 
 ResponseBody _jsonBody(int statusCode, Map<String, dynamic> data) {
-  return ResponseBody.fromString(
+  return .fromString(
     jsonEncode(data),
     statusCode,
     headers: <String, List<String>>{

@@ -1,7 +1,6 @@
 import 'dart:io';
 
 import '../utils/console_logger.dart';
-import '../utils/enums.dart';
 import 'models/feature.dart';
 import 'models/feature_paths.dart';
 import 'models/request.dart';
@@ -19,13 +18,13 @@ class FeatureModeRunner {
     final FeaturePaths paths = FeaturePaths.fromFeatureName(feature.names);
 
     switch (feature.modeType) {
-      case ModeType.generate:
+      case .generate:
         await _runGenerateMode(paths);
-      case ModeType.modify:
+      case .modify:
         await _runModifyMode();
-      case ModeType.delete:
+      case .delete:
         _runDeleteMode();
-      case ModeType.protected:
+      case .protected:
         ConsoleLogger.info('Feature is in PROTECTED mode.');
         ConsoleLogger.error('CLOSED!');
     }
@@ -55,7 +54,7 @@ class FeatureModeRunner {
 
   Future<void> _runModifyMode() async {
     final List<Request> pendingRequests = feature.requests
-        .where((request) => request.mode == ModeType.generate)
+        .where((request) => request.mode == .generate)
         .toList();
 
     await ModifyFeature.modifyFeature(
@@ -86,7 +85,7 @@ class FeatureModeRunner {
       'build_runner',
       'build',
       '--delete-conflicting-outputs',
-    ], mode: ProcessStartMode.inheritStdio);
+    ], mode: .inheritStdio);
     final int exitCode = await process.exitCode;
     if (exitCode == 0) {
       ConsoleLogger.success('Test mocks generated successfully!');

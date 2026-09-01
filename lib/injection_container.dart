@@ -19,7 +19,7 @@ import 'features/profile/profile_injection.dart';
 export 'config/themes/extra_colors.dart';
 
 abstract class ServiceLocator {
-  static final GetIt instance = GetIt.instance;
+  static final GetIt instance = .instance;
 
   static Future<void> init() async {
     instance.allowReassignment = true;
@@ -71,12 +71,8 @@ abstract class ServiceLocator {
   }
 
   static void _injectSecureStorage() {
-    AndroidOptions androidOptions = const AndroidOptions(
-      encryptedSharedPreferences: true,
-    );
     // IOSOptions iosOptions = const IOSOptions(accessibility: KeychainAccessibility.first_unlock);
-    final FlutterSecureStorage secureStorage = FlutterSecureStorage(
-      aOptions: androidOptions,
+    const secureStorage = FlutterSecureStorage(
       // iOptions: iosOptions,
     );
     instance.registerLazySingleton<FlutterSecureStorage>(() => secureStorage);

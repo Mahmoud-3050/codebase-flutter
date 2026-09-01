@@ -66,7 +66,7 @@ class ArabicToEnglishNumberFormatter extends TextInputFormatter {
     return newValue.copyWith(
       text: converted,
       selection: newValue.selection,
-      composing: TextRange.empty,
+      composing: .empty,
     );
   }
 }

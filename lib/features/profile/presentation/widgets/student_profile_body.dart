@@ -81,12 +81,12 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
         padding: .all(16.w),
         children: [
           _StudentProfileHeader(student: widget.student),
-          SizedBox(height: 24.h),
+          24.hGap,
           Text(
             Strings.personalData,
             style: TextStyles.of(size: 16, weight: .w600),
           ),
-          SizedBox(height: 12.h),
+          12.hGap,
           AppTextFormField.nameTextField(
             controller: _firstNameController,
             hintText: Strings.firstName,

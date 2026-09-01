@@ -87,7 +87,7 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
     if (dataType != null) {
       dataJson = dataType.isList
           ? '[]'
-          : (dataType == DartType.model ? '<String, dynamic>{}' : "''");
+          : (dataType == .model ? '<String, dynamic>{}' : "''");
     }
 
     buffer.writeln(

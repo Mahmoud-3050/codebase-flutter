@@ -87,7 +87,7 @@ class Request {
     );
 
     final int modeInt = (json['mode'] as num?)?.toInt() ?? 1;
-    final ModeType modeType = ModeType.fromCode(modeInt);
+    final ModeType modeType = .fromCode(modeInt);
 
     return Request(
       file: file,
@@ -97,7 +97,7 @@ class Request {
       endpoint: endpointModel,
       type:
           RequestTypeExtension.fromString(json['type']?.toString() ?? '') ??
-          RequestType.get,
+          .get,
       hasToken: (json['token'] as bool?) ?? false,
       params: json['params'] as Map<String, dynamic>?,
       response:

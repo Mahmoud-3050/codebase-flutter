@@ -48,7 +48,7 @@ abstract final class LanguageYamlLoader {
     );
 
     return LanguageConfig(
-      jsonAssetPaths: List.unmodifiable(jsonAssetPaths),
+      jsonAssetPaths: .unmodifiable(jsonAssetPaths),
       defaultLanguage: defaultLanguage,
     );
   }

@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'dart:io';
 
 /// Script to find unused assets in Flutter project

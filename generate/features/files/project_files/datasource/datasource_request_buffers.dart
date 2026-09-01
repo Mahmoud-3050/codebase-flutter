@@ -1,4 +1,3 @@
-import '../../../../utils/enums.dart';
 import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_buffers.dart';
@@ -77,15 +76,11 @@ class DatasourceRequestBuffers extends BaseRequestBuffers {
     );
     buffer.writeln('        ${request.names.camelCase}Endpoint,');
     bool isBodyRequest =
-        request.type == RequestType.post ||
-        request.type == RequestType.put ||
-        request.type == RequestType.patch;
+        request.type == .post || request.type == .put || request.type == .patch;
     if (hasParams && isBodyRequest) {
       buffer.writeln('        body: params.toJson(),');
     }
-    if (hasParams &&
-        request.type == RequestType.get &&
-        request.endpoint.hasQueryParams) {
+    if (hasParams && request.type == .get && request.endpoint.hasQueryParams) {
       buffer.writeln('        queryParameters: params.toJson(),');
     }
     buffer.writeln('      );');

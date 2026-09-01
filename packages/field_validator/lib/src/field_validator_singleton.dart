@@ -6,7 +6,7 @@ import 'validator_messages.dart';
 /// Singleton manager for field validation configuration and factory methods.
 class FieldValidator {
   FieldValidator._internal();
-  static final FieldValidator _instance = FieldValidator._internal();
+  static final FieldValidator _instance = ._internal();
   static FieldValidator get instance => _instance;
   factory FieldValidator() => _instance;
 

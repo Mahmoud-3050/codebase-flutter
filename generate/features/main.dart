@@ -18,7 +18,7 @@ void main(List<String> args) async {
   final Feature? feature = FeatureLoader.load(config.featureName);
   if (feature == null) return;
 
-  if (feature.modeType == ModeType.protected) {
+  if (feature.modeType == .protected) {
     ConsoleLogger.info('You are in PROTECTED mode');
     ConsoleLogger.error('CLOSED!');
     return;

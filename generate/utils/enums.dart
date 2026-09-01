@@ -11,10 +11,10 @@ enum ModeType {
   const ModeType(this.code);
 
   static ModeType fromCode(int code) => switch (code) {
-    1 => ModeType.generate,
-    2 => ModeType.modify,
-    3 => ModeType.delete,
-    _ => ModeType.protected,
+    1 => .generate,
+    2 => .modify,
+    3 => .delete,
+    _ => .protected,
   };
 }
 
@@ -81,18 +81,18 @@ enum DartType {
   }
 
   String typeName({String modelClass = 'Data'}) => switch (this) {
-    DartType.int => 'int',
-    DartType.double => 'double',
-    DartType.bool => 'bool',
-    DartType.string => 'String',
-    DartType.list => 'List<dynamic>',
-    DartType.listString => 'List<String>',
-    DartType.listInt => 'List<int>',
-    DartType.listDouble => 'List<double>',
-    DartType.listBool => 'List<bool>',
-    DartType.listModel => 'List<$modelClass>',
-    DartType.model => modelClass,
-    DartType.dynamicType => 'dynamic',
+    .int => 'int',
+    .double => 'double',
+    .bool => 'bool',
+    .string => 'String',
+    .list => 'List<dynamic>',
+    .listString => 'List<String>',
+    .listInt => 'List<int>',
+    .listDouble => 'List<double>',
+    .listBool => 'List<bool>',
+    .listModel => 'List<$modelClass>',
+    .model => modelClass,
+    .dynamicType => 'dynamic',
   };
 
   core.bool get isList => switch (this) {
@@ -101,7 +101,7 @@ enum DartType {
     DartType.listInt ||
     DartType.listDouble ||
     DartType.listBool ||
-    DartType.listModel => true,
+    .listModel => true,
     _ => false,
   };
 }

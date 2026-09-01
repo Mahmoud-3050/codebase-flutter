@@ -15,7 +15,7 @@ class FeaturePaths {
   });
 
   factory FeaturePaths.fromFeatureName(Names featureNames) {
-    final Directory projectRoot = Directory.current;
+    final Directory projectRoot = .current;
     final String featureProjectPath =
         '${projectRoot.absolute.path}/${GenerateConstants.projectFeaturesPath}/${featureNames.snakeCase}';
     final String featureJsonFilesPath =

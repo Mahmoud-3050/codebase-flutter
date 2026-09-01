@@ -1,7 +1,8 @@
 include: package:flutter_lints/flutter.yaml
 
 plugins:
-  prefer_shorthands: ^0.4.7
+  prefer_shorthands:
+    path: packages/prefer_shorthands
 
 linter:
   rules:
@@ -13,5 +14,3 @@ linter:
     prefer_const_constructors: true
     prefer_const_literals_to_create_immutables: true
     avoid_redundant_argument_values: true
-    prefer_shorthands:
-      convert_implicit_declaration: true

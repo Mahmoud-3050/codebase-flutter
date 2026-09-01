@@ -39,13 +39,12 @@ class EntityRequestBuffers extends BaseRequestBuffers {
     );
 
     ///-> Data Model
-    if (dataType != null &&
-        (dataType == DartType.model || dataType == DartType.listModel)) {
+    if (dataType != null && (dataType == .model || dataType == .listModel)) {
       Map<String, dynamic> dataMap = <String, dynamic>{};
-      if (dataType == DartType.model) {
+      if (dataType == .model) {
         dataMap = request.response['data'];
       }
-      if (dataType == DartType.listModel) {
+      if (dataType == .listModel) {
         dataMap = request.response['data'][0];
       }
       fetchJsonKeys(modelName, dataMap);

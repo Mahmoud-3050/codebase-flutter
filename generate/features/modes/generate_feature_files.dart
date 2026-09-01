@@ -23,7 +23,7 @@ abstract class GenerateFeature {
     required Feature feature,
     bool generateTest = false,
   }) async {
-    final Directory projectRoot = Directory.current;
+    final Directory projectRoot = .current;
     final String featurePath =
         '${projectRoot.absolute.path}/${GenerateConstants.projectFeaturesPath}/${feature.names.snakeCase}';
 

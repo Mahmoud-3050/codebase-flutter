@@ -1,3 +1,4 @@
+// ignore_for_file: avoid_print
 import 'dart:convert';
 import 'dart:io';
 
@@ -27,7 +28,7 @@ void main() async {
   List<Map<String, dynamic>> routeConfigs = [];
 
   if (jsonData is List) {
-    routeConfigs = List<Map<String, dynamic>>.from(jsonData);
+    routeConfigs = .from(jsonData);
   } else if (jsonData is Map) {
     routeConfigs = [Map<String, dynamic>.from(jsonData)];
   } else {

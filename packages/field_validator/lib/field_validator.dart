@@ -1,4 +1,4 @@
-library field_validator;
+library;
 
 export 'src/asset_loader.dart';
 export 'src/base_validator.dart';

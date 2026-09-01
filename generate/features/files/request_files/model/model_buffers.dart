@@ -41,13 +41,12 @@ class ModelRequestBuffers extends BaseRequestBuffers {
     );
 
     ///-> Data Model
-    if (dataType != null &&
-        (dataType == DartType.model || dataType == DartType.listModel)) {
+    if (dataType != null && (dataType == .model || dataType == .listModel)) {
       Map<String, dynamic> dataMap = <String, dynamic>{};
-      if (dataType == DartType.model) {
+      if (dataType == .model) {
         dataMap = request.response['data'];
       }
-      if (dataType == DartType.listModel) {
+      if (dataType == .listModel) {
         dataMap = request.response['data'][0];
       }
       fetchJsonKeys(modelName, dataMap);
@@ -121,13 +120,13 @@ class ModelRequestBuffers extends BaseRequestBuffers {
     //     buffer.writeln("        data: json['data'],");
     //   }
     // }
-    if (dataType != null && dataType == DartType.listModel) {
+    if (dataType != null && dataType == .listModel) {
       buffer.writeln("        data: (json['data'] as List<dynamic>)");
       buffer.writeln(
         '            .map((dynamic e) => ${modelName}Model.fromJson(e))',
       );
       buffer.writeln('            .toList(),');
-    } else if (dataType != null && dataType == DartType.model) {
+    } else if (dataType != null && dataType == .model) {
       buffer.writeln("        data: ${modelName}Model.fromJson(json['data']),");
     } else if (dataType != null) {
       buffer.writeln("        data: json['data'] as ${dataType.typeName()},");
