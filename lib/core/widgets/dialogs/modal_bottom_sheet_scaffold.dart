@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:themes/themes.dart';
 
-import '../../../injection_container.dart';
 import '../../utils/values/text_styles.dart';
 import '../app_divider.dart';
 
@@ -13,13 +13,15 @@ class ModalBottomSheetScaffold extends StatelessWidget {
 
   const ModalBottomSheetScaffold({
     required this.title,
-    required this.child, this.subTitle = '',
+    required this.child,
+    this.subTitle = '',
     this.icon,
     super.key,
   });
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 8.h),
       decoration: BoxDecoration(
@@ -35,23 +37,24 @@ class ModalBottomSheetScaffold extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              icon?? IconButton(
-                onPressed: (){},
-                icon: Icon(
-                  Icons.close_rounded,
-                  size: 32.r,
-                  color: Colors.transparent,
-                ),
-              ),
+              icon ??
+                  IconButton(
+                    onPressed: () {},
+                    icon: Icon(
+                      Icons.close_rounded,
+                      size: 32.r,
+                      color: Colors.transparent,
+                    ),
+                  ),
               Expanded(
                 child: Text(
                   title,
-                  style: TextStyles.medium18(color: colors.textPrimary),
+                  style: TextStyles.of(size: 18, weight: FontWeight.w500),
                   textAlign: TextAlign.center,
                 ),
               ),
               IconButton(
-                onPressed: (){
+                onPressed: () {
                   Navigator.pop(context);
                 },
                 icon: Icon(
@@ -64,19 +67,20 @@ class ModalBottomSheetScaffold extends StatelessWidget {
           ),
           subTitle.isNotEmpty
               ? Center(
-                child: Text(
-                  subTitle,
-                  style: TextStyles.regular14(color: colors.textSecondary),
-                  textAlign: TextAlign.center,
-                ),
-              ) : const SizedBox(),
+                  child: Text(
+                    subTitle,
+                    style: TextStyles.of(size: 14, color: colors.textSecondary),
+                    textAlign: TextAlign.center,
+                  ),
+                )
+              : const SizedBox(),
           SizedBox(height: 32.h),
           const AppDivider(),
+
           ///Body
           child,
         ],
       ),
     );
   }
-
 }

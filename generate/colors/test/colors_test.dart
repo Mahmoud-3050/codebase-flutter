@@ -6,9 +6,11 @@ import '../src/color_helper.dart';
 import '../src/colors_generator.dart';
 
 const String _palettesFixture = '''
+import 'color_keys.dart';
+
 abstract final class ColorsPalettes {
   static const Map<String, Color> _sharedExtra = {
-    'yellow': Color(0xFFECC826),
+    ColorKeys.yellow: Color(0xFFECC826),
   };
 
   static const ThemeColors _light = ThemeColors(
@@ -16,7 +18,7 @@ abstract final class ColorsPalettes {
     success: Color(0xFF00B507),
     extra: {
       ..._sharedExtra,
-      'greyBackground': Color(0xFFEAEBED),
+      ColorKeys.greyBackground: Color(0xFFEAEBED),
     },
   );
 
@@ -25,7 +27,7 @@ abstract final class ColorsPalettes {
     success: Color(0xFF00B507),
     extra: {
       ..._sharedExtra,
-      'greyBackground': Color(0xFF13151C),
+      ColorKeys.greyBackground: Color(0xFF13151C),
     },
   );
 
@@ -38,13 +40,22 @@ abstract final class ColorsPalettes {
 ''';
 
 const String _extrasFixture = '''
+import 'color_keys.dart';
+
 extension ExtraColors on ThemeColors {
-  Color get yellow => extra('yellow');
-  Color get greyBackground => extra('greyBackground');
+  Color get yellow => extra(ColorKeys.yellow);
+  Color get greyBackground => extra(ColorKeys.greyBackground);
 
   LinearGradient get primaryGradient => LinearGradient(
         colors: [secondary, primary],
       );
+}
+''';
+
+const String _colorKeysFixture = '''
+abstract final class ColorKeys {
+  static const String yellow = 'yellow';
+  static const String greyBackground = 'greyBackground';
 }
 ''';
 
@@ -133,10 +144,7 @@ void main() {
 
   group('ColorException', () {
     test('toString includes the message', () {
-      expect(
-        const ColorException('bad hex').toString(),
-        contains('bad hex'),
-      );
+      expect(const ColorException('bad hex').toString(), contains('bad hex'));
     });
   });
 
@@ -168,10 +176,7 @@ void main() {
     });
 
     test('parses light;dark pair on the same key', () {
-      final ColorEntry? entry = parseColorEntry(
-        'testColor',
-        '#5F17ED;#5F17FF',
-      );
+      final ColorEntry? entry = parseColorEntry('testColor', '#5F17ED;#5F17FF');
       expect(entry, isNotNull);
       expect(entry!.camelCase, 'testColor');
       expect(entry.lightHex, 'FF5F17ED');
@@ -237,10 +242,15 @@ void main() {
       expect(hasTypedField(_palettesFixture, 'yellow'), isFalse);
     });
 
-    test('detects quoted extra map keys', () {
+    test('detects ColorKeys extra map keys', () {
       expect(hasExtraKey(_palettesFixture, 'yellow'), isTrue);
       expect(hasExtraKey(_palettesFixture, 'greyBackground'), isTrue);
       expect(hasExtraKey(_palettesFixture, 'primary'), isFalse);
+    });
+
+    test('detects quoted extra map keys for migration', () {
+      const String quoted = "    'yellow': Color(0xFFECC826),\n";
+      expect(hasExtraKey(quoted, 'yellow'), isTrue);
     });
 
     test('distinguishes shared extras from per-palette extras', () {
@@ -251,8 +261,11 @@ void main() {
 
   group('replaceTypedField', () {
     test('updates every matching typed field (light and dark)', () {
-      final String next =
-          replaceTypedField(_palettesFixture, 'primary', 'FF6A20FF');
+      final String next = replaceTypedField(
+        _palettesFixture,
+        'primary',
+        'FF6A20FF',
+      );
       expect('primary: Color(0xFF6A20FF),'.allMatches(next).length, 2);
       expect(next.contains('primary: Color(0xFF5F17ED)'), isFalse);
       expect(next.contains('primary: Color(0xFF111111)'), isFalse);
@@ -262,38 +275,63 @@ void main() {
 
   group('replaceExtraKey', () {
     test('updates shared extra keys', () {
-      final String next =
-          replaceExtraKey(_palettesFixture, 'yellow', 'FFD4B020');
-      expect(next.contains("'yellow': Color(0xFFD4B020),"), isTrue);
-      expect(next.contains("'yellow': Color(0xFFECC826),"), isFalse);
+      final String next = replaceExtraKey(
+        _palettesFixture,
+        'yellow',
+        'FFD4B020',
+      );
+      expect(next.contains('ColorKeys.yellow: Color(0xFFD4B020),'), isTrue);
+      expect(next.contains('ColorKeys.yellow: Color(0xFFECC826),'), isFalse);
     });
 
     test('updates per-palette extra keys independently', () {
-      final String next =
-          replaceExtraKey(_palettesFixture, 'greyBackground', 'FFFFFFFF');
-      expect("'greyBackground': Color(0xFFFFFFFF),".allMatches(next).length, 2);
+      final String next = replaceExtraKey(
+        _palettesFixture,
+        'greyBackground',
+        'FFFFFFFF',
+      );
+      expect(
+        'ColorKeys.greyBackground: Color(0xFFFFFFFF),'.allMatches(next).length,
+        2,
+      );
+    });
+
+    test('migrates quoted extra keys to ColorKeys', () {
+      const String quoted = "    'yellow': Color(0xFFECC826),\n";
+      final String next = replaceExtraKey(quoted, 'yellow', 'FFD4B020');
+      expect(next.contains('ColorKeys.yellow: Color(0xFFD4B020),'), isTrue);
+      expect(next.contains("'yellow':"), isFalse);
     });
   });
 
   group('addSharedExtra', () {
     test('appends a new extra to _sharedExtra', () {
-      final String next =
-          addSharedExtra(_palettesFixture, 'brandAccent', 'FFFF00AA');
-      expect(next.contains("'brandAccent': Color(0xFFFF00AA),"), isTrue);
-      expect(next.contains("'yellow': Color(0xFFECC826),"), isTrue);
+      final String next = addSharedExtra(
+        _palettesFixture,
+        'brandAccent',
+        'FFFF00AA',
+      );
+      expect(
+        next.contains('ColorKeys.brandAccent: Color(0xFFFF00AA),'),
+        isTrue,
+      );
+      expect(next.contains('ColorKeys.yellow: Color(0xFFECC826),'), isTrue);
     });
 
     test('adds a trailing comma when the last extra has none', () {
       const String noComma = '''
 abstract final class ColorsPalettes {
   static const Map<String, Color> _sharedExtra = {
-    'yellow': Color(0xFFECC826)
+    ColorKeys.yellow: Color(0xFFECC826)
   };
 }
 ''';
       final String next = addSharedExtra(noComma, 'brandAccent', 'FFFF00AA');
-      expect(next.contains("'yellow': Color(0xFFECC826),"), isTrue);
-      expect(next.contains("'brandAccent': Color(0xFFFF00AA),"), isTrue);
+      expect(next.contains('ColorKeys.yellow: Color(0xFFECC826),'), isTrue);
+      expect(
+        next.contains('ColorKeys.brandAccent: Color(0xFFFF00AA),'),
+        isTrue,
+      );
     });
 
     test('throws when _light palette is missing', () {
@@ -309,14 +347,14 @@ abstract final class ColorsPalettes {
   static const ThemeColors _light = ThemeColors(
     primary: Color(0xFF5F17ED),
     extra: {
-      'greyBackground': Color(0xFFEAEBED),
+      ColorKeys.greyBackground: Color(0xFFEAEBED),
     },
   );
 
   static const ThemeColors _dark = ThemeColors(
     primary: Color(0xFF111111),
     extra: {
-      'greyBackground': Color(0xFF13151C),
+      ColorKeys.greyBackground: Color(0xFF13151C),
     },
   );
 }
@@ -324,10 +362,7 @@ abstract final class ColorsPalettes {
       final String next = addSharedExtra(noShared, 'testColor', 'FF5F17ED');
       expect(hasSharedExtraKey(next, 'testColor'), isTrue);
       expect(next.contains('..._sharedExtra'), isTrue);
-      expect(
-        next.contains("'testColor': Color(0xFF5F17ED),"),
-        isTrue,
-      );
+      expect(next.contains('ColorKeys.testColor: Color(0xFF5F17ED),'), isTrue);
     });
   });
 
@@ -335,13 +370,10 @@ abstract final class ColorsPalettes {
     test('inserts a getter before primaryGradient', () {
       final String next = ensureExtraGetter(_extrasFixture, 'brandAccent');
       expect(
-        next.contains("Color get brandAccent => extra('brandAccent');"),
+        next.contains('Color get brandAccent => extra(ColorKeys.brandAccent);'),
         isTrue,
       );
-      expect(
-        next.contains('LinearGradient get primaryGradient'),
-        isTrue,
-      );
+      expect(next.contains('LinearGradient get primaryGradient'), isTrue);
       expect(
         next.indexOf('brandAccent'),
         lessThan(next.indexOf('primaryGradient')),
@@ -353,15 +385,29 @@ abstract final class ColorsPalettes {
       expect('Color get yellow =>'.allMatches(next).length, 1);
     });
 
-    test('inserts before the last brace when there is no gradient', () {
-      const String noGradient = '''
+    test('migrates a quoted extra() call to ColorKeys', () {
+      const String quoted = '''
 extension ExtraColors on ThemeColors {
   Color get yellow => extra('yellow');
 }
 ''';
+      final String next = ensureExtraGetter(quoted, 'yellow');
+      expect(
+        next.contains('Color get yellow => extra(ColorKeys.yellow);'),
+        isTrue,
+      );
+      expect('Color get yellow =>'.allMatches(next).length, 1);
+    });
+
+    test('inserts before the last brace when there is no gradient', () {
+      const String noGradient = '''
+extension ExtraColors on ThemeColors {
+  Color get yellow => extra(ColorKeys.yellow);
+}
+''';
       final String next = ensureExtraGetter(noGradient, 'brandAccent');
       expect(
-        next.contains("Color get brandAccent => extra('brandAccent');"),
+        next.contains('Color get brandAccent => extra(ColorKeys.brandAccent);'),
         isTrue,
       );
       expect(next.trim().endsWith('}'), isTrue);
@@ -375,11 +421,63 @@ extension ExtraColors on ThemeColors {
     });
   });
 
+  group('ensureColorKey / ensureColorKeysImport', () {
+    test('appends a missing ColorKeys constant', () {
+      final String next = ensureColorKey(_colorKeysFixture, 'brandAccent');
+      expect(
+        next.contains("static const String brandAccent = 'brandAccent';"),
+        isTrue,
+      );
+      expect(next.contains("static const String yellow = 'yellow';"), isTrue);
+    });
+
+    test('does not duplicate an existing ColorKeys constant', () {
+      final String next = ensureColorKey(_colorKeysFixture, 'yellow');
+      expect(
+        "static const String yellow = 'yellow';".allMatches(next).length,
+        1,
+      );
+    });
+
+    test('creates ColorKeys when the catalog is empty', () {
+      final String next = ensureColorKey('', 'yellow');
+      expect(next.contains('class ColorKeys'), isTrue);
+      expect(next.contains("static const String yellow = 'yellow';"), isTrue);
+    });
+
+    test('inserts color_keys import after existing imports', () {
+      const String source = '''
+import 'package:flutter/material.dart';
+import 'package:themes/themes.dart';
+
+abstract final class ColorsPalettes {}
+''';
+      final String next = ensureColorKeysImport(source);
+      expect(next.contains("import 'color_keys.dart';"), isTrue);
+      expect(
+        next.indexOf("import 'package:themes/themes.dart';"),
+        lessThan(next.indexOf("import 'color_keys.dart';")),
+      );
+    });
+
+    test('does not duplicate color_keys import', () {
+      final String next = ensureColorKeysImport(_palettesFixture);
+      expect("import 'color_keys.dart';".allMatches(next).length, 1);
+    });
+
+    test('prepends color_keys import when the file has none', () {
+      const String source = 'abstract final class ColorsPalettes {}\n';
+      final String next = ensureColorKeysImport(source);
+      expect(next.startsWith("import 'color_keys.dart';"), isTrue);
+    });
+  });
+
   group('applyColors', () {
     test('updates an existing typed field in both palettes', () {
       final ColorApplyResult result = applyColors(
         palettes: _palettesFixture,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{'primary': '#6A20FF'},
       );
       expect(result.applied, 1);
@@ -388,44 +486,62 @@ extension ExtraColors on ThemeColors {
         2,
       );
       expect(result.extras, _extrasFixture);
+      expect(result.colorKeys, _colorKeysFixture);
     });
 
     test('updates an existing extra value', () {
       final ColorApplyResult result = applyColors(
         palettes: _palettesFixture,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{'yellow': '#D4B020'},
       );
       expect(result.applied, 1);
       expect(
-        result.palettes.contains("'yellow': Color(0xFFD4B020),"),
+        result.palettes.contains('ColorKeys.yellow: Color(0xFFD4B020),'),
         isTrue,
       );
       expect('Color get yellow =>'.allMatches(result.extras).length, 1);
+      expect(
+        result.colorKeys.contains("static const String yellow = 'yellow';"),
+        isTrue,
+      );
     });
 
-    test('adds a new extra key and ExtraColors getter', () {
-      final ColorApplyResult result = applyColors(
-        palettes: _palettesFixture,
-        extras: _extrasFixture,
-        json: <String, dynamic>{'brand_accent': '#FF00AA'},
-      );
-      expect(result.applied, 1);
-      expect(
-        result.palettes.contains("'brandAccent': Color(0xFFFF00AA),"),
-        isTrue,
-      );
-      expect(
-        result.extras
-            .contains("Color get brandAccent => extra('brandAccent');"),
-        isTrue,
-      );
-    });
+    test(
+      'adds a new extra key, ColorKeys constant, and ExtraColors getter',
+      () {
+        final ColorApplyResult result = applyColors(
+          palettes: _palettesFixture,
+          extras: _extrasFixture,
+          colorKeys: _colorKeysFixture,
+          json: <String, dynamic>{'brand_accent': '#FF00AA'},
+        );
+        expect(result.applied, 1);
+        expect(
+          result.palettes.contains('ColorKeys.brandAccent: Color(0xFFFF00AA),'),
+          isTrue,
+        );
+        expect(
+          result.extras.contains(
+            'Color get brandAccent => extra(ColorKeys.brandAccent);',
+          ),
+          isTrue,
+        );
+        expect(
+          result.colorKeys.contains(
+            "static const String brandAccent = 'brandAccent';",
+          ),
+          isTrue,
+        );
+      },
+    );
 
     test('applies mixed valid entries and skips invalid ones', () {
       final ColorApplyResult result = applyColors(
         palettes: _palettesFixture,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{
           'primary': '#6A20FF',
           'class': '#000000',
@@ -438,7 +554,7 @@ extension ExtraColors on ThemeColors {
       expect(result.applied, 2);
       expect(result.palettes.contains('primary: Color(0xFF6A20FF),'), isTrue);
       expect(
-        result.palettes.contains("'brandAccent': Color(0xFFFF00AA),"),
+        result.palettes.contains('ColorKeys.brandAccent: Color(0xFFFF00AA),'),
         isTrue,
       );
       expect(hasTypedField(result.palettes, 'class'), isFalse);
@@ -448,31 +564,39 @@ extension ExtraColors on ThemeColors {
       final ColorApplyResult result = applyColors(
         palettes: _palettesFixture,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{},
       );
       expect(result.applied, 0);
       expect(result.palettes, _palettesFixture);
       expect(result.extras, _extrasFixture);
+      expect(result.colorKeys, _colorKeysFixture);
     });
 
-    test('prefers typed field over extra when the name matches a typed token',
-        () {
-      final ColorApplyResult result = applyColors(
-        palettes: _palettesFixture,
-        extras: _extrasFixture,
-        json: <String, dynamic>{'success': '#00D60A'},
-      );
-      expect(result.palettes.contains('success: Color(0xFF00D60A),'), isTrue);
-      expect(
-        result.extras.contains("Color get success => extra('success');"),
-        isFalse,
-      );
-    });
+    test(
+      'prefers typed field over extra when the name matches a typed token',
+      () {
+        final ColorApplyResult result = applyColors(
+          palettes: _palettesFixture,
+          extras: _extrasFixture,
+          colorKeys: _colorKeysFixture,
+          json: <String, dynamic>{'success': '#00D60A'},
+        );
+        expect(result.palettes.contains('success: Color(0xFF00D60A),'), isTrue);
+        expect(
+          result.extras.contains(
+            'Color get success => extra(ColorKeys.success);',
+          ),
+          isFalse,
+        );
+      },
+    );
 
     test('sets typed light and dark from a semicolon pair', () {
       final ColorApplyResult result = applyColors(
         palettes: _palettesFixture,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{'primary': '#6A20FF;#00AA11'},
       );
       expect(result.applied, 1);
@@ -488,16 +612,17 @@ extension ExtraColors on ThemeColors {
       final ColorApplyResult result = applyColors(
         palettes: _palettesFixture,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{'yellow': '#ECC826;#D4B020'},
       );
       expect(result.applied, 1);
       expect(hasSharedExtraKey(result.palettes, 'yellow'), isFalse);
       expect(
-        result.palettes.contains("'yellow': Color(0xFFECC826),"),
+        result.palettes.contains('ColorKeys.yellow: Color(0xFFECC826),'),
         isTrue,
       );
       expect(
-        result.palettes.contains("'yellow': Color(0xFFD4B020),"),
+        result.palettes.contains('ColorKeys.yellow: Color(0xFFD4B020),'),
         isTrue,
       );
       expect('Color get yellow =>'.allMatches(result.extras).length, 1);
@@ -507,15 +632,20 @@ extension ExtraColors on ThemeColors {
       final ColorApplyResult result = applyColors(
         palettes: _palettesFixture,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{'greyBackground': '#EAEBED;#13151C'},
       );
       expect(result.applied, 1);
       expect(
-        result.palettes.contains("'greyBackground': Color(0xFFEAEBED),"),
+        result.palettes.contains(
+          'ColorKeys.greyBackground: Color(0xFFEAEBED),',
+        ),
         isTrue,
       );
       expect(
-        result.palettes.contains("'greyBackground': Color(0xFF13151C),"),
+        result.palettes.contains(
+          'ColorKeys.greyBackground: Color(0xFF13151C),',
+        ),
         isTrue,
       );
     });
@@ -524,16 +654,28 @@ extension ExtraColors on ThemeColors {
       final ColorApplyResult result = applyColors(
         palettes: _palettesFixture,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{'testColor': '#5F17ED'},
       );
       expect(result.applied, 1);
       expect(hasSharedExtraKey(result.palettes, 'testColor'), isTrue);
       final String light = _paletteSlice(result.palettes, '_light', '_dark');
       final String dark = _paletteSlice(result.palettes, '_dark', null);
-      expect(light.contains("'testColor': Color(0xFF5F17ED),"), isFalse);
-      expect(dark.contains("'testColor': Color(0xFF5F17ED),"), isFalse);
       expect(
-        result.extras.contains("Color get testColor => extra('testColor');"),
+        light.contains('ColorKeys.testColor: Color(0xFF5F17ED),'),
+        isFalse,
+      );
+      expect(dark.contains('ColorKeys.testColor: Color(0xFF5F17ED),'), isFalse);
+      expect(
+        result.extras.contains(
+          'Color get testColor => extra(ColorKeys.testColor);',
+        ),
+        isTrue,
+      );
+      expect(
+        result.colorKeys.contains(
+          "static const String testColor = 'testColor';",
+        ),
         isTrue,
       );
     });
@@ -542,16 +684,19 @@ extension ExtraColors on ThemeColors {
       final ColorApplyResult result = applyColors(
         palettes: _palettesFixture,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{'testColor': '#5F17ED;#5F17FF'},
       );
       expect(result.applied, 1);
       expect(hasSharedExtraKey(result.palettes, 'testColor'), isFalse);
       final String light = _paletteSlice(result.palettes, '_light', '_dark');
       final String dark = _paletteSlice(result.palettes, '_dark', null);
-      expect(light.contains("'testColor': Color(0xFF5F17ED),"), isTrue);
-      expect(dark.contains("'testColor': Color(0xFF5F17FF),"), isTrue);
+      expect(light.contains('ColorKeys.testColor: Color(0xFF5F17ED),'), isTrue);
+      expect(dark.contains('ColorKeys.testColor: Color(0xFF5F17FF),'), isTrue);
       expect(
-        result.extras.contains("Color get testColor => extra('testColor');"),
+        result.extras.contains(
+          'Color get testColor => extra(ColorKeys.testColor);',
+        ),
         isTrue,
       );
     });
@@ -560,12 +705,10 @@ extension ExtraColors on ThemeColors {
       final ColorApplyResult result = applyColors(
         palettes: _palettesFixture,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{'testColor': '#5F17ED;#5F17FF'},
       );
-      expect(
-        result.palettes.contains('defaultMode: ThemeMode.dark,'),
-        isTrue,
-      );
+      expect(result.palettes.contains('defaultMode: ThemeMode.dark,'), isTrue);
     });
 
     test('creates _sharedExtra when missing and json has a single hex', () {
@@ -574,14 +717,14 @@ abstract final class ColorsPalettes {
   static const ThemeColors _light = ThemeColors(
     primary: Color(0xFF5F17ED),
     extra: {
-      'greyBackground': Color(0xFFEAEBED),
+      ColorKeys.greyBackground: Color(0xFFEAEBED),
     },
   );
 
   static const ThemeColors _dark = ThemeColors(
     primary: Color(0xFF111111),
     extra: {
-      'greyBackground': Color(0xFF13151C),
+      ColorKeys.greyBackground: Color(0xFF13151C),
     },
   );
 }
@@ -589,37 +732,41 @@ abstract final class ColorsPalettes {
       final ColorApplyResult result = applyColors(
         palettes: noShared,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{'testColor': '#5F17ED'},
       );
       expect(result.applied, 1);
       expect(
-        result.palettes
-            .contains('static const Map<String, Color> _sharedExtra'),
+        result.palettes.contains(
+          'static const Map<String, Color> _sharedExtra',
+        ),
         isTrue,
       );
       expect(hasSharedExtraKey(result.palettes, 'testColor'), isTrue);
+      expect('..._sharedExtra,'.allMatches(result.palettes).length, 2);
       expect(
-        '..._sharedExtra,'.allMatches(result.palettes).length,
-        2,
-      );
-      expect(
-        result.extras.contains("Color get testColor => extra('testColor');"),
+        result.extras.contains(
+          'Color get testColor => extra(ColorKeys.testColor);',
+        ),
         isTrue,
       );
+      expect(result.palettes.contains("import 'color_keys.dart';"), isTrue);
     });
 
     test('moves a per-palette extra into _sharedExtra for a single hex', () {
       const String splitExtra = '''
+import 'color_keys.dart';
+
 abstract final class ColorsPalettes {
   static const Map<String, Color> _sharedExtra = {
-    'yellow': Color(0xFFECC826),
+    ColorKeys.yellow: Color(0xFFECC826),
   };
 
   static const ThemeColors _light = ThemeColors(
     primary: Color(0xFF5F17ED),
     extra: {
       ..._sharedExtra,
-      'testColor': Color(0xFF5F17ED),
+      ColorKeys.testColor: Color(0xFF5F17ED),
     },
   );
 
@@ -627,7 +774,7 @@ abstract final class ColorsPalettes {
     primary: Color(0xFF111111),
     extra: {
       ..._sharedExtra,
-      'testColor': Color(0xFF5F17FF),
+      ColorKeys.testColor: Color(0xFF5F17FF),
     },
   );
 }
@@ -635,20 +782,25 @@ abstract final class ColorsPalettes {
       final ColorApplyResult result = applyColors(
         palettes: splitExtra,
         extras: _extrasFixture,
+        colorKeys: _colorKeysFixture,
         json: <String, dynamic>{'testColor': '#5F17ED'},
       );
       expect(hasSharedExtraKey(result.palettes, 'testColor'), isTrue);
       final String light = _paletteSlice(result.palettes, '_light', '_dark');
       final String dark = _paletteSlice(result.palettes, '_dark', null);
-      expect(light.contains("'testColor': Color(0xFF5F17ED),"), isFalse);
-      expect(dark.contains("'testColor': Color(0xFF5F17FF),"), isFalse);
+      expect(
+        light.contains('ColorKeys.testColor: Color(0xFF5F17ED),'),
+        isFalse,
+      );
+      expect(dark.contains('ColorKeys.testColor: Color(0xFF5F17FF),'), isFalse);
     });
   });
 }
 
 String _paletteSlice(String source, String startMarker, String? endMarker) {
   final int start = source.indexOf(startMarker);
-  final int end =
-      endMarker == null ? source.length : source.indexOf(endMarker, start + 1);
+  final int end = endMarker == null
+      ? source.length
+      : source.indexOf(endMarker, start + 1);
   return source.substring(start, end);
 }

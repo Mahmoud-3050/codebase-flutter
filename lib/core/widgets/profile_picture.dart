@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:themes/themes.dart';
 
-import '../../injection_container.dart';
 import '../utils/extensions.dart';
 import '../utils/values/assets.dart';
 import 'app_image.dart';
@@ -50,7 +50,8 @@ class ProfilePicture extends StatelessWidget {
               width: width?? 80.w,
               height: height?? 80.h,
               fit: BoxFit.fill,
-              colorFilter: ColorFilterExtension.setColor(placeholderColor?? colors.textPrimary),
+              colorFilter: ColorFilterExtension.setColor(
+                  placeholderColor ?? context.colors.textPrimary),
             ),
           );
         }
@@ -59,7 +60,8 @@ class ProfilePicture extends StatelessWidget {
           width: width?? 80.w,
           height: height?? 80.h,
           fit: BoxFit.fill,
-          colorFilter: ColorFilterExtension.setColor(placeholderColor?? colors.textPrimary),
+          colorFilter: ColorFilterExtension.setColor(
+              placeholderColor ?? context.colors.textPrimary),
         );
       },
     );

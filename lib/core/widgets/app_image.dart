@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:themes/themes.dart';
 
 import '../utils/values/assets.dart';
 import '../../config/themes/extra_colors.dart';
@@ -134,7 +135,7 @@ class AppImage extends StatelessWidget {
         height: height,
         fit: fit,
         errorBuilder: (BuildContext context, Object url, StackTrace? error) =>
-            _errorWidget,
+            _errorWidget(context),
       );
 
   Widget get _imageAsset {
@@ -151,7 +152,7 @@ class AppImage extends StatelessWidget {
         height: height,
         fit: fit,
         errorBuilder: (BuildContext context, Object url, StackTrace? error) =>
-            _errorWidget,
+            _errorWidget(context),
       );
 
   Widget get _imageFile {
@@ -178,7 +179,8 @@ class AppImage extends StatelessWidget {
             return child;
           }
         },
-        errorBuilder: (BuildContext context, _, dynamic error) => _errorWidget,
+        errorBuilder: (BuildContext context, _, dynamic error) =>
+            _errorWidget(context),
       );
 
   Widget get _imageNetwork {
@@ -206,9 +208,10 @@ class AppImage extends StatelessWidget {
         height: height,
         fit: fit,
         placeholderFadeInDuration: const Duration(milliseconds: 500),
-        placeholder: (BuildContext context, String url) => _loadingWidget,
+        placeholder: (BuildContext context, String url) =>
+            _loadingWidget(context),
         errorWidget: (BuildContext context, String url, dynamic error) =>
-            _errorWidget,
+            _errorWidget(context),
       );
     }
     if (isCircle == true) {
@@ -217,12 +220,12 @@ class AppImage extends StatelessWidget {
     return _imageNetworkItem;
   }
 
-  Widget get _loadingWidget => Center(
+  Widget _loadingWidget(BuildContext context) => Center(
         child: AppShimmer(
           child: Container(
             width: width,
             height: height,
-            color: colors.baseColorShimmer,
+            color: context.colors.baseColorShimmer,
           ),
         ),
       );
@@ -236,11 +239,11 @@ class AppImage extends StatelessWidget {
   //   ).appLoading,
   // );
 
-  Widget get _errorWidget => Center(
+  Widget _errorWidget(BuildContext context) => Center(
         child: Container(
           width: width,
           height: height,
-          color: colors.baseColorShimmer,
+          color: context.colors.baseColorShimmer,
           child: const Icon(
             Icons.error,
             color: Colors.grey,

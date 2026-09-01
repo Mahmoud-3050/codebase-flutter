@@ -42,10 +42,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
         backgroundColor: colors.foreground,
         foregroundColor: colors.textPrimary,
         elevation: 0,
-        title: Text(
-          Strings.studentProfile,
-          style: TextStyles.medium18(color: colors.textPrimary),
-        ),
+        title: Text(Strings.studentProfile, style: TextStyles.of(size: 18, weight: FontWeight.w500)),
       ),
       body: BlocListener<UpdateStudentProfileCubit, UpdateStudentProfileState>(
         listener: (context, state) {
@@ -58,31 +55,23 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             context.read<GetStudentProfileCubit>().fGetStudentProfile();
           }
           if (state is UpdateStudentProfileErrorState) {
-            showAppSnackBar(
-              context: context,
-              message: state.message,
-              type: ToastType.error,
-            );
+            showAppSnackBar(context: context, message: state.message, type: ToastType.error);
           }
         },
         child: BlocBuilder<GetStudentProfileCubit, GetStudentProfileState>(
           builder: (context, state) => switch (state) {
-            GetStudentProfileInitialState() ||
-            GetStudentProfileLoadingState() =>
-              const _StudentProfileLoading(),
+            GetStudentProfileInitialState() || GetStudentProfileLoadingState() => const _StudentProfileLoading(),
             GetStudentProfileErrorState(:final message) => _StudentProfileError(
-                message: message,
-                onRetry: () =>
-                    context.read<GetStudentProfileCubit>().fGetStudentProfile(),
-              ),
-            GetStudentProfileSuccessState(:final data) => data == null
-                ? _StudentProfileError(
-                    message: Strings.pleaseTryAgainLater,
-                    onRetry: () => context
-                        .read<GetStudentProfileCubit>()
-                        .fGetStudentProfile(),
-                  )
-                : StudentProfileBody(student: data),
+              message: message,
+              onRetry: () => context.read<GetStudentProfileCubit>().fGetStudentProfile(),
+            ),
+            GetStudentProfileSuccessState(:final data) =>
+              data == null
+                  ? _StudentProfileError(
+                      message: Strings.pleaseTryAgainLater,
+                      onRetry: () => context.read<GetStudentProfileCubit>().fGetStudentProfile(),
+                    )
+                  : StudentProfileBody(student: data),
           },
         ),
       ),
@@ -102,30 +91,21 @@ class _StudentProfileLoading extends StatelessWidget {
         padding: EdgeInsets.all(16.w),
         child: Column(
           children: [
-            CircleAvatar(
-              radius: 44.r,
-              backgroundColor: colors.grey200,
-            ),
+            CircleAvatar(radius: 44.r, backgroundColor: colors.grey200),
             SizedBox(height: 16.h),
             Container(
               height: 18.h,
               width: 160.w,
-              decoration: BoxDecoration(
-                color: colors.grey200,
-                borderRadius: BorderRadius.circular(8.r),
-              ),
+              decoration: BoxDecoration(color: colors.grey200, borderRadius: BorderRadius.circular(8.r)),
             ),
             SizedBox(height: 24.h),
             ...List<Widget>.generate(
               4,
               (_) => Padding(
-                padding: EdgeInsets.only(bottom: 16.h),
+                padding: .only(bottom: 16.h),
                 child: Container(
                   height: 56.h,
-                  decoration: BoxDecoration(
-                    color: colors.grey200,
-                    borderRadius: BorderRadius.circular(12.r),
-                  ),
+                  decoration: BoxDecoration(color: colors.grey200, borderRadius: .circular(12.r)),
                 ),
               ),
             ),
@@ -137,10 +117,7 @@ class _StudentProfileLoading extends StatelessWidget {
 }
 
 class _StudentProfileError extends StatelessWidget {
-  const _StudentProfileError({
-    required this.message,
-    required this.onRetry,
-  });
+  const _StudentProfileError({required this.message, required this.onRetry});
 
   final String message;
   final VoidCallback onRetry;
@@ -148,20 +125,13 @@ class _StudentProfileError extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.all(16.w),
+      padding: .all(16.w),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
+        mainAxisAlignment: .center,
         children: [
-          EmptyWidget(
-            iconSvg: Assets.iconsUserEdit,
-            title: Strings.studentProfile,
-            message: message,
-          ),
+          EmptyWidget(iconSvg: Assets.iconsUserEdit, title: Strings.studentProfile, message: message),
           SizedBox(height: 24.h),
-          AppElevatedButton(
-            text: Strings.confirm,
-            onPressed: onRetry,
-          ),
+          AppElevatedButton(text: Strings.confirm, onPressed: onRetry),
         ],
       ),
     );

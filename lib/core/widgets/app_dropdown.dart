@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:themes/themes.dart';
 
-import '../../injection_container.dart';
 import '../../config/language/strings.dart';
 import '../utils/values/text_styles.dart';
 import 'app_shimmer.dart';
@@ -20,7 +20,12 @@ class AppDropdown<T> extends StatefulWidget {
   final bool isOptional;
 
   const AppDropdown({
-    required this.value, required this.values, required this.names, required this.hintText, required this.onChanged, super.key,
+    required this.value,
+    required this.values,
+    required this.names,
+    required this.hintText,
+    required this.onChanged,
+    super.key,
     this.labelText,
     this.iconItemBuilder,
     this.backgroundColor,
@@ -35,13 +40,12 @@ class AppDropdown<T> extends StatefulWidget {
 }
 
 class _AppDropdownState<T> extends State<AppDropdown<T>> {
-
   Map<T, String> mapNamesValues = <T, String>{};
 
   @override
   void initState() {
     super.initState();
-    for(int i=0; i<widget.values.length; i++){
+    for (int i = 0; i < widget.values.length; i++) {
       mapNamesValues[widget.values[i]] = widget.names[i];
     }
   }
@@ -54,7 +58,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
         children: <Widget>[
           Text(
             widget.labelText!,
-            style: TextStyles.medium16(),
+            style: TextStyles.of(size: 16, weight: FontWeight.w500),
           ),
           SizedBox(height: 4.h),
           _dropdown,
@@ -70,7 +74,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.r),
         color: widget.backgroundColor,
-        border: Border.all(color: widget.borderColor ?? colors.hint),
+        border: Border.all(color: widget.borderColor ?? context.colors.hint),
       ),
       child: DropdownButton<T>(
         value: widget.value,
@@ -78,10 +82,10 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
         icon: Icon(
           Icons.arrow_drop_down_rounded,
           color: widget.values.isEmpty
-              ? colors.hint
+              ? context.colors.hint
               : widget.onChanged != null
-                  ? colors.textPrimary
-                  : colors.hint,
+                  ? context.colors.textPrimary
+                  : context.colors.hint,
           size: 20.r,
         ),
         hint: _buildHintText(),
@@ -90,15 +94,13 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
         underline: const SizedBox(),
         selectedItemBuilder: (context) {
           List<Widget> selectedItems = [];
-          if(widget.isOptional){
-            final noneItem = DropdownMenuItem<T>(
-              child: _buildHintText()
-            );
+          if (widget.isOptional) {
+            final noneItem = DropdownMenuItem<T>(child: _buildHintText());
             selectedItems.add(noneItem);
           }
-          List<Widget> valuesSelectedItems = mapNamesValues.entries
-              .map((MapEntry<T, String> entry) {
-                return DropdownMenuItem<T>(
+          List<Widget> valuesSelectedItems =
+              mapNamesValues.entries.map((MapEntry<T, String> entry) {
+            return DropdownMenuItem<T>(
               value: entry.key,
               child: Builder(
                 builder: (context) {
@@ -107,14 +109,16 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
                       children: <Widget>[
                         Text(
                           widget.textItemBuilder!,
-                          style: TextStyles.regular12(color: colors.textSecondary),
+                          style: TextStyles.of(
+                              size: 12, color: context.colors.textSecondary),
                         ),
                         SizedBox(width: 8.w),
                         Container(
                           width: 2.w,
                           height: 32.h,
-                          padding: EdgeInsets.symmetric(horizontal: 0.w, vertical: 8.h),
-                          color: colors.divider,
+                          padding: EdgeInsets.symmetric(
+                              horizontal: 0.w, vertical: 8.h),
+                          color: context.colors.divider,
                         ),
                         SizedBox(width: 8.w),
                         Expanded(
@@ -127,7 +131,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
                 },
               ),
             );
-              }).toList();
+          }).toList();
           selectedItems.addAll(valuesSelectedItems);
           return selectedItems;
         },
@@ -137,9 +141,9 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
     );
   }
 
-  List<DropdownMenuItem<T>> _getItems(){
+  List<DropdownMenuItem<T>> _getItems() {
     List<DropdownMenuItem<T>> selectedItems = [];
-    if(widget.isOptional){
+    if (widget.isOptional) {
       final noneItem = DropdownMenuItem<T>(
         child: Row(
           children: <Widget>[
@@ -155,7 +159,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
             Expanded(
               child: Text(
                 Strings.none,
-                style: TextStyles.medium14(color: colors.textPrimary),
+                style: TextStyles.of(size: 14, weight: FontWeight.w500),
               ),
             ),
           ],
@@ -180,7 +184,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
             Expanded(
               child: Text(
                 entry.value,
-                style: TextStyles.medium14(color: colors.textPrimary),
+                style: TextStyles.of(size: 14, weight: FontWeight.w500),
               ),
             ),
           ],
@@ -191,7 +195,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
     return selectedItems;
   }
 
-  Widget _buildHintText(){
+  Widget _buildHintText() {
     return Builder(
       builder: (BuildContext context) {
         if (widget.iconItemBuilder != null) {
@@ -201,14 +205,14 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
               SizedBox(width: 8.w),
               Text(
                 widget.hintText,
-                style: TextStyles.regular14(color: colors.hint),
+                style: TextStyles.of(size: 14, color: context.colors.hint),
               ),
             ],
           );
         }
         return Text(
           widget.hintText,
-          style: TextStyles.regular12(color: colors.hint),
+          style: TextStyles.of(size: 12, color: context.colors.hint),
         );
       },
     );
@@ -220,7 +224,7 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
         children: [
           TextSpan(
             text: value,
-            style: TextStyles.medium14(color: colors.textPrimary),
+            style: TextStyles.of(size: 14, weight: FontWeight.w500),
           ),
         ],
       ),
@@ -228,7 +232,6 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
       overflow: TextOverflow.ellipsis,
     );
   }
-
 }
 
 class AppDropdownShimmer extends StatelessWidget {
@@ -237,68 +240,69 @@ class AppDropdownShimmer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Builder(
-      builder: (BuildContext context) {
-        if (labelText != null) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: <Widget>[
-              Text(
-                labelText!,
-                style: TextStyles.medium18(),
-              ),
-              SizedBox(height: 4.h),
-              _dropdown,
-            ],
-          );
-        }
-        return _dropdown;
+    return Builder(builder: (BuildContext context) {
+      if (labelText != null) {
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Text(
+              labelText!,
+              style: TextStyles.of(size: 18, weight: FontWeight.w500),
+            ),
+            SizedBox(height: 4.h),
+            _dropdown(context),
+          ],
+        );
       }
-    );
+      return _dropdown(context);
+    });
   }
 
-  Widget get _dropdown => AppShimmer(
-    child: Container(
-      padding: EdgeInsets.symmetric(horizontal: 16.w),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(8.r),
-        color: colors.foreground,
-      ),
-      child: DropdownButton<int>(
-        value: 0,
-        icon: Icon(
-          Icons.arrow_drop_down_rounded,
-          color: colors.unselected,
-        ),
-        hint: Builder(builder: (BuildContext context) {
-          return Text(
-            'hintText',
-            style: TextStyles.regular15().copyWith(color: colors.unselected),
-          );
-        }),
-        borderRadius: BorderRadius.circular(8.r),
-        isExpanded: true,
-        underline: const SizedBox(),
-        items: <DropdownMenuItem<int>>[
-          DropdownMenuItem<int>(
+  Widget _dropdown(BuildContext context) {
+    return AppShimmer(
+        child: Container(
+          padding: EdgeInsets.symmetric(horizontal: 16.w),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8.r),
+            color: context.colors.foreground,
+          ),
+          child: DropdownButton<int>(
             value: 0,
-            child: Row(
-              children: <Widget>[
-                Icon(Icons.add, color: colors.primary),
-                SizedBox(width: 8.w),
-                Text(
-                  'entry.value',
-                  style: TextStyles.semiBold14().copyWith(
-                    color: Colors.black,
-                  ),
-                ),
-              ],
+            icon: Icon(
+              Icons.arrow_drop_down_rounded,
+              color: context.colors.unselected,
             ),
-          )
-        ],
-        onChanged: (int? value){},
-      ),
-    ),
-  );
+            hint: Builder(builder: (BuildContext context) {
+              return Text(
+                'hintText',
+                style: TextStyles.of(size: 15, color: context.colors.unselected),
+              );
+            }),
+            borderRadius: BorderRadius.circular(8.r),
+            isExpanded: true,
+            underline: const SizedBox(),
+            items: <DropdownMenuItem<int>>[
+              DropdownMenuItem<int>(
+                value: 0,
+                child: Row(
+                  children: <Widget>[
+                    Icon(Icons.add, color: context.colors.primary),
+                    SizedBox(width: 8.w),
+                    Text(
+                      'entry.value',
+                      style: TextStyles.of(
+                          size: 14,
+                          weight: FontWeight.w600,
+                          color: Colors.black),
+                    ),
+                  ],
+                ),
+              )
+            ],
+            onChanged: (int? value) {},
+          ),
+        ),
+      );
+  }
 }
 

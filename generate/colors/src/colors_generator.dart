@@ -20,18 +20,22 @@ class ColorEntry {
   bool get isShared => lightHex == darkHex;
 }
 
-/// Result of applying a colors.json map onto palette / ExtraColors sources.
+/// Result of applying a colors.json map onto palette / ExtraColors / ColorKeys sources.
 class ColorApplyResult {
   const ColorApplyResult({
     required this.palettes,
     required this.extras,
     required this.applied,
+    this.colorKeys = '',
   });
 
   final String palettes;
   final String extras;
+  final String colorKeys;
   final int applied;
 }
+
+const String _colorKeysImport = "import 'color_keys.dart';";
 
 final RegExp _sharedExtraMap = RegExp(
   r'(static const Map<String, Color> _sharedExtra = \{)([\s\S]*?)(\n  \};)',
@@ -55,8 +59,10 @@ ColorEntry? parseColorEntry(String rawKey, dynamic rawValue) {
     return null;
   }
 
-  final List<String> parts =
-      rawValue.split(';').map((String part) => part.trim()).toList();
+  final List<String> parts = rawValue
+      .split(';')
+      .map((String part) => part.trim())
+      .toList();
   if (parts.length != 1 && parts.length != 2) return null;
   if (parts.any((String part) => part.isEmpty)) return null;
 
@@ -75,6 +81,19 @@ ColorEntry? parseColorEntry(String rawKey, dynamic rawValue) {
   }
 }
 
+String colorKeyRef(String camelCase) => 'ColorKeys.$camelCase';
+
+/// Matches `ColorKeys.foo: Color(...)` or quoted `'foo': Color(...)`.
+RegExp extraEntryPattern(String camelCase, {bool optionalComma = false}) {
+  final String comma = optionalComma ? ',?' : ',';
+  return RegExp(
+    "(?:ColorKeys\\.$camelCase|'$camelCase'): Color\\(0x[0-9A-Fa-f]+\\)$comma",
+  );
+}
+
+String extraEntry(String camelCase, String hex) =>
+    '${colorKeyRef(camelCase)}: Color(0x$hex),';
+
 bool hasTypedField(String source, String camelCase) {
   return RegExp(
     '^\\s+$camelCase: Color\\(0x[0-9A-Fa-f]+\\),',
@@ -83,25 +102,18 @@ bool hasTypedField(String source, String camelCase) {
 }
 
 bool hasExtraKey(String source, String camelCase) {
-  return RegExp(
-    "'$camelCase': Color\\(0x[0-9A-Fa-f]+\\),",
-  ).hasMatch(source);
+  return extraEntryPattern(camelCase).hasMatch(source);
 }
 
 bool hasSharedExtraKey(String source, String camelCase) {
   final Match? match = _sharedExtraMap.firstMatch(source);
   if (match == null) return false;
-  return RegExp(
-    "'$camelCase': Color\\(0x[0-9A-Fa-f]+\\),",
-  ).hasMatch(match[2]!);
+  return extraEntryPattern(camelCase).hasMatch(match[2]!);
 }
 
 String replaceTypedField(String source, String camelCase, String hex) {
   return source.replaceAllMapped(
-    RegExp(
-      '^(\\s+)$camelCase: Color\\(0x[0-9A-Fa-f]+\\),',
-      multiLine: true,
-    ),
+    RegExp('^(\\s+)$camelCase: Color\\(0x[0-9A-Fa-f]+\\),', multiLine: true),
     (Match match) => '${match[1]}$camelCase: Color(0x$hex),',
   );
 }
@@ -119,8 +131,8 @@ String replaceTypedFieldInPalette(
 
 String replaceExtraKey(String source, String camelCase, String hex) {
   return source.replaceAllMapped(
-    RegExp("'$camelCase': Color\\(0x[0-9A-Fa-f]+\\),"),
-    (Match match) => "'$camelCase': Color(0x$hex),",
+    extraEntryPattern(camelCase),
+    (Match match) => extraEntry(camelCase, hex),
   );
 }
 
@@ -158,7 +170,7 @@ String addSharedExtra(String source, String camelCase, String hex) {
   if (body.isNotEmpty && !body.endsWith(',')) {
     body = '$body,';
   }
-  body = "$body\n    '$camelCase': Color(0x$hex),";
+  body = '$body\n    ${extraEntry(camelCase, hex)}';
   return source.replaceRange(
     match.start,
     match.end,
@@ -173,7 +185,9 @@ String removeSharedExtra(String source, String camelCase) {
   }
 
   final String body = match[2]!.replaceFirst(
-    RegExp("\\n\\s*'$camelCase': Color\\(0x[0-9A-Fa-f]+\\),?"),
+    RegExp(
+      '\\n\\s*${extraEntryPattern(camelCase, optionalComma: true).pattern}',
+    ),
     '',
   );
   return source.replaceRange(
@@ -183,16 +197,14 @@ String removeSharedExtra(String source, String camelCase) {
   );
 }
 
-String removePaletteExtra(
-  String source,
-  String camelCase,
-  PaletteKind kind,
-) {
+String removePaletteExtra(String source, String camelCase, PaletteKind kind) {
   return _rewritePaletteBlock(source, kind, (String block) {
     final _ExtraMapRange? extra = _extraMapRange(block);
     if (extra == null) return block;
     final String body = extra.body.replaceFirst(
-      RegExp("\\n\\s*'$camelCase': Color\\(0x[0-9A-Fa-f]+\\),?"),
+      RegExp(
+        '\\n\\s*${extraEntryPattern(camelCase, optionalComma: true).pattern}',
+      ),
       '',
     );
     return extra.replaceBody(block, body);
@@ -208,33 +220,38 @@ String upsertPaletteExtra(
   return _rewritePaletteBlock(source, kind, (String block) {
     final _ExtraMapRange? extra = _extraMapRange(block);
     if (extra == null) {
-      return _insertExtraMap(block, "\n      '$camelCase': Color(0x$hex),");
+      return _insertExtraMap(block, '\n      ${extraEntry(camelCase, hex)}');
     }
 
     var body = extra.body;
-    final RegExp key = RegExp("'$camelCase': Color\\(0x[0-9A-Fa-f]+\\),");
+    final RegExp key = extraEntryPattern(camelCase);
     if (key.hasMatch(body)) {
       body = body.replaceAllMapped(
         key,
-        (Match match) => "'$camelCase': Color(0x$hex),",
+        (Match match) => extraEntry(camelCase, hex),
       );
     } else {
       body = body.trimRight();
       if (body.isNotEmpty && !body.endsWith(',')) {
         body = '$body,';
       }
-      body = "$body\n      '$camelCase': Color(0x$hex),";
+      body = '$body\n      ${extraEntry(camelCase, hex)}';
     }
     return extra.replaceBody(block, body);
   });
 }
 
 String ensureExtraGetter(String source, String camelCase) {
+  source = source.replaceAll(
+    "extra('$camelCase')",
+    'extra(${colorKeyRef(camelCase)})',
+  );
   if (RegExp('Color get $camelCase =>').hasMatch(source)) {
     return source;
   }
 
-  final String getter = "  Color get $camelCase => extra('$camelCase');\n";
+  final String getter =
+      '  Color get $camelCase => extra(${colorKeyRef(camelCase)});\n';
   final Match? gradient = RegExp(
     r'^(\s*)LinearGradient get primaryGradient',
     multiLine: true,
@@ -254,14 +271,56 @@ String ensureExtraGetter(String source, String camelCase) {
   return '${source.substring(0, closeAt)}$getter${source.substring(closeAt)}';
 }
 
+String ensureColorKeysImport(String source) {
+  if (RegExp("import\\s+['\"]color_keys\\.dart['\"]").hasMatch(source)) {
+    return source;
+  }
+  final Iterable<Match> imports = RegExp(
+    r'^import .+;$',
+    multiLine: true,
+  ).allMatches(source);
+  if (imports.isNotEmpty) {
+    final Match lastImport = imports.last;
+    return source.replaceRange(
+      lastImport.end,
+      lastImport.end,
+      '\n$_colorKeysImport',
+    );
+  }
+  return '$_colorKeysImport\n\n$source';
+}
+
+String ensureColorKey(String source, String camelCase) {
+  if (RegExp('static const String $camelCase\\s*=').hasMatch(source)) {
+    return source;
+  }
+  final String line = "  static const String $camelCase = '$camelCase';\n";
+  if (!RegExp(r'class ColorKeys').hasMatch(source)) {
+    return '''
+/// Extra [ThemeColors.extra] map keys.
+///
+/// Palettes, ExtraColors, and the colors generator share this catalog.
+abstract final class ColorKeys {
+$line}
+''';
+  }
+  final int closeAt = source.lastIndexOf('}');
+  if (closeAt == -1) {
+    throw const ColorException('ColorKeys class is not closed');
+  }
+  return '${source.substring(0, closeAt)}$line${source.substring(closeAt)}';
+}
+
 /// Updates typed fields, extra map values, or inserts new extras.
 ColorApplyResult applyColors({
   required String palettes,
   required String extras,
   required Map<String, dynamic> json,
+  String colorKeys = '',
 }) {
   var nextPalettes = palettes;
   var nextExtras = extras;
+  var nextColorKeys = colorKeys;
   var applied = 0;
 
   for (final MapEntry<String, dynamic> entry in json.entries) {
@@ -309,6 +368,9 @@ ColorApplyResult applyColors({
         );
       }
       nextExtras = ensureExtraGetter(nextExtras, color.camelCase);
+      nextColorKeys = ensureColorKey(nextColorKeys, color.camelCase);
+      nextPalettes = ensureColorKeysImport(nextPalettes);
+      nextExtras = ensureColorKeysImport(nextExtras);
     } else {
       if (hasSharedExtraKey(nextPalettes, color.camelCase)) {
         nextPalettes = removeSharedExtra(nextPalettes, color.camelCase);
@@ -326,6 +388,9 @@ ColorApplyResult applyColors({
         PaletteKind.dark,
       );
       nextExtras = ensureExtraGetter(nextExtras, color.camelCase);
+      nextColorKeys = ensureColorKey(nextColorKeys, color.camelCase);
+      nextPalettes = ensureColorKeysImport(nextPalettes);
+      nextExtras = ensureColorKeysImport(nextExtras);
     }
     applied++;
   }
@@ -333,6 +398,7 @@ ColorApplyResult applyColors({
   return ColorApplyResult(
     palettes: nextPalettes,
     extras: nextExtras,
+    colorKeys: nextColorKeys,
     applied: applied,
   );
 }

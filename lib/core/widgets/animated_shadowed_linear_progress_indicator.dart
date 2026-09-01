@@ -63,6 +63,7 @@ class _AnimatedShadowedProgressIndicatorState
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return LayoutBuilder(
       builder: (context, constraints) {
         return AnimatedBuilder(

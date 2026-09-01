@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
-import '../../../injection_container.dart';
 import '../../utils/extensions.dart';
 import '../../utils/values/text_styles.dart';
 
@@ -18,7 +17,7 @@ class LoadingDialog extends StatelessWidget {
       padding: EdgeInsets.symmetric(horizontal: 8.w, vertical: 72.h),
       child: Builder(
         builder: (context) {
-          if(title != null){
+          if (title != null) {
             return Wrap(
               direction: Axis.vertical,
               alignment: WrapAlignment.center,
@@ -35,7 +34,7 @@ class LoadingDialog extends StatelessWidget {
                 SizedBox(height: 16.h),
                 Text(
                   title!,
-                  style: TextStyles.medium16(color: colors.textPrimary),
+                  style: TextStyles.of(size: 16, weight: FontWeight.w500),
                   textAlign: TextAlign.center,
                 ),
               ],

@@ -35,7 +35,7 @@ class HeaderBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: EdgeInsets.all(16.w),
-      child: Text('Welcome', style: TextStyles.medium20()),
+      child: Text('Welcome', style: TextStyles.of(size: 20, weight: FontWeight.w500)),
     );
   }
 }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:shimmer/shimmer.dart';
+import 'package:themes/themes.dart';
 
 import '../../config/themes/extra_colors.dart';
 
@@ -18,6 +19,7 @@ class AppShimmer extends StatefulWidget {
 class _AppShimmerState extends State<AppShimmer> {
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Shimmer.fromColors(
       baseColor: colors.baseColorShimmer,
       highlightColor: colors.highlightColorShimmer,

@@ -72,8 +72,6 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
 
   @override
   Widget build(BuildContext context) {
-    final colors = context.colors;
-
     return Form(
       key: _formKey,
       child: ListView(
@@ -83,7 +81,7 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
           SizedBox(height: 24.h),
           Text(
             Strings.personalData,
-            style: TextStyles.semiBold16(color: colors.textPrimary),
+            style: TextStyles.of(size: 16, weight: FontWeight.w600),
           ),
           SizedBox(height: 12.h),
           AppTextFormField.nameTextField(
@@ -219,13 +217,13 @@ class _StudentProfileHeader extends StatelessWidget {
           SizedBox(height: 12.h),
           Text(
             student.fullName,
-            style: TextStyles.semiBold18(color: colors.textPrimary),
+            style: TextStyles.of(size: 18, weight: FontWeight.w600),
             textAlign: TextAlign.center,
           ),
           SizedBox(height: 4.h),
           Text(
             student.email,
-            style: TextStyles.regular14(color: colors.textSecondary),
+            style: TextStyles.of(size: 14, color: colors.textSecondary),
             textAlign: TextAlign.center,
           ),
         ],

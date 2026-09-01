@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:themes/themes.dart';
 
-import '../../injection_container.dart';
+import '../../config/themes/extra_colors.dart';
 import '../utils/values/text_styles.dart';
 
 class AppDropdownMultiSelect<T> extends StatefulWidget {
@@ -15,7 +16,11 @@ class AppDropdownMultiSelect<T> extends StatefulWidget {
   final void Function(List<T>)? onChanged;
 
   const AppDropdownMultiSelect({
-    required this.selectedItems, required this.values, required this.names, required this.hintText, super.key,
+    required this.selectedItems,
+    required this.values,
+    required this.names,
+    required this.hintText,
+    super.key,
     this.labelText,
     this.textItemBuilder,
     this.backgroundColor,
@@ -24,7 +29,8 @@ class AppDropdownMultiSelect<T> extends StatefulWidget {
   });
 
   @override
-  State<AppDropdownMultiSelect<T>> createState() => _AppDropdownMultiSelectState<T>();
+  State<AppDropdownMultiSelect<T>> createState() =>
+      _AppDropdownMultiSelectState<T>();
 }
 
 class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
@@ -105,12 +111,14 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
     return ListTile(
       title: Text(
         widget.names[widget.values.indexOf(item)],
-        style: TextStyles.medium14(
-          color: isSelected ? colors.green : colors.textPrimary,
+        style: TextStyles.of(
+          size: 14,
+          weight: FontWeight.w500,
+          color: isSelected ? context.colors.green : context.colors.textPrimary,
         ),
         maxLines: 3,
       ),
-      trailing: isSelected ? Icon(Icons.check, color: colors.green) : null,
+      trailing: isSelected ? Icon(Icons.check, color: context.colors.green) : null,
       onTap: () => _toggleItemSelection(item, setStateOverlay),
     );
   }
@@ -136,7 +144,7 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8.r),
         color: widget.backgroundColor,
-        border: Border.all(color: widget.borderColor ?? colors.hint),
+        border: Border.all(color: widget.borderColor ?? context.colors.hint),
       ),
       child: _buildDropdownContent(),
     );
@@ -146,7 +154,9 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
     if (_internalSelectedItems.isEmpty) {
       return _buildHintRow();
     }
-    return widget.textItemBuilder != null ? _buildCustomTextRow() : _buildSelectedItemsRow();
+    return widget.textItemBuilder != null
+        ? _buildCustomTextRow()
+        : _buildSelectedItemsRow();
   }
 
   Widget _buildHintRow() {
@@ -155,7 +165,7 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
         Expanded(
           child: Text(
             widget.hintText,
-            style: TextStyles.regular12(color: colors.hint),
+            style: TextStyles.of(size: 12, color: context.colors.hint),
           ),
         ),
         SizedBox(width: 8.w),
@@ -169,13 +179,13 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
       children: <Widget>[
         Text(
           widget.textItemBuilder!,
-          style: TextStyles.medium14(color: colors.textPrimary),
+          style: TextStyles.of(size: 14, weight: FontWeight.w500),
         ),
         SizedBox(width: 8.w),
         Container(
           width: 2.w,
           height: 32.h,
-          color: colors.divider,
+          color: context.colors.divider,
         ),
         SizedBox(width: 8.w),
         Expanded(child: _buildSelectedText()),
@@ -195,14 +205,19 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
   }
 
   Widget _buildSelectedText() {
-    List<TextSpan> textSpans = _internalSelectedItems.asMap().entries.map((entry) {
+    List<TextSpan> textSpans =
+        _internalSelectedItems.asMap().entries.map((entry) {
       int index = entry.key;
       T item = entry.value;
       return TextSpan(
-        text: widget.names[widget.values.indexOf(item)]
-            + (index < _internalSelectedItems.length - 1 ? ', ' : ''),
-        style: TextStyles.medium14(
-          color: index.isEven ? colors.textPrimary : colors.textPrimary.withValues(alpha: 0.86),
+        text: widget.names[widget.values.indexOf(item)] +
+            (index < _internalSelectedItems.length - 1 ? ', ' : ''),
+        style: TextStyles.of(
+          size: 14,
+          weight: FontWeight.w500,
+          color: index.isEven
+              ? context.colors.textPrimary
+              : context.colors.textPrimary.withValues(alpha: 0.86),
         ),
       );
     }).toList();
@@ -213,15 +228,14 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
     );
   }
 
-
   Widget _buildDropdownIcon() {
     return Icon(
       Icons.arrow_drop_down_rounded,
       color: widget.values.isEmpty
-          ? colors.hint
+          ? context.colors.hint
           : widget.onChanged != null
-          ? colors.textPrimary
-          : colors.hint,
+              ? context.colors.textPrimary
+              : context.colors.hint,
       size: 20.r,
     );
   }

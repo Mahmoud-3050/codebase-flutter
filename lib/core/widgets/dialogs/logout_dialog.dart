@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:go_router/go_router.dart';
+import 'package:themes/themes.dart';
 
-import '../../../injection_container.dart';
 import '../../../config/language/strings.dart';
 import '../../utils/values/text_styles.dart';
 import '../app_outlined_button.dart';
@@ -11,19 +12,20 @@ class LogoutDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Padding(
-      padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
+      padding: .symmetric(horizontal: 16.w, vertical: 20.h),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
+        mainAxisSize: .min,
         children: [
           Text(
             Strings.logout,
-            style: TextStyles.semiBold18(),
+            style: TextStyles.of(size: 18, weight: .w600),
           ),
           SizedBox(height: 24.h),
           Text(
             Strings.doYouWantToLogout,
-            style: TextStyles.regular14(),
+            style: TextStyles.of(size: 14),
             maxLines: 2,
           ),
           SizedBox(height: 32.h),
@@ -32,7 +34,7 @@ class LogoutDialog extends StatelessWidget {
               Expanded(
                 child: AppOutlinedButton(
                   onPressed: () {
-                    Navigator.of(context).pop(true);
+                    context.pop(true);
                   },
                   text: Strings.yes,
                   borderColor: colors.error,
@@ -44,7 +46,7 @@ class LogoutDialog extends StatelessWidget {
               Expanded(
                 child: AppOutlinedButton(
                   onPressed: () {
-                    Navigator.of(context).pop(false);
+                    context.pop(false);
                   },
                   text: Strings.no,
                   backgroundColor: colors.foreground,

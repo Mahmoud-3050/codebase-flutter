@@ -1,3 +1,4 @@
 abstract class Fonts {
-  static const String poppins = 'Poppins';
+  static String get current => _poppins;
+  static const String _poppins = 'Poppins';
 }

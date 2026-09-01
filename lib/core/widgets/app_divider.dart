@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import '../../injection_container.dart';
+import 'package:themes/themes.dart';
 
 class AppDivider extends StatefulWidget {
   const AppDivider({super.key});
@@ -15,7 +14,7 @@ class _AppDividerState extends State<AppDivider> {
   Widget build(BuildContext context) {
     return Container(
       height: 1.h,
-      color: colors.divider,
+      color: context.colors.divider,
     );
   }
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:themes/themes.dart';
 
-import '../../../injection_container.dart';
 import '../../../config/language/strings.dart';
 import '../../utils/values/text_styles.dart';
 import '../app_outlined_button.dart';
@@ -11,6 +11,7 @@ class DeleteAccountDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
       child: Column(
@@ -18,12 +19,13 @@ class DeleteAccountDialog extends StatelessWidget {
         children: [
           Text(
             Strings.deleteAccount,
-            style: TextStyles.semiBold18(color: colors.error),
+            style: TextStyles.of(
+                size: 18, weight: FontWeight.w600, color: colors.error),
           ),
           SizedBox(height: 16.h),
           Text(
             '${Strings.deleteAccountWarning}.',
-            style: TextStyles.regular14(color: colors.textPrimary),
+            style: TextStyles.of(size: 14),
             maxLines: 3,
           ),
           SizedBox(height: 24.h),
@@ -35,7 +37,7 @@ class DeleteAccountDialog extends StatelessWidget {
                     Navigator.of(context).pop(true);
                   },
                   text: Strings.delete,
-                  textStyle: TextStyles.regular12(color: colors.error),
+                  textStyle: TextStyles.of(size: 12, color: colors.error),
                   borderColor: colors.error,
                   backgroundColor: colors.foreground,
                 ),
@@ -47,7 +49,7 @@ class DeleteAccountDialog extends StatelessWidget {
                     Navigator.of(context).pop(false);
                   },
                   text: Strings.no,
-                  textStyle: TextStyles.regular12(color: colors.primary),
+                  textStyle: TextStyles.of(size: 12, color: colors.primary),
                   backgroundColor: colors.foreground,
                 ),
               ),
@@ -64,6 +66,7 @@ class ConfirmDeleteAccountDialog extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 16.w, vertical: 20.h),
       child: Column(
@@ -71,12 +74,13 @@ class ConfirmDeleteAccountDialog extends StatelessWidget {
         children: [
           Text(
             Strings.confirmDeleteAccount,
-            style: TextStyles.semiBold18(color: colors.error),
+            style: TextStyles.of(
+                size: 18, weight: FontWeight.w600, color: colors.error),
           ),
           SizedBox(height: 16.h),
           Text(
             Strings.areYouSureDeleteAccount,
-            style: TextStyles.regular14(color: colors.textPrimary),
+            style: TextStyles.of(size: 14),
             maxLines: 3,
           ),
           SizedBox(height: 24.h),

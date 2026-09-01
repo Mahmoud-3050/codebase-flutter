@@ -18,6 +18,8 @@ abstract class GenerateConstants {
       'lib/config/themes/colors_palettes.dart';
   static const String outputExtraColorsFilePath =
       'lib/config/themes/extra_colors.dart';
+  static const String outputColorKeysFilePath =
+      'lib/config/themes/color_keys.dart';
   //generate_features
   static const String projectFeaturesPath = 'lib/features';
   static const String requestsAssetsPath = 'generate/requests';

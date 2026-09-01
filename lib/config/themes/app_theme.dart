@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:themes/themes.dart';
 
 import '../../core/utils/values/fonts.dart';
+import '../../core/utils/values/text_styles.dart';
 
 /// Host [ThemeData]: package color layer + fonts / ScreenUtil sizes.
 ///
@@ -10,13 +10,13 @@ import '../../core/utils/values/fonts.dart';
 ThemeData appTheme(ThemeColors colors, Brightness brightness) {
   final colorTheme = Themes.buildThemeData(colors, brightness);
   return colorTheme.copyWith(
-    textTheme: colorTheme.textTheme.apply(fontFamily: Fonts.poppins),
+    textTheme: colorTheme.textTheme.apply(fontFamily: Fonts.current),
     primaryTextTheme:
-        colorTheme.primaryTextTheme.apply(fontFamily: Fonts.poppins),
+        colorTheme.primaryTextTheme.apply(fontFamily: Fonts.current),
     dividerTheme: DividerThemeData(
-      thickness: 1.w,
-      indent: 4.w,
-      endIndent: 4.w,
+      thickness: 1,
+      indent: 4,
+      endIndent: 4,
       color: colors.divider,
     ),
     iconButtonTheme: IconButtonThemeData(
@@ -32,17 +32,15 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
       type: BottomNavigationBarType.fixed,
       selectedItemColor: colors.primary,
       unselectedItemColor: colors.hint,
-      selectedLabelStyle: TextStyle(
-        fontFamily: Fonts.poppins,
-        fontSize: 12.sp,
-        fontWeight: FontWeight.w400,
+      selectedLabelStyle: TextStyles.of(
+        size: 12,
         color: colors.primary,
+        fontFamily: Fonts.current,
       ),
-      unselectedLabelStyle: TextStyle(
-        fontFamily: Fonts.poppins,
-        fontSize: 12.sp,
-        fontWeight: FontWeight.w400,
+      unselectedLabelStyle: TextStyles.of(
+        size: 12,
         color: colors.hint,
+        fontFamily: Fonts.current,
       ),
     ),
     appBarTheme: AppBarTheme(
@@ -51,11 +49,10 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
       scrolledUnderElevation: 0,
       centerTitle: false,
       iconTheme: IconThemeData(color: colors.textPrimary),
-      titleTextStyle: TextStyle(
-        fontWeight: FontWeight.w600,
-        fontFamily: Fonts.poppins,
-        color: colors.textPrimary,
-        fontSize: 18.sp,
+      titleTextStyle: TextStyles.of(
+        size: 18,
+        weight: FontWeight.w600,
+        fontFamily: Fonts.current,
       ),
     ),
   );

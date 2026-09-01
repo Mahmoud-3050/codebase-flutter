@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:themes/themes.dart';
 
-import '../../injection_container.dart';
 import '../utils/extensions.dart';
 import '../utils/values/assets.dart';
 import 'app_image.dart';
@@ -33,7 +33,7 @@ class JobImage extends StatelessWidget {
       Assets.iconsBuilding,
       width: width ?? 70.r,
       height: height ?? 70.r,
-      colorFilter: ColorFilterExtension.setColor(colors.textPrimary),
+      colorFilter: ColorFilterExtension.setColor(context.colors.textPrimary),
     );
   }
 }

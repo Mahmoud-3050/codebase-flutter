@@ -27,7 +27,7 @@ class _AnimatedCounterTextState extends State<AnimatedCounterText> {
 
   Stream<int> createNumberStream(int maxNumber) async* {
     int j = 0;
-    if(maxNumber > 0){
+    if (maxNumber > 0) {
       j = 1;
     }
     int editMaxNumber = maxNumber > limitCounter ? limitCounter : maxNumber;
@@ -35,7 +35,7 @@ class _AnimatedCounterTextState extends State<AnimatedCounterText> {
       await Future.delayed(Duration(milliseconds: streamMilliseconds));
       yield i;
     }
-    if(maxNumber > limitCounter){
+    if (maxNumber > limitCounter) {
       await Future.delayed(Duration(milliseconds: streamMilliseconds + 100));
       yield maxNumber;
     }
@@ -48,15 +48,16 @@ class _AnimatedCounterTextState extends State<AnimatedCounterText> {
         builder: (context, snapshot) {
           int counter = snapshot.data ?? 0;
           return AnimatedSwitcher(
-            duration: Duration(milliseconds: counter > limitCounter
-                ? widgetMilliseconds + 100
-                : widgetMilliseconds),
+            duration: Duration(
+                milliseconds: counter > limitCounter
+                    ? widgetMilliseconds + 100
+                    : widgetMilliseconds),
             transitionBuilder: (child, animation) {
               final position = Tween<Offset>(
                 begin: (animation.status == AnimationStatus.completed)
                     ? counter > limitCounter
-                    ? const Offset(0, 3.5)
-                    : const Offset(0, 1)
+                        ? const Offset(0, 3.5)
+                        : const Offset(0, 1)
                     : const Offset(0, -1),
                 end: Offset.zero,
               ).animate(animation);
@@ -67,11 +68,10 @@ class _AnimatedCounterTextState extends State<AnimatedCounterText> {
             },
             child: Text(
               snapshot.data?.toString() ?? '',
-              style: TextStyles.bold16(),
+              style: TextStyles.of(size: 16, weight: FontWeight.w700),
               key: UniqueKey(),
             ),
           );
-        }
-    );
+        });
   }
 }

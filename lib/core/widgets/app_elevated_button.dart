@@ -3,7 +3,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:themes/themes.dart';
 
-import '../../config/themes/extra_colors.dart';
 import '../utils/extensions.dart';
 import '../utils/values/text_styles.dart';
 
@@ -52,6 +51,7 @@ class AppElevatedButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = context.colors;
     return Container(
       margin: EdgeInsets.symmetric(horizontal: sidePadding ?? 0.0),
       decoration: BoxDecoration(
@@ -109,11 +109,11 @@ class AppElevatedButton extends StatelessWidget {
                       },
                     ),
                     SizedBox(width: 8.w),
-                    _buttonText,
+                    _buttonText(colors),
                   ],
                 );
               }
-              return _buttonText;
+              return _buttonText(colors);
             },
           ),
         ),
@@ -121,10 +121,14 @@ class AppElevatedButton extends StatelessWidget {
     );
   }
 
-  Widget get _buttonText => Text(
+  Widget _buttonText(ThemeColors colors) => Text(
         text,
-        style:
-            textStyle ?? TextStyles.medium16(color: textColor ?? colors.white),
+        style: textStyle ??
+            TextStyles.of(
+              size: 16,
+              weight: FontWeight.w500,
+              color: textColor ?? colors.white,
+            ),
         textAlign: TextAlign.center,
         maxLines: 1,
       );

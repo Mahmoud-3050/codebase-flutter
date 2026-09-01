@@ -10,9 +10,7 @@ import 'src/colors_generator.dart';
 void main(List<String> args) async {
   final File jsonFile = File(GenerateConstants.colorsJsonAssetFilePath);
   if (!jsonFile.existsSync()) {
-    ConsoleLogger.error(
-      'Missing ${GenerateConstants.colorsJsonAssetFilePath}',
-    );
+    ConsoleLogger.error('Missing ${GenerateConstants.colorsJsonAssetFilePath}');
     exit(1);
   }
 
@@ -28,9 +26,11 @@ void main(List<String> args) async {
     return;
   }
 
-  final File palettesFile =
-      File(GenerateConstants.outputColorsPalettesFilePath);
+  final File palettesFile = File(
+    GenerateConstants.outputColorsPalettesFilePath,
+  );
   final File extrasFile = File(GenerateConstants.outputExtraColorsFilePath);
+  final File colorKeysFile = File(GenerateConstants.outputColorKeysFilePath);
   if (!palettesFile.existsSync() || !extrasFile.existsSync()) {
     ConsoleLogger.error(
       'Missing palettes or ExtraColors file. Expected:\n'
@@ -43,6 +43,9 @@ void main(List<String> args) async {
   final ColorApplyResult result = applyColors(
     palettes: palettesFile.readAsStringSync(),
     extras: extrasFile.readAsStringSync(),
+    colorKeys: colorKeysFile.existsSync()
+        ? colorKeysFile.readAsStringSync()
+        : '',
     json: decoded,
   );
 
@@ -53,15 +56,20 @@ void main(List<String> args) async {
 
   await palettesFile.writeAsString(result.palettes);
   await extrasFile.writeAsString(result.extras);
-  await Process.run('dart', [
-    'format',
+  final List<String> formatPaths = <String>[
     GenerateConstants.outputColorsPalettesFilePath,
     GenerateConstants.outputExtraColorsFilePath,
-  ]);
+  ];
+  if (result.colorKeys.isNotEmpty) {
+    await colorKeysFile.writeAsString(result.colorKeys);
+    formatPaths.add(GenerateConstants.outputColorKeysFilePath);
+  }
+  await Process.run('dart', ['format', ...formatPaths]);
   ConsoleLogger.success(
     'Wrote ${GenerateConstants.outputColorsPalettesFilePath}',
   );
-  ConsoleLogger.success(
-    'Wrote ${GenerateConstants.outputExtraColorsFilePath}',
-  );
+  ConsoleLogger.success('Wrote ${GenerateConstants.outputExtraColorsFilePath}');
+  if (result.colorKeys.isNotEmpty) {
+    ConsoleLogger.success('Wrote ${GenerateConstants.outputColorKeysFilePath}');
+  }
 }

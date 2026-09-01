@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import '../../injection_container.dart';
+import 'package:themes/themes.dart';
 import 'package:field_validator/field_validator.dart';
+
 import '../../config/language/strings.dart';
 import '../utils/values/text_styles.dart';
 
@@ -39,7 +39,8 @@ class AppTextFormField extends StatefulWidget {
   final TextStyle? textStyle, hintTextStyle, labelTextStyle;
 
   const AppTextFormField({
-    required this.controller, this.focusNode,
+    required this.controller,
+    this.focusNode,
     this.hintText = '',
     this.obscureText = false,
     this.keyboardType,
@@ -104,15 +105,15 @@ class AppTextFormField extends StatefulWidget {
     return AppTextFormField(
       controller: controller,
       focusNode: focusNode,
-      hintText: hintText?.isEmpty == true? Strings.name : hintText,
-      labelText: labelText?.isEmpty == true? Strings.name : labelText,
+      hintText: hintText?.isEmpty == true ? Strings.name : hintText,
+      labelText: labelText?.isEmpty == true ? Strings.name : labelText,
       textInputAction: textInputAction,
       maxLines: maxLines,
       maxLength: maxLength,
       prefixIcon: prefixIcon,
       onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
-      validatorType: validatorType?? EmptyValidator(),
+      validatorType: validatorType ?? EmptyValidator(),
       backgroundColor: backgroundColor,
       prefixIconColor: prefixIconColor,
       cursorColor: cursorColor,
@@ -148,7 +149,7 @@ class AppTextFormField extends StatefulWidget {
     return AppTextFormField(
       controller: controller,
       focusNode: focusNode,
-      hintText: hintText?? Strings.email,
+      hintText: hintText ?? Strings.email,
       labelText: labelText,
       autofocus: autofocus,
       readOnly: readOnly,
@@ -159,7 +160,7 @@ class AppTextFormField extends StatefulWidget {
       prefixIcon: Icons.email_rounded,
       onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
-      validatorType: validatorType?? EmptyValidator(),
+      validatorType: validatorType ?? EmptyValidator(),
       backgroundColor: backgroundColor,
       prefixIconColor: prefixIconColor,
       cursorColor: cursorColor,
@@ -193,13 +194,13 @@ class AppTextFormField extends StatefulWidget {
     return AppTextFormField(
       controller: controller,
       focusNode: focusNode,
-      hintText: hintText?? Strings.phoneNumber,
+      hintText: hintText ?? Strings.phoneNumber,
       labelText: labelText,
       maxLines: 1,
       keyboardType: TextInputType.phone,
       textInputAction: textInputAction,
       prefixIcon: Icons.phone_rounded,
-      validatorType: validatorType?? PhoneValidator(),
+      validatorType: validatorType ?? PhoneValidator(),
       onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
       readOnly: readOnly,
@@ -221,7 +222,8 @@ class AppTextFormField extends StatefulWidget {
     BaseValidator? validatorType,
     void Function(String)? onFieldSubmitted,
     void Function(String)? onChanged,
-    void Function(void Function(void Function()) localSetState)? onSuffixIconPressed,
+    void Function(void Function(void Function()) localSetState)?
+        onSuffixIconPressed,
     String? hintText,
     String? labelText,
     Color? backgroundColor,
@@ -256,7 +258,7 @@ class AppTextFormField extends StatefulWidget {
             isSecureText = !isSecureText;
           });
         },
-        validatorType: validatorType?? PasswordValidator(),
+        validatorType: validatorType ?? PasswordValidator(),
         onFieldSubmitted: onFieldSubmitted,
         onChanged: onChanged,
         backgroundColor: backgroundColor,
@@ -285,19 +287,19 @@ class AppTextFormField extends StatefulWidget {
       controller: controller,
       focusNode: focusNode,
       autofocus: autofocus,
-      // backgroundColor: colors.upBackground,
+      // backgroundColor: Themes.instance.colors.upBackground,
       borderRadius: BorderRadius.circular(24.r),
-      // borderColor: colors.upBackground.withValues(alpha: 0.2),
-      focusBorderColor: colors.primary,
-      cursorColor: colors.primary,
+      // borderColor: Themes.instance.colors.upBackground.withValues(alpha: 0.2),
+      focusBorderColor: Themes.instance.colors.primary,
+      cursorColor: Themes.instance.colors.primary,
       hintText: '${Strings.search}...',
-      // hintTextStyle: TextStyles.regular14(color: colors.upBackground.withValues(alpha: 0.8)),
-      // textStyle: TextStyles.regular14(color: colors.secondary),
+      // hintTextStyle: TextStyles.of(size: 14, color: Themes.instance.colors.upBackground.withValues(alpha: 0.8)),
+      // textStyle: TextStyles.of(size: 14, color: Themes.instance.colors.secondary),
       validatorType: EmptyValidator(),
       keyboardType: TextInputType.text,
       textInputAction: TextInputAction.search,
       prefixIcon: Icons.search_rounded,
-      // prefixIconColor: colors.upBackground.withValues(alpha: 0.8),
+      // prefixIconColor: Themes.instance.colors.upBackground.withValues(alpha: 0.8),
       readOnly: readOnly,
       onTap: onTap,
       onChanged: onChanged,
@@ -372,7 +374,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
         }
         return Text(
           '$currentLength/$maxLength',
-          style: TextStyles.regular10(color: colors.textSecondary),
+          style: TextStyles.of(size: 10, color: context.colors.textSecondary),
         );
       },
       maxLines: widget.maxLines,
@@ -382,7 +384,8 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       textInputAction: widget.textInputAction,
       autofillHints: widget.autofillHints,
       maxLengthEnforcement: MaxLengthEnforcement.enforced,
-      style: widget.textStyle ?? TextStyles.medium14(color: colors.textPrimary),
+      style:
+          widget.textStyle ?? TextStyles.of(size: 14, weight: FontWeight.w500),
       cursorColor: widget.cursorColor,
       cursorRadius: Radius.circular(8.r),
       decoration: _decoration,
@@ -400,21 +403,22 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
         alignLabelWithHint: false,
         contentPadding: _padding,
         errorMaxLines: 2,
-        fillColor: widget.backgroundColor ?? colors.primary.withValues(alpha: 0.05),
+        fillColor:
+            widget.backgroundColor ?? context.colors.primary.withValues(alpha: 0.05),
         filled: widget.backgroundColor != null,
-        focusColor: colors.primary,
+        focusColor: context.colors.primary,
         border: _createBorder(
-          widget.borderColor ?? colors.primary.withValues(alpha: 0.05),
+          widget.borderColor ?? context.colors.primary.withValues(alpha: 0.05),
         ),
-        enabledBorder: _createBorder(widget.borderColor ?? colors.hint),
-        focusedBorder: _createBorder(widget.focusBorderColor ?? colors.primary),
-        focusedErrorBorder: _createBorder(colors.primary),
-        errorBorder: _createBorder(colors.error),
-        errorStyle: TextStyles.regular12(color: colors.error),
+        enabledBorder: _createBorder(widget.borderColor ?? context.colors.hint),
+        focusedBorder: _createBorder(widget.focusBorderColor ?? context.colors.primary),
+        focusedErrorBorder: _createBorder(context.colors.primary),
+        errorBorder: _createBorder(context.colors.error),
+        errorStyle: TextStyles.of(size: 12, color: context.colors.error),
         hintStyle: widget.hintTextStyle ??
-            TextStyles.regular12(color: colors.textSecondary),
+            TextStyles.of(size: 12, color: context.colors.textSecondary),
         labelStyle: widget.labelTextStyle ??
-            TextStyles.regular12(color: colors.textSecondary),
+            TextStyles.of(size: 12, color: context.colors.textSecondary),
         prefixIcon: _prefixIcon,
         suffixIcon: _suffixIcon,
       );
@@ -430,7 +434,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
           onTap: widget.onPrefixIconPressed,
           child: Icon(
             widget.prefixIcon,
-            color: widget.prefixIconColor ?? colors.hint,
+            color: widget.prefixIconColor ?? context.colors.hint,
           ),
         );
 
@@ -440,7 +444,7 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
           onTap: widget.onSuffixIconPressed,
           child: Icon(
             widget.suffixIcon,
-            color: widget.suffixIconColor ?? colors.hint,
+            color: widget.suffixIconColor ?? context.colors.hint,
           ),
         );
 

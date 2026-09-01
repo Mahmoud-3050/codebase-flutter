@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
-
-import '../../injection_container.dart';
+import 'package:themes/themes.dart';
 
 void showAppSnackBar({
   required BuildContext context,
@@ -42,6 +41,7 @@ SnackBar _buildAppSnackBar({
 }
 
 Widget _buildContent(BuildContext context, String message, ToastType type) {
+  final colors = context.colors;
   return Wrap(
     crossAxisAlignment: WrapCrossAlignment.center,
     children: <Widget>[

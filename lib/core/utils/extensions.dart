@@ -4,7 +4,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../../config/themes/extra_colors.dart';
+import 'package:themes/themes.dart';
+
 import 'enums.dart';
 
 String _padTwoDigits(int value) => value.toString().padLeft(2, '0');
@@ -101,7 +102,9 @@ extension AppUpdateTypeExtension on AppUpdateType {
 extension ColorFilterExtension on ColorFilter {
   static ColorFilter getFocusColor(FocusNode focusNode) {
     return ColorFilter.mode(
-      focusNode.hasFocus ? colors.primary : colors.hint,
+      focusNode.hasFocus
+          ? Themes.instance.colors.primary
+          : Themes.instance.colors.hint,
       BlendMode.srcIn,
     );
   }
