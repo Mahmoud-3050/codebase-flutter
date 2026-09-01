@@ -2,8 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import 'app_routes.dart';
+import '../../features/profile/presentation/navigation/router.dart' as profile;
 import '../../features/splash/presentation/navigation/router.dart' as splash;
-export '../../features/splash/presentation/navigation/router.dart' hide $appRoutes;
+export '../../features/profile/presentation/navigation/router.dart'
+    hide $appRoutes;
+export '../../features/splash/presentation/navigation/router.dart'
+    hide $appRoutes;
 
 final GlobalKey<NavigatorState> rootNavigatorKey =
     GlobalKey<NavigatorState>(debugLabel: 'root');
@@ -20,7 +24,7 @@ class AppRouter {
     },
     routes: [
       ...splash.$appRoutes,
-      // Combine all feature-specific generated routes
+      ...profile.$appRoutes,
     ],
   );
 }

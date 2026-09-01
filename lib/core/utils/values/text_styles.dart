@@ -383,8 +383,7 @@ abstract class TextStyles {
 //endregion
 
   //region:: LineThrough Medium
-  static TextStyle lineThroughMedium15({Color? color, bool? isArabic}) =>
-      TextStyle(
+  static TextStyle lineThroughMedium15({Color? color, bool? isArabic}) => TextStyle(
         color: color ?? _textColor,
         fontSize: 15.sp,
         fontWeight: FontWeight.w500,
