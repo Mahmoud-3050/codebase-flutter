@@ -148,12 +148,12 @@ final class RefreshTokenHelper {
       BaseOptions(
         baseUrl: ApiConstants.baseUrl,
         contentType: 'application/json',
-        connectTimeout: const Duration(seconds: 30),
-        sendTimeout: const Duration(seconds: 30),
+        connectTimeout: const Duration(seconds: 120),
+        sendTimeout: const Duration(seconds: 360),
         receiveTimeout: const Duration(seconds: 30),
       ),
     );
-    applyTrustingHttpAdapter(client);
+    applyHttpAdapter(client);
     return client;
   }
 

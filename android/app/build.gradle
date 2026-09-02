@@ -41,6 +41,16 @@ android {
 //        multiDexEnabled true
     }
 
+    flavorDimensions += "default"
+    productFlavors {
+        dev {
+            dimension = "default"
+        }
+        live {
+            dimension = "default"
+        }
+    }
+
     signingConfigs {
         release {
             keyAlias keystoreProperties['keyAlias']

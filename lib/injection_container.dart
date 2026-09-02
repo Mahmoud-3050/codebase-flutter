@@ -20,9 +20,6 @@ abstract class ServiceLocator {
   static Future<void> init() async {
     instance.allowReassignment = true;
 
-    /// Features
-    await initProfileFeatureInjection();
-
     /// Core
     injectFCMTokenSingleton('');
     await _injectSharedPreferences();
@@ -34,6 +31,10 @@ abstract class ServiceLocator {
     _injectDioConsumer();
     injectDeviceTypeSingleton(Platform.isIOS ? .ios : .android);
     injectDeviceIdSingleton(await getDeviceId());
+
+
+    /// Features
+    await initProfileFeatureInjection();
   }
 
   static void _injectDio() {
@@ -48,7 +49,10 @@ abstract class ServiceLocator {
 
   static Future<void> _injectSharedPreferences() async {
     final sharedPreferences = await SharedPreferences.getInstance();
-    instance.registerLazySingleton<SharedPreferences>(() => sharedPreferences, instanceName: 'sharedPreferences');
+    instance.registerLazySingleton<SharedPreferences>(
+      () => sharedPreferences,
+      instanceName: 'sharedPreferences',
+    );
   }
 
   static void _injectSecureStorage() {
@@ -56,9 +60,11 @@ abstract class ServiceLocator {
     const secureStorage = FlutterSecureStorage(
       // iOptions: iosOptions,
     );
-    instance.registerLazySingleton<FlutterSecureStorage>(() => secureStorage, instanceName: 'secureStorage');
+    instance.registerLazySingleton<FlutterSecureStorage>(
+      () => secureStorage,
+      instanceName: 'secureStorage',
+    );
   }
-
 
   static void _injectUserTypeStorage() {
     instance.registerLazySingleton<UserTypeStorage>(
@@ -110,10 +116,14 @@ abstract class ServiceLocator {
 }
 
 SharedPreferences get sharedPreferences =>
-    ServiceLocator.instance<SharedPreferences>(instanceName: 'sharedPreferences');
+    ServiceLocator.instance<SharedPreferences>(
+      instanceName: 'sharedPreferences',
+    );
 
 FlutterSecureStorage get secureStorage =>
-    ServiceLocator.instance<FlutterSecureStorage>(instanceName: 'secureStorage');
+    ServiceLocator.instance<FlutterSecureStorage>(
+      instanceName: 'secureStorage',
+    );
 
 UserTypeStorage get userTypeStorage =>
     ServiceLocator.instance<UserTypeStorage>();
@@ -126,6 +136,7 @@ DeviceTokenStorage get deviceTokenStorage =>
 
 DioConsumer get dioConsumer => ServiceLocator.instance<DioConsumer>();
 
+AppFlavor get currentFlavor => ServiceLocator.instance<AppFlavor>();
 
 String get fcmToken =>
     ServiceLocator.instance<String>(instanceName: 'fcmToken');

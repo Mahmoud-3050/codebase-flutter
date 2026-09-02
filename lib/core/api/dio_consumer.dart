@@ -53,7 +53,7 @@ class DioConsumerImpl implements DioConsumer {
     required this.client,
     @visibleForTesting Interceptor? apiInterceptor,
   }) {
-    applyTrustingHttpAdapter(client);
+    applyHttpAdapter(client);
     client.options
       ..baseUrl = ApiConstants.baseUrl
       ..contentType = 'application/json'

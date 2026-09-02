@@ -1,3 +1,24 @@
+enum AppFlavor {
+  live,
+  dev;
+
+  bool get isLive => this == live;
+  bool get isDev => this == dev;
+
+  static AppFlavor _current = dev;
+
+  static AppFlavor get current => _current;
+
+  static void activate(AppFlavor flavor) {
+    _current = flavor;
+  }
+
+  static AppFlavor fromString(String value) => AppFlavor.values.firstWhere(
+    (AppFlavor element) => element.name == value,
+    orElse: () => .dev,
+  );
+}
+
 enum DeviceType {
   android,
   ios;
@@ -5,8 +26,10 @@ enum DeviceType {
   bool get isAndroid => this == android;
   bool get isIOS => this == ios;
 
-  static DeviceType fromString(String value) =>
-      DeviceType.values.firstWhere((DeviceType element) => element.name == value, orElse: () => .android);
+  static DeviceType fromString(String value) => DeviceType.values.firstWhere(
+    (DeviceType element) => element.name == value,
+    orElse: () => .android,
+  );
 }
 
 enum UserType {
@@ -18,8 +41,10 @@ enum UserType {
   bool get isLoggedIn => this == loggedIn;
   bool get isGuest => this == guest;
 
-  static UserType fromString(String value) =>
-      UserType.values.firstWhere((UserType element) => element.name == value, orElse: () => .guest);
+  static UserType fromString(String value) => UserType.values.firstWhere(
+    (UserType element) => element.name == value,
+    orElse: () => .guest,
+  );
 }
 
 enum AppUpdateType {
@@ -30,5 +55,8 @@ enum AppUpdateType {
   bool get isImmediately => this == immediately;
 
   static AppUpdateType fromString(String value) =>
-      AppUpdateType.values.firstWhere((AppUpdateType element) => element.name == value, orElse: () => .flexible);
+      AppUpdateType.values.firstWhere(
+        (AppUpdateType element) => element.name == value,
+        orElse: () => .flexible,
+      );
 }
