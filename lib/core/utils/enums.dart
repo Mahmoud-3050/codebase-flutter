@@ -11,10 +11,15 @@ enum DeviceType {
 
 enum UserType {
   firstOpen, //WelcomeScreen
-  login, // LoginScreen
-  company, // HomeScreen
-  student, // HomeScreen
-  guest, // HomeScreen
+  loggedIn, // HomeScreen
+  guest; // HomeScreen
+
+  bool get isFirstOpen => this == firstOpen;
+  bool get isLoggedIn => this == loggedIn;
+  bool get isGuest => this == guest;
+
+  static UserType fromString(String value) =>
+      UserType.values.firstWhere((UserType element) => element.name == value, orElse: () => .guest);
 }
 
 enum AppUpdateType {

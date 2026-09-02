@@ -4,7 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:codebase/core/api/api_constants.dart';
 import 'package:codebase/core/api/refresh_token_helper.dart';
 import 'package:codebase/core/api/status_code.dart';
-import 'package:codebase/core/services/local_storage/access_token_storage.dart';
+import 'package:codebase/core/services/local_storage/interfaces/local_storage_interface.dart';
 
 void main() {
   group('parseAccessToken', () {
@@ -38,12 +38,15 @@ void main() {
 
     setUp(() {
       storage = FakeAccessTokenStorage();
-      helper = RefreshTokenHelper(
-        tokenStorage: storage,
-        refreshClient: Dio(),
-        languageCode: () => 'en',
-      );
+      helper = RefreshTokenHelper.instance
+        ..init(
+          tokenStorage: storage,
+          refreshClient: Dio(),
+          languageCode: () => 'en',
+        );
     });
+
+    tearDown(RefreshTokenHelper.instance.reset);
 
     test('returns false when the failure is not 401', () async {
       expect(await helper.shouldRefresh(_unauthorizedError(statusCode: 500)),
@@ -85,11 +88,13 @@ void main() {
     test('removes the stored access token', () async {
       final FakeAccessTokenStorage storage = FakeAccessTokenStorage()
         ..token = 'a';
-      final RefreshTokenHelper helper = RefreshTokenHelper(
-        tokenStorage: storage,
-        refreshClient: Dio(),
-        languageCode: () => 'en',
-      );
+      final RefreshTokenHelper helper = RefreshTokenHelper.instance
+        ..init(
+          tokenStorage: storage,
+          refreshClient: Dio(),
+          languageCode: () => 'en',
+        );
+      addTearDown(RefreshTokenHelper.instance.reset);
 
       await helper.clearAuthTokens();
 
@@ -120,15 +125,21 @@ DioException _unauthorizedError({
   );
 }
 
-class FakeAccessTokenStorage implements AccessTokenStorage {
+class FakeAccessTokenStorage implements LocalStorageInterface {
   String? token;
 
   @override
-  Future<String?> read() async => token;
+  Future<String?> read({String? key}) async => token;
 
   @override
-  Future<void> save(String value) async => token = value;
+  Future<bool> save({required String value, String? key}) async {
+    token = value;
+    return true;
+  }
 
   @override
-  Future<void> remove() async => token = null;
+  Future<bool> remove({String? key}) async {
+    token = null;
+    return true;
+  }
 }

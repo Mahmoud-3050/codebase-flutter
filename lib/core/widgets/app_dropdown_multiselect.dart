@@ -29,8 +29,7 @@ class AppDropdownMultiSelect<T> extends StatefulWidget {
   });
 
   @override
-  State<AppDropdownMultiSelect<T>> createState() =>
-      _AppDropdownMultiSelectState<T>();
+  State<AppDropdownMultiSelect<T>> createState() => _AppDropdownMultiSelectState<T>();
 }
 
 class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
@@ -42,14 +41,12 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
   @override
   void initState() {
     super.initState();
-    _internalSelectedItems = List.from(widget.selectedItems);
+    _internalSelectedItems = .from(widget.selectedItems);
   }
 
   void _toggleItemSelection(T item, Function setStateOverlay) {
     setStateOverlay(() {
-      _internalSelectedItems.contains(item)
-          ? _internalSelectedItems.remove(item)
-          : _internalSelectedItems.add(item);
+      _internalSelectedItems.contains(item) ? _internalSelectedItems.remove(item) : _internalSelectedItems.add(item);
     });
     widget.onChanged?.call(_internalSelectedItems);
   }
@@ -118,9 +115,7 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
         ),
         maxLines: 3,
       ),
-      trailing: isSelected
-          ? Icon(Icons.check, color: context.colors.green)
-          : null,
+      trailing: isSelected ? Icon(Icons.check, color: context.colors.green) : null,
       onTap: () => _toggleItemSelection(item, setStateOverlay),
     );
   }
@@ -129,10 +124,7 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
   Widget build(BuildContext context) {
     return CompositedTransformTarget(
       link: _layerLink,
-      child: GestureDetector(
-        onTap: _toggleDropdownMenu,
-        child: _buildDropdownContainer(),
-      ),
+      child: GestureDetector(onTap: _toggleDropdownMenu, child: _buildDropdownContainer()),
     );
   }
 
@@ -153,19 +145,14 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
     if (_internalSelectedItems.isEmpty) {
       return _buildHintRow();
     }
-    return widget.textItemBuilder != null
-        ? _buildCustomTextRow()
-        : _buildSelectedItemsRow();
+    return widget.textItemBuilder != null ? _buildCustomTextRow() : _buildSelectedItemsRow();
   }
 
   Widget _buildHintRow() {
     return Row(
       children: [
         Expanded(
-          child: Text(
-            widget.hintText,
-            style: TextStyles.of(size: 12, color: context.colors.hint),
-          ),
+          child: Text(widget.hintText, style: TextStyles.of(size: 12, color: context.colors.hint)),
         ),
         SizedBox(width: 8.w),
         _buildDropdownIcon(),
@@ -176,10 +163,7 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
   Widget _buildCustomTextRow() {
     return Row(
       children: <Widget>[
-        Text(
-          widget.textItemBuilder!,
-          style: TextStyles.of(size: 14, weight: .w500),
-        ),
+        Text(widget.textItemBuilder!, style: TextStyles.of(size: 14, weight: .w500)),
         SizedBox(width: 8.w),
         Container(width: 2.w, height: 32.h, color: context.colors.divider),
         SizedBox(width: 8.w),
@@ -200,21 +184,15 @@ class _AppDropdownMultiSelectState<T> extends State<AppDropdownMultiSelect<T>> {
   }
 
   Widget _buildSelectedText() {
-    List<TextSpan> textSpans = _internalSelectedItems.asMap().entries.map((
-      entry,
-    ) {
+    List<TextSpan> textSpans = _internalSelectedItems.asMap().entries.map((entry) {
       int index = entry.key;
       T item = entry.value;
       return TextSpan(
-        text:
-            widget.names[widget.values.indexOf(item)] +
-            (index < _internalSelectedItems.length - 1 ? ', ' : ''),
+        text: widget.names[widget.values.indexOf(item)] + (index < _internalSelectedItems.length - 1 ? ', ' : ''),
         style: TextStyles.of(
           size: 14,
           weight: .w500,
-          color: index.isEven
-              ? context.colors.textPrimary
-              : context.colors.textPrimary.withValues(alpha: 0.86),
+          color: index.isEven ? context.colors.textPrimary : context.colors.textPrimary.withValues(alpha: 0.86),
         ),
       );
     }).toList();

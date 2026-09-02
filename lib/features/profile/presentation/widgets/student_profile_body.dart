@@ -198,8 +198,8 @@ class _StudentProfileHeader extends StatelessWidget {
     final colors = context.colors;
 
     return Container(
-      width: double.infinity,
-      padding: .symmetric(vertical: 20.h, horizontal: 16.w),
+      width: .infinity,
+      padding: Paddings.symmetric(h: 16, v: 20),
       decoration: BoxDecoration(
         color: colors.foreground,
         borderRadius: .circular(16.r),

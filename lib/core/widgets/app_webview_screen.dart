@@ -27,7 +27,7 @@ class _AppWebViewScreenState extends State<AppWebViewScreen> {
   void initState() {
     super.initState();
     controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setJavaScriptMode(.unrestricted)
       ..setBackgroundColor(const Color(0x00000000))
       ..setNavigationDelegate(
         NavigationDelegate(
@@ -50,7 +50,7 @@ class _AppWebViewScreenState extends State<AppWebViewScreen> {
           },
         ),
       )
-      ..loadRequest(Uri.parse(widget.url));
+      ..loadRequest(.parse(widget.url));
   }
 
   @override

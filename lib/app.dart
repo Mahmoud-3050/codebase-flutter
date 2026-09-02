@@ -29,12 +29,9 @@ class App extends StatelessWidget {
                     darkTheme: appTheme(themes.darkColors, .dark),
                     themeMode: themes.mode,
                     locale: locale,
-                    supportedLocales:
-                        LanguageLocalizationsSetup.supportedLocales,
-                    localeResolutionCallback:
-                        LanguageLocalizationsSetup.localeResolutionCallback,
-                    localizationsDelegates:
-                        LanguageLocalizationsSetup.localizationsDelegates,
+                    supportedLocales: LanguageLocalizationsSetup.supportedLocales,
+                    localeResolutionCallback: LanguageLocalizationsSetup.localeResolutionCallback,
+                    localizationsDelegates: LanguageLocalizationsSetup.localizationsDelegates,
                     routerConfig: AppRouter.router,
                     debugShowCheckedModeBanner: false,
                   );

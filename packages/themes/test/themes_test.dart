@@ -39,9 +39,10 @@ class FakeThemeStorage implements ThemeStorage {
   Future<String?> getThemeMode() async => themeMode;
 
   @override
-  Future<void> saveThemeMode(String mode) async {
+  Future<bool> saveThemeMode(String mode) async {
     saveCount++;
     themeMode = mode;
+    return true;
   }
 }
 

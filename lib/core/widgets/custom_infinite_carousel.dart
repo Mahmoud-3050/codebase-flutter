@@ -57,7 +57,7 @@ class _InfiniteSmoothAutoScrollState extends State<InfiniteSmoothAutoScroll>
   // Pause/resume based on app lifecycle (background/foreground)
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (state == .resumed) {
       _appShouldScroll = true;
     } else {
       _appShouldScroll = false;

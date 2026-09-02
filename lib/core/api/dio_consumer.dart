@@ -11,7 +11,6 @@ import 'api_constants.dart';
 import 'api_interceptors.dart';
 import 'dio_http_adapter.dart';
 
-export 'dio_http_adapter.dart';
 
 sealed class DioConsumer {
   Future<dynamic> get(
@@ -62,9 +61,9 @@ class DioConsumerImpl implements DioConsumer {
         HttpHeaders.acceptHeader: 'application/json',
       }
       ..sendTimeout = const Duration(seconds: 120)
-      ..receiveTimeout = const Duration(seconds: 120)
+      ..receiveTimeout = const Duration(seconds: 360)
       ..connectTimeout = const Duration(seconds: 30);
-    client.interceptors.add(apiInterceptor ?? ApiInterceptors.instance);
+    client.interceptors.add(apiInterceptor ?? ApiInterceptor.instance);
     if (kDebugMode) {
       client.interceptors.add(
         PrettyDioLogger(

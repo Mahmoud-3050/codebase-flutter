@@ -32,8 +32,9 @@ class FakeLanguageStorage implements LanguageStorage {
   Future<String?> getLanguageCode() async => languageCode;
 
   @override
-  Future<void> saveLanguageCode(String code) async {
+  Future<bool> saveLanguageCode(String code) async {
     languageCode = code;
+    return true;
   }
 }
 

@@ -45,14 +45,10 @@ class _AnimatedCounterTextState extends State<AnimatedCounterText> {
       builder: (context, snapshot) {
         int counter = snapshot.data ?? 0;
         return AnimatedSwitcher(
-          duration: Duration(
-            milliseconds: counter > limitCounter
-                ? widgetMilliseconds + 100
-                : widgetMilliseconds,
-          ),
+          duration: Duration(milliseconds: counter > limitCounter ? widgetMilliseconds + 100 : widgetMilliseconds),
           transitionBuilder: (child, animation) {
             final position = Tween<Offset>(
-              begin: (animation.status == AnimationStatus.completed)
+              begin: (animation.status == .completed)
                   ? counter > limitCounter
                         ? const Offset(0, 3.5)
                         : const Offset(0, 1)

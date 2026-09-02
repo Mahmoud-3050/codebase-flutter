@@ -222,8 +222,7 @@ class AppTextFormField extends StatefulWidget {
     BaseValidator? validatorType,
     void Function(String)? onFieldSubmitted,
     void Function(String)? onChanged,
-    void Function(void Function(void Function()) localSetState)?
-    onSuffixIconPressed,
+    void Function(void Function(void Function()) localSetState)? onSuffixIconPressed,
     String? hintText,
     String? labelText,
     Color? backgroundColor,
@@ -250,9 +249,7 @@ class AppTextFormField extends StatefulWidget {
           textInputAction: textInputAction,
           maxLines: 1,
           prefixIcon: Icons.lock_rounded,
-          suffixIcon: isSecureText
-              ? Icons.visibility_rounded
-              : Icons.visibility_off_rounded,
+          suffixIcon: isSecureText ? Icons.visibility_rounded : Icons.visibility_off_rounded,
           onSuffixIconPressed: () {
             setState(() {
               isSecureText = !isSecureText;
@@ -327,9 +324,7 @@ class AppTextFormField extends StatefulWidget {
       onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
       validatorType: isValidator ? const NumbersValidator() : null,
-      inputFormatters: [
-        FilteringTextInputFormatter.allow(RegExp(r'^\d+\d{0,2}')),
-      ],
+      inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'^\d+\d{0,2}'))],
     );
   }
 }
@@ -364,31 +359,19 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       obscureText: widget.obscureText,
       keyboardType: widget.keyboardType,
       maxLength: widget.maxLength,
-      buildCounter:
-          (
-            BuildContext context, {
-            int? currentLength,
-            int? maxLength,
-            bool? isFocused,
-          }) {
-            if (maxLength == null) {
-              return null;
-            }
-            return Text(
-              '$currentLength/$maxLength',
-              style: TextStyles.of(
-                size: 10,
-                color: context.colors.textSecondary,
-              ),
-            );
-          },
+      buildCounter: (BuildContext context, {int? currentLength, int? maxLength, bool? isFocused}) {
+        if (maxLength == null) {
+          return null;
+        }
+        return Text('$currentLength/$maxLength', style: TextStyles.of(size: 10, color: context.colors.textSecondary));
+      },
       maxLines: widget.maxLines,
       readOnly: widget.readOnly,
       autofocus: widget.autofocus,
       inputFormatters: widget.inputFormatters,
       textInputAction: widget.textInputAction,
       autofillHints: widget.autofillHints,
-      maxLengthEnforcement: MaxLengthEnforcement.enforced,
+      maxLengthEnforcement: .enforced,
       style: widget.textStyle ?? TextStyles.of(size: 14, weight: .w500),
       cursorColor: widget.cursorColor,
       cursorRadius: .circular(8.r),
@@ -407,54 +390,35 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
     alignLabelWithHint: false,
     contentPadding: _padding,
     errorMaxLines: 2,
-    fillColor:
-        widget.backgroundColor ??
-        context.colors.primary.withValues(alpha: 0.05),
+    fillColor: widget.backgroundColor ?? context.colors.primary.withValues(alpha: 0.05),
     filled: widget.backgroundColor != null,
     focusColor: context.colors.primary,
-    border: _createBorder(
-      widget.borderColor ?? context.colors.primary.withValues(alpha: 0.05),
-    ),
+    border: _createBorder(widget.borderColor ?? context.colors.primary.withValues(alpha: 0.05)),
     enabledBorder: _createBorder(widget.borderColor ?? context.colors.hint),
-    focusedBorder: _createBorder(
-      widget.focusBorderColor ?? context.colors.primary,
-    ),
+    focusedBorder: _createBorder(widget.focusBorderColor ?? context.colors.primary),
     focusedErrorBorder: _createBorder(context.colors.primary),
     errorBorder: _createBorder(context.colors.error),
     errorStyle: TextStyles.of(size: 12, color: context.colors.error),
-    hintStyle:
-        widget.hintTextStyle ??
-        TextStyles.of(size: 12, color: context.colors.textSecondary),
-    labelStyle:
-        widget.labelTextStyle ??
-        TextStyles.of(size: 12, color: context.colors.textSecondary),
+    hintStyle: widget.hintTextStyle ?? TextStyles.of(size: 12, color: context.colors.textSecondary),
+    labelStyle: widget.labelTextStyle ?? TextStyles.of(size: 12, color: context.colors.textSecondary),
     prefixIcon: _prefixIcon,
     suffixIcon: _suffixIcon,
   );
 
-  EdgeInsetsGeometry get _padding => .symmetric(
-    horizontal: 16.w,
-    vertical: 16.h * widget.paddingVerticalFactory,
-  );
+  EdgeInsetsGeometry get _padding => .symmetric(horizontal: 16.w, vertical: 16.h * widget.paddingVerticalFactory);
 
   Widget? get _prefixIcon => widget.prefixIcon == null
       ? widget.prefix
       : InkWell(
           onTap: widget.onPrefixIconPressed,
-          child: Icon(
-            widget.prefixIcon,
-            color: widget.prefixIconColor ?? context.colors.hint,
-          ),
+          child: Icon(widget.prefixIcon, color: widget.prefixIconColor ?? context.colors.hint),
         );
 
   Widget? get _suffixIcon => widget.suffixIcon == null
       ? widget.suffix
       : InkWell(
           onTap: widget.onSuffixIconPressed,
-          child: Icon(
-            widget.suffixIcon,
-            color: widget.suffixIconColor ?? context.colors.hint,
-          ),
+          child: Icon(widget.suffixIcon, color: widget.suffixIconColor ?? context.colors.hint),
         );
 
   OutlineInputBorder _createBorder(Color color) {

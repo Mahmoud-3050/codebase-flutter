@@ -31,21 +31,14 @@ void main() {
     mainDio.httpClientAdapter = mainAdapter;
     refreshDio.httpClientAdapter = refreshAdapter;
 
-    RefreshTokenHelper.instance.init(
-      tokenStorage: storage,
-      refreshClient: refreshDio,
-      languageCode: () => 'ar',
-    );
+    RefreshTokenHelper.instance.init(tokenStorage: storage, refreshClient: refreshDio, languageCode: () => 'ar');
     ApiInterceptor.instance.init(
       retryClient: mainDio,
       refreshTokenHelper: .instance,
       getLanguageCode: () => 'ar',
       noInternetMessage: () => 'No internet',
     );
-    consumer = DioConsumerImpl(
-      client: mainDio,
-      apiInterceptor: ApiInterceptor.instance,
-    );
+    consumer = DioConsumerImpl(client: mainDio, apiInterceptor: ApiInterceptor.instance);
     mainDio.httpClientAdapter = mainAdapter;
   });
 
@@ -58,8 +51,7 @@ void main() {
     test('attaches Bearer token and Accept-Language on each request', () async {
       storage.token = 'abc123';
       mainAdapter.handler = (RequestOptions options) {
-        expect(
-            options.headers[HttpHeaders.authorizationHeader], 'Bearer abc123');
+        expect(options.headers[HttpHeaders.authorizationHeader], 'Bearer abc123');
         expect(options.headers[HttpHeaders.acceptLanguageHeader], 'ar');
         expect(options.headers[HttpHeaders.acceptHeader], 'application/json');
         return _jsonBody(StatusCode.ok, <String, dynamic>{'status': 'success'});
@@ -71,8 +63,7 @@ void main() {
 
     test('omits Authorization when no access token is stored', () async {
       mainAdapter.handler = (RequestOptions options) {
-        expect(options.headers.containsKey(HttpHeaders.authorizationHeader),
-            isFalse);
+        expect(options.headers.containsKey(HttpHeaders.authorizationHeader), isFalse);
         return _jsonBody(StatusCode.ok, <String, dynamic>{'ok': true});
       };
 
@@ -82,40 +73,27 @@ void main() {
 
   group('error mapping', () {
     test('unwraps UnauthorizedException for 401 on public requests', () async {
-      mainAdapter.handler = (_) => _jsonBody(
-            StatusCode.unauthorized,
-            <String, dynamic>{'message': 'Invalid credentials'},
-          );
+      mainAdapter.handler = (_) =>
+          _jsonBody(StatusCode.unauthorized, <String, dynamic>{'message': 'Invalid credentials'});
 
       await expectLater(
         consumer.post('/common/login', body: <String, dynamic>{}),
         throwsA(
-          isA<UnauthorizedException>().having(
-            (UnauthorizedException e) => e.message,
-            'message',
-            'Invalid credentials',
-          ),
+          isA<UnauthorizedException>().having((UnauthorizedException e) => e.message, 'message', 'Invalid credentials'),
         ),
       );
       expect(refreshAdapter.calls, 0);
     });
 
     test('unwraps ServerException for 500', () async {
-      mainAdapter.handler = (_) => _jsonBody(
-            StatusCode.internalServerError,
-            <String, dynamic>{'message': 'Boom'},
-          );
+      mainAdapter.handler = (_) => _jsonBody(StatusCode.internalServerError, <String, dynamic>{'message': 'Boom'});
 
       await expectLater(
         consumer.get('/profile'),
         throwsA(
           isA<ServerException>()
               .having((ServerException e) => e.message, 'message', 'Boom')
-              .having(
-                (ServerException e) => e.statusCode,
-                'statusCode',
-                StatusCode.internalServerError,
-              ),
+              .having((ServerException e) => e.statusCode, 'statusCode', StatusCode.internalServerError),
         ),
       );
     });
@@ -129,30 +107,19 @@ void main() {
       mainAdapter.handler = (RequestOptions options) {
         protectedCalls++;
         if (protectedCalls == 1) {
-          expect(options.headers[HttpHeaders.authorizationHeader],
-              'Bearer old-access');
-          return _jsonBody(
-            StatusCode.unauthorized,
-            <String, dynamic>{'message': 'expired'},
-          );
+          expect(options.headers[HttpHeaders.authorizationHeader], 'Bearer old-access');
+          return _jsonBody(StatusCode.unauthorized, <String, dynamic>{'message': 'expired'});
         }
-        expect(options.headers[HttpHeaders.authorizationHeader],
-            'Bearer new-access');
+        expect(options.headers[HttpHeaders.authorizationHeader], 'Bearer new-access');
         return _jsonBody(StatusCode.ok, <String, dynamic>{'status': 'success'});
       };
       refreshAdapter.handler = (RequestOptions options) {
         expect(options.path, ApiConstants.refreshTokenPath);
-        expect(options.headers[HttpHeaders.authorizationHeader],
-            'Bearer old-access');
-        return _jsonBody(
-          StatusCode.ok,
-          <String, dynamic>{
-            'status': 'success',
-            'data': <String, dynamic>{
-              'access_token': 'new-access',
-            },
-          },
-        );
+        expect(options.headers[HttpHeaders.authorizationHeader], 'Bearer old-access');
+        return _jsonBody(StatusCode.ok, <String, dynamic>{
+          'status': 'success',
+          'data': <String, dynamic>{'access_token': 'new-access'},
+        });
       };
 
       final dynamic data = await consumer.get('/student/profile/edit');
@@ -167,29 +134,19 @@ void main() {
       storage.token = 'old-access';
 
       mainAdapter.handler = (RequestOptions options) {
-        if (options.headers[HttpHeaders.authorizationHeader] ==
-            'Bearer old-access') {
-          return _jsonBody(
-            StatusCode.unauthorized,
-            <String, dynamic>{'message': 'expired'},
-          );
+        if (options.headers[HttpHeaders.authorizationHeader] == 'Bearer old-access') {
+          return _jsonBody(StatusCode.unauthorized, <String, dynamic>{'message': 'expired'});
         }
         return _jsonBody(StatusCode.ok, <String, dynamic>{'ok': true});
       };
       refreshAdapter.handler = (_) async {
         await Future<void>.delayed(const Duration(milliseconds: 40));
-        return _jsonBody(
-          StatusCode.ok,
-          <String, dynamic>{
-            'data': <String, dynamic>{'accessToken': 'new-access'},
-          },
-        );
+        return _jsonBody(StatusCode.ok, <String, dynamic>{
+          'data': <String, dynamic>{'accessToken': 'new-access'},
+        });
       };
 
-      await Future.wait<dynamic>(<Future<dynamic>>[
-        consumer.get('/one'),
-        consumer.get('/two'),
-      ]);
+      await Future.wait<dynamic>(<Future<dynamic>>[consumer.get('/one'), consumer.get('/two')]);
 
       expect(refreshAdapter.calls, 1);
       expect(storage.token, 'new-access');
@@ -197,19 +154,11 @@ void main() {
 
     test('clears the access token when refresh fails', () async {
       storage.token = 'old-access';
-      mainAdapter.handler = (_) => _jsonBody(
-            StatusCode.unauthorized,
-            <String, dynamic>{'message': 'expired'},
-          );
-      refreshAdapter.handler = (_) => _jsonBody(
-            StatusCode.unauthorized,
-            <String, dynamic>{'message': 'invalid refresh'},
-          );
+      mainAdapter.handler = (_) => _jsonBody(StatusCode.unauthorized, <String, dynamic>{'message': 'expired'});
+      refreshAdapter.handler = (_) =>
+          _jsonBody(StatusCode.unauthorized, <String, dynamic>{'message': 'invalid refresh'});
 
-      await expectLater(
-        consumer.get('/student/profile/edit'),
-        throwsA(isA<UnauthorizedException>()),
-      );
+      await expectLater(consumer.get('/student/profile/edit'), throwsA(isA<UnauthorizedException>()));
       expect(storage.token, isNull);
     });
   });
@@ -245,8 +194,7 @@ class _ScriptedAdapter implements HttpClientAdapter {
     Future<void>? cancelFuture,
   ) async {
     calls++;
-    final FutureOr<ResponseBody> Function(RequestOptions options)? current =
-        handler;
+    final FutureOr<ResponseBody> Function(RequestOptions options)? current = handler;
     if (current == null) {
       throw StateError('No adapter handler for ${options.path}');
     }

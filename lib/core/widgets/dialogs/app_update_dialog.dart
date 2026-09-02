@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:store_redirect/store_redirect.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:themes/themes.dart';
 
 import '../../../config/language/strings.dart';
 import '../../../config/themes/extra_colors.dart';
+import '../../utils/extensions.dart';
 import '../../utils/values/text_styles.dart';
 import '../app_elevated_button.dart';
 import '../app_logo.dart';
@@ -43,16 +45,16 @@ class AppUpdateDialog extends StatelessWidget {
   );
 
   Widget _content(ThemeColors colors) => Container(
-    margin: EdgeInsetsDirectional.only(top: 64.h),
-    padding: EdgeInsetsDirectional.only(
-      start: 24.w,
-      end: 24.w,
-      top: 64.h,
-      bottom: 32.h,
+    margin: Paddings.only(top: 64.h),
+    padding: Paddings.only(
+      start: 24,
+      end: 24,
+      top: 64,
+      bottom: 32,
     ),
     decoration: BoxDecoration(
       color: colors.foreground,
-      borderRadius: .all(.circular(32.r)),
+      borderRadius: .circular(32.r),
     ),
     child: Column(
       mainAxisAlignment: .center,
@@ -99,9 +101,10 @@ class AppUpdateDialog extends StatelessWidget {
     child: AppElevatedButton(
       text: Strings.update,
       onPressed: () async {
+        PackageInfo packageInfo = await PackageInfo.fromPlatform();
         StoreRedirect.redirect(
-          androidAppId: 'com.sahalat.android',
-          iOSAppId: '6737917009',
+          androidAppId: packageInfo.packageName,
+          iOSAppId: packageInfo.packageName,
         );
       },
     ),

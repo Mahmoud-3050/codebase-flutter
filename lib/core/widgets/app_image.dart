@@ -126,7 +126,7 @@ class AppImage extends StatelessWidget {
     );
   }
 
-  Image get _imageAssetItem => Image.asset(
+  Image get _imageAssetItem => .asset(
     imageAsset!,
     width: width,
     height: height,
@@ -142,7 +142,7 @@ class AppImage extends StatelessWidget {
     return _imageAssetItem;
   }
 
-  Image get _imageFileItem => Image.file(
+  Image get _imageFileItem => .file(
     key: imageKey,
     imageFile!,
     width: width,
@@ -159,7 +159,7 @@ class AppImage extends StatelessWidget {
     return _imageFileItem;
   }
 
-  Image get _imageNetworkItem => Image.network(
+  Image get _imageNetworkItem => .network(
     imageUrl!,
     color: color,
     width: width,

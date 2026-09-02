@@ -16,20 +16,14 @@ final class DioExceptionMapper {
 
   AppException map(DioException error) {
     return switch (error.type) {
-      DioExceptionType.connectionTimeout ||
-      DioExceptionType.sendTimeout ||
-      DioExceptionType.receiveTimeout ||
-      DioExceptionType.transformTimeout ||
-      DioExceptionType.connectionError ||
-      DioExceptionType.unknown => InternetConnectionException(
-        message: noInternetMessage(),
-      ),
-      DioExceptionType.badResponse => _mapResponse(error),
-      DioExceptionType.badCertificate ||
-      DioExceptionType.cancel => ServerException(
-        message: error.message,
-        statusCode: error.response?.statusCode,
-      ),
+      .connectionTimeout ||
+      .sendTimeout ||
+      .receiveTimeout ||
+      .transformTimeout ||
+      .connectionError ||
+      .unknown => InternetConnectionException(message: noInternetMessage()),
+      .badResponse => _mapResponse(error),
+      .badCertificate || .cancel => ServerException(message: error.message, statusCode: error.response?.statusCode),
     };
   }
 
@@ -42,9 +36,7 @@ final class DioExceptionMapper {
     }
     if (statusCode == StatusCode.movedPermanently) {
       return ServerException(
-        message:
-            extractErrorMessage(error.response?.data, preferDataField: true) ??
-            message,
+        message: extractErrorMessage(error.response?.data, preferDataField: true) ?? message,
         statusCode: statusCode,
       );
     }

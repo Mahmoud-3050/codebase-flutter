@@ -2,36 +2,55 @@ import 'dart:async';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:language/language.dart';
 
 import '../error/exceptions.dart';
-import '../services/local_storage/access_token_storage.dart';
+import '../services/local_storage/impl/access_token_storage.dart';
+import '../services/local_storage/interfaces/local_storage_interface.dart';
 import 'api_constants.dart';
 import 'dio_http_adapter.dart';
 import 'status_code.dart';
 
 final class RefreshTokenHelper {
-  RefreshTokenHelper({
-    AccessTokenStorage? tokenStorage,
-    Dio? refreshClient,
-    String Function()? languageCode,
-  }) : _tokenStorage = tokenStorage,
-       _refreshClient = refreshClient,
-       _languageCode = languageCode;
+  RefreshTokenHelper._();
 
-  static final RefreshTokenHelper instance = RefreshTokenHelper();
+  static final RefreshTokenHelper instance = ._();
+
+  factory RefreshTokenHelper() => instance;
 
   static const String retriedRequestExtraKey = 'accessTokenRetried';
 
-  final AccessTokenStorage? _tokenStorage;
-  final Dio? _refreshClient;
-  final String Function()? _languageCode;
+  LocalStorageInterface? _tokenStorage;
+  Dio? _refreshClient;
+  String Function()? _languageCode;
   Dio? _lazyRefreshClient;
-
   Completer<void>? _refreshLock;
 
-  AccessTokenStorage get tokenStorage =>
+  /// Optional overrides. Production uses GetIt / [Language.instance].
+  void init({
+    LocalStorageInterface? tokenStorage,
+    Dio? refreshClient,
+    String Function()? languageCode,
+  }) {
+    _tokenStorage = tokenStorage;
+    _refreshClient = refreshClient;
+    _languageCode = languageCode;
+    _lazyRefreshClient = null;
+    _refreshLock = null;
+  }
+
+  @visibleForTesting
+  void reset() {
+    _tokenStorage = null;
+    _refreshClient = null;
+    _languageCode = null;
+    _lazyRefreshClient = null;
+    _refreshLock = null;
+  }
+
+  LocalStorageInterface get tokenStorage =>
       _tokenStorage ?? GetIt.instance<AccessTokenStorage>();
 
   Dio get refreshClient =>
@@ -121,7 +140,7 @@ final class RefreshTokenHelper {
       throw const UnauthorizedException();
     }
 
-    await tokenStorage.save(newAccessToken);
+    await tokenStorage.save(value: newAccessToken);
   }
 
   Dio _createRefreshClient() {

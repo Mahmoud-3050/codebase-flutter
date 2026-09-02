@@ -3,15 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
-
 import 'package:themes/themes.dart';
 
-import 'enums.dart';
 
-String _padTwoDigits(int value) => value.toString().padLeft(2, '0');
 
 extension DateTimeExtension on DateTime {
-  String get displayFormat => '$year-${_padTwoDigits(month)}-${_padTwoDigits(day)}';
+  String _padTwoDigits(int value) => value.toString().padLeft(2, '0');
+  
+  String get displayFormat =>
+      '$year-${_padTwoDigits(month)}-${_padTwoDigits(day)}';
 
   String get displayTimeFormat =>
       '$year-${_padTwoDigits(month)}-${_padTwoDigits(day)} '
@@ -53,7 +53,7 @@ extension StringExtension on String {
       throw Exception('Could not launch $this');
     }
     if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
+      await launchUrl(uri, mode: .externalApplication);
     } else {
       throw Exception('Could not launch $this');
     }
@@ -83,19 +83,14 @@ extension FormDataExtension on FormData {
   }
 }
 
-extension UserTypeExtension on UserType {
-  static UserType fromString(String value) =>
-      UserType.values.firstWhere((UserType element) => element.name == value, orElse: () => .firstOpen);
-}
-
-extension AppUpdateTypeExtension on AppUpdateType {
-  static AppUpdateType fromString(String value) =>
-      AppUpdateType.values.firstWhere((AppUpdateType element) => element.name == value, orElse: () => .immediately);
-}
-
 extension ColorFilterExtension on ColorFilter {
   static ColorFilter getFocusColor(FocusNode focusNode) {
-    return ColorFilter.mode(focusNode.hasFocus ? Themes.instance.colors.primary : Themes.instance.colors.hint, .srcIn);
+    return ColorFilter.mode(
+      focusNode.hasFocus
+          ? Themes.instance.colors.primary
+          : Themes.instance.colors.hint,
+      .srcIn,
+    );
   }
 
   static ColorFilter setColor(Color color) {
@@ -136,15 +131,15 @@ extension CircularProgressIndicatorExtension on CircularProgressIndicator {
 extension TextEditingControllerExtension on TextEditingController {
   void get fixCursorErrorOfLastIndex {
     addListener(() {
-      if (selection == TextSelection.fromPosition(TextPosition(offset: text.length - 1))) {
-        selection = TextSelection.fromPosition(TextPosition(offset: text.length));
+      if (selection == .fromPosition(TextPosition(offset: text.length - 1))) {
+        selection = .fromPosition(TextPosition(offset: text.length));
       }
     });
   }
 }
 
 /// ScreenUtil gaps. On `num` so integer literals work (`24.hGap`).
-extension ScreenUtilGapExtension on num {
+extension GapExtension on num {
   /// Horizontal space: [SizedBox] width scaled with `.w`.
   SizedBox get wGap => SizedBox(width: w);
 
@@ -152,10 +147,34 @@ extension ScreenUtilGapExtension on num {
   SizedBox get hGap => SizedBox(height: h);
 
   /// Horizontal sliver space (e.g. horizontal [CustomScrollView]).
-  SliverToBoxAdapter get wSliverGap => SliverToBoxAdapter(child: SizedBox(width: w));
+  SliverToBoxAdapter get wSliverGap =>
+      SliverToBoxAdapter(child: SizedBox(width: w));
 
   /// Vertical sliver space (e.g. vertical [CustomScrollView]).
-  SliverToBoxAdapter get hSliverGap => SliverToBoxAdapter(child: SizedBox(height: h));
+  SliverToBoxAdapter get hSliverGap =>
+      SliverToBoxAdapter(child: SizedBox(height: h));
+}
+
+/// ScreenUtil insets. `h`/start/end use `.w`; `v`/top/bottom use `.h`.
+/// `Paddings.symmetric(h: 16, v: 20)` → `horizontal: 16.w, vertical: 20.h`.
+extension Paddings on EdgeInsetsGeometry {
+  static EdgeInsetsDirectional symmetric({num h = 0, num v = 0}) {
+    return EdgeInsetsDirectional.symmetric(horizontal: h.w, vertical: v.h);
+  }
+
+  static EdgeInsetsDirectional only({
+    num start = 0,
+    num top = 0,
+    num end = 0,
+    num bottom = 0,
+  }) {
+    return EdgeInsetsDirectional.only(
+      start: start.w,
+      top: top.h,
+      end: end.w,
+      bottom: bottom.h,
+    );
+  }
 }
 
 extension ObjectParsingX on Object? {

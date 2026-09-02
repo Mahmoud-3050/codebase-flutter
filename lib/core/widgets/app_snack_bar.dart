@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:themes/themes.dart';
 
+import '../utils/extensions.dart';
+
 void showAppSnackBar({
   required BuildContext context,
   required String message,
   required ToastType type,
-  SnackBarBehavior? behavior = SnackBarBehavior.floating,
+  SnackBarBehavior? behavior = .floating,
   Duration duration = const Duration(milliseconds: 5000),
 }) {
   ScaffoldMessenger.of(context).showSnackBar(
@@ -29,7 +31,7 @@ SnackBar _buildAppSnackBar({
 }) {
   return SnackBar(
     content: _buildContent(context, message, type),
-    dismissDirection: DismissDirection.horizontal,
+    dismissDirection: .horizontal,
     padding: _padding,
     margin: _getMargin(context, behavior),
     backgroundColor: type.color,
@@ -60,16 +62,17 @@ Widget _buildContent(BuildContext context, String message, ToastType type) {
   );
 }
 
-EdgeInsetsGeometry get _padding => .symmetric(horizontal: 16.w, vertical: 8.h);
+EdgeInsetsDirectional get _padding =>
+    .symmetric(horizontal: 16.w, vertical: 8.h);
 
-EdgeInsetsGeometry? _getMargin(
+EdgeInsetsDirectional? _getMargin(
   BuildContext context,
   SnackBarBehavior? behavior,
 ) {
-  if (behavior != SnackBarBehavior.floating) {
+  if (behavior != .floating) {
     return null;
   }
-  return EdgeInsetsDirectional.only(bottom: 16.h, start: 16.w, end: 16.w);
+  return Paddings.only(bottom: 16, start: 16, end: 16);
 }
 
 enum ToastType { success, error, warning, info }

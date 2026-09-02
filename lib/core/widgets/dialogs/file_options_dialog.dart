@@ -30,7 +30,7 @@ class FileOptionsDialog extends StatelessWidget {
             onPressed: () async {
               Navigator.pop(context);
               FilePickerResult? filePickerResult = await FilePicker.pickFiles(
-                type: FileType.custom,
+                type: .custom,
                 allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
               );
               if (filePickerResult != null) {
