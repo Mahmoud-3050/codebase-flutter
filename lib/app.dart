@@ -1,7 +1,7 @@
-import 'package:language/language.dart';
 import 'package:flutter/material.dart' hide RouteFactory;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:language/language.dart';
 import 'package:themes/themes.dart';
 
 import 'config/routes/app_router.dart';
@@ -30,8 +30,10 @@ class App extends StatelessWidget {
                     themeMode: themes.mode,
                     locale: locale,
                     supportedLocales: LanguageLocalizationsSetup.supportedLocales,
-                    localeResolutionCallback: LanguageLocalizationsSetup.localeResolutionCallback,
-                    localizationsDelegates: LanguageLocalizationsSetup.localizationsDelegates,
+                    localeResolutionCallback:
+                        LanguageLocalizationsSetup.localeResolutionCallback,
+                    localizationsDelegates:
+                        LanguageLocalizationsSetup.localizationsDelegates,
                     routerConfig: AppRouter.router,
                     debugShowCheckedModeBanner: false,
                   );

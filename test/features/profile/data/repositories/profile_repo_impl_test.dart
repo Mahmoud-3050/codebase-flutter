@@ -22,12 +22,12 @@ void main() {
 
   group('getStudentProfile', () {
     test('returns Left when remote throws AppException', () async {
-      when(remote.getStudentProfile()).thenThrow(
-        const ServerException(message: 'Server error'),
-      );
+      when(
+        remote.getStudentProfile(cancellation: anyNamed('cancellation')),
+      ).thenThrow(const ServerException(message: 'Server error'));
 
-      final Either<Failure, GetStudentProfileResponse> result =
-          await repository.getStudentProfile(params: NoParams());
+      final Either<Failure, GetStudentProfileResponse> result = await repository
+          .getStudentProfile(params: const CancellableParams());
 
       expect(result.isLeft, isTrue);
       result.fold(
@@ -36,20 +36,48 @@ void main() {
       );
     });
 
-    test('returns Left when remote throws non-AppException', () async {
-      when(remote.getStudentProfile()).thenThrow(TypeError());
+    test(
+      'returns ValidationFailure when remote throws ValidationException',
+      () async {
+        when(
+          remote.getStudentProfile(cancellation: anyNamed('cancellation')),
+        ).thenThrow(
+          const ValidationException(
+            message: 'invalid',
+            fieldErrors: <String, List<String>>{
+              'email': <String>['taken'],
+            },
+          ),
+        );
 
-      final Either<Failure, GetStudentProfileResponse> result =
-          await repository.getStudentProfile(params: NoParams());
+        final Either<Failure, GetStudentProfileResponse> result =
+            await repository.getStudentProfile(
+              params: const CancellableParams(),
+            );
+
+        expect(result.isLeft, isTrue);
+        result.fold((Failure failure) {
+          expect(failure, isA<ValidationFailure>());
+          expect((failure as ValidationFailure).fieldErrors['email'], <String>[
+            'taken',
+          ]);
+        }, (_) => fail('Expected Left'));
+      },
+    );
+
+    test('returns Left when remote throws non-AppException', () async {
+      when(
+        remote.getStudentProfile(cancellation: anyNamed('cancellation')),
+      ).thenThrow(TypeError());
+
+      final Either<Failure, GetStudentProfileResponse> result = await repository
+          .getStudentProfile(params: const CancellableParams());
 
       expect(result.isLeft, isTrue);
-      result.fold(
-        (Failure failure) {
-          expect(failure, isA<ServerFailure>());
-          expect(failure.message, Strings.pleaseTryAgainLater);
-        },
-        (_) => fail('Expected Left'),
-      );
+      result.fold((Failure failure) {
+        expect(failure, isA<ServerFailure>());
+        expect(failure.message, Strings.pleaseTryAgainLater);
+      }, (_) => fail('Expected Left'));
     });
   });
 }

@@ -25,11 +25,13 @@ class ChangeCompanyPasswordParams extends Equatable {
   final String? oldPassword;
   final String? newPassword;
   final String? newPasswordConfirmation;
+  final Object? cancellation;
 
   const ChangeCompanyPasswordParams({
     required this.oldPassword,
     required this.newPassword,
     required this.newPasswordConfirmation,
+    this.cancellation,
   });
 
   Map<String, dynamic> toJson() {

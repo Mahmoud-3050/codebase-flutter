@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 
+import '../api/status_code.dart';
 import 'failures.dart';
 
 abstract class AppException extends Equatable implements Exception {
@@ -79,5 +80,75 @@ class CacheException extends AppException {
   @override
   Failure toFailure() {
     return CacheFailure(message: message);
+  }
+}
+
+class ForbiddenException extends AppException {
+  @override
+  final String? message;
+
+  const ForbiddenException({this.message});
+
+  @override
+  Failure toFailure() {
+    return ServerFailure(message: message, statusCode: StatusCode.forbidden);
+  }
+}
+
+class ConflictException extends AppException {
+  @override
+  final String? message;
+
+  const ConflictException({this.message});
+
+  @override
+  Failure toFailure() {
+    return ServerFailure(message: message, statusCode: StatusCode.conflict);
+  }
+}
+
+class ValidationException extends AppException {
+  @override
+  final String? message;
+  final Map<String, List<String>> fieldErrors;
+
+  const ValidationException({
+    this.message,
+    this.fieldErrors = const <String, List<String>>{},
+  });
+
+  @override
+  List<Object?> get props => <Object?>[message, fieldErrors];
+
+  @override
+  Failure toFailure() {
+    return ValidationFailure(message: message, fieldErrors: fieldErrors);
+  }
+}
+
+class TooManyRequestsException extends AppException {
+  @override
+  final String? message;
+
+  const TooManyRequestsException({this.message});
+
+  @override
+  Failure toFailure() {
+    return ServerFailure(
+      message: message,
+      statusCode: StatusCode.tooManyRequests,
+    );
+  }
+}
+
+class RequestCancelledException extends AppException {
+  @override
+  final String? message;
+
+  const RequestCancelledException({this.message});
+
+  @override
+  Failure toFailure() {
+    return CancelledFailure(message: message);
   }
 }

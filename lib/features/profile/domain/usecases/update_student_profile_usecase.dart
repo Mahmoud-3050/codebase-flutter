@@ -35,6 +35,7 @@ class UpdateStudentProfileParams extends Equatable {
   final String? graduationDate;
   final String? gpaFile;
   final String? cvFile;
+  final Object? cancellation;
 
   const UpdateStudentProfileParams({
     required this.firstName,
@@ -51,6 +52,7 @@ class UpdateStudentProfileParams extends Equatable {
     required this.graduationDate,
     required this.gpaFile,
     required this.cvFile,
+    this.cancellation,
   });
 
   Map<String, dynamic> toJson() {

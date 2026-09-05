@@ -28,11 +28,11 @@ abstract class ProfileRepository {
   });
 
   Future<Either<Failure, GetCompanyProfileResponse>> getCompanyProfile({
-    required NoParams params,
+    required CancellableParams params,
   });
 
   Future<Either<Failure, GetStudentProfileResponse>> getStudentProfile({
-    required NoParams params,
+    required CancellableParams params,
   });
 
   Future<Either<Failure, UpdateCompanyProfileResponse>> updateCompanyProfile({

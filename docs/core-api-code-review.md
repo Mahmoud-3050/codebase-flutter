@@ -1,152 +1,213 @@
 # Code review: `lib/core/api/`
 
-**Date:** 2026-09-02  
-**Scope:** `dio_consumer.dart`, `api_interceptors.dart`, `refresh_token_helper.dart`, `dio_exception_mapper.dart`, `dio_http_adapter.dart`, `api_constants.dart`, `status_code.dart`, plus `test/core/api/`  
-**Mindset:** bugs, behavioral regressions, security, unhandled cases, missing tests. Quality notes follow findings.
+**Date:** 2026-09-05 (re-review after H1 / H2)  
+**Previous review:** 2026-09-02, overall **71 / 100**  
+**Scope:** `dio_consumer.dart`, `api_interceptors.dart`, `refresh_token_helper.dart`, `dio_exception_mapper.dart`, `dio_http_adapter.dart`, `api_constants.dart`, `status_code.dart`, plus `test/core/api/` and the exception/failure mapping they feed.  
+**Mindset:** bugs, behavioral regressions, security, unhandled cases, missing tests. Quality notes follow findings.  
+**Review only — no code was changed in this pass.**
 
 ---
 
 ## Summary
 
-Token refresh, 401 retry, and interceptor → `AppException` unwrapping work for the paths that are tested (public 401, 500, one refresh + retry, concurrent 401 coalescing, failed refresh clears storage).
+The HTTP layer is a solid Dio wrapper: flavor-aware base URLs, typed status mapping, a refresh lock, retry that stamps the new Bearer token, multipart `Content-Type`, and a unit-test suite that now covers the session-failure paths that previously logged users out.
 
-The main risks are **wrong user-facing errors** (unknown Dio failures mapped as “no internet”), **retry using the same Dio instance** (easy to get interceptor re-entry / stale headers if `onRequest` is skipped), **debug TLS trust still on for any debug build**, and **large untested surface** (`DioConsumerImpl` verbs, refresh payload edge cases, 403/422/cancel).
+**H1 and H2 are fixed.** Transient refresh failures (5xx / 429 / cancel / timeout / unexpected) keep the access token. Public auth paths omit `Authorization` and do not trigger refresh. No High findings remain.
+
+The leftover risk is **session product policy**, not basic HTTP: 422 `fieldErrors` never reach `Failure`, token clear is not a full logout, retry-still-401 can refresh again on the next tap, and the refresh client still uses a 360s receive timeout.
 
 ---
 
+## Score
 
+**Overall: 81 / 100 (B / Strong)**  
+**Previous:** 71 / 100 (B−) → **+10** from H1 + H2 + their tests.
+
+Safe to ship for authenticated profile traffic and for adding login/register on these paths. Follow-ups are Medium (forms, logout orchestration, timeouts, debug TLS/logs).
+
+| Category | Weight | Score | Prev | Grade | Why this number |
+| --- | ---: | ---: | ---: | --- | --- |
+| Correctness / reliability | 30% | **82** | 64 | B | Happy-path refresh and the two former High bugs are tested. Remaining: retry-still-401 (M2), ignored `save == false` (M9), `transformTimeout` as offline (M10). |
+| Security | 20% | **80** | 72 | B | Public auth no longer gets a leftover Bearer. Production TLS is correct. Deductions: debug body logs (M5), debug+dev trust-all (M6), authenticated redirects still forward `Authorization` (M7). |
+| Test coverage | 20% | **84** | 78 | B | Refresh 500/429/cancel/403, login without Bearer, login 401 without refresh, and `isPublicAuthPath` are covered. Gaps: `save == false`, follow-up request after retry-401, 422 through `toFailure()`, redirect headers. |
+| Code quality / architecture | 15% | **78** | 76 | B | `_isUnrecoverableRefreshFailure` and `ApiConstants.matchesPath` / `isPublicAuthPath` make the policy explicit. Still: GetIt inside singletons, magic timeouts, exceptions not sealed. |
+| Case handling completeness | 15% | **76** | 67 | B− | Refresh 5xx and public-auth 401 are correct. Still open: CancelToken, 422 field errors on `Failure`, session notify on logout, persist-fail after refresh. |
+
+**Weighted total:** `82×0.30 + 80×0.20 + 84×0.20 + 78×0.15 + 76×0.15` = **80.50 → 81**
+
+### Scale
+
+| Range | Meaning |
+| ---: | --- |
+| 90–100 | Production-hardened; remaining items are polish |
+| **80–89** | **Strong; minor gaps, safe to ship with follow-ups (this review)** |
+| 70–79 | Good structure; important edge cases remain |
+| 60–69 | Acceptable skeleton; several user-facing bugs |
+| &lt; 60 | Rework before relying on it |
+
+### Finding load
+
+| Severity | Count | vs previous |
+| --- | ---: | --- |
+| High | **0** | was 2 (H1, H2 resolved) |
+| Medium | 12 | unchanged IDs; M7 slightly narrower |
+| Low | 8 | unchanged |
+
+### After remaining fixes
+
+| If you land… | Expected overall |
+| --- | ---: |
+| M1 + M2/M3 | **~85** (B) |
+| Full remaining recommended order | **~88** (B+) |
+
+Distance to 90+ is still pinning, CancelToken, redacted logs, and a real logout callback — not more Dio wrappers.
+
+---
+
+## Resolved since 2026-09-02
+
+| ID | Fix |
+| --- | --- |
+| **H1** | `_mapFailedRefresh` / `_isUnrecoverableRefreshFailure`: logout only on refresh **401/403**. 200 with no token still clears via `UnauthorizedException`. 5xx, 429, cancel, timeout, and unexpected errors keep tokens. Tests in `api_interceptors_test.dart`. |
+| **H2** | `_attachHeaders` strips Bearer on `ApiConstants.publicAuthPaths`. `shouldRefresh` returns false for those paths even if a leftover header exists. Tests for login omit-header and login 401 without refresh. |
+
+---
 
 ## Findings (by severity)
 
-
-
 ### High
 
-
-| ID  | Location                                                           | Finding                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
-| --- | ------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| H1  | `dio_exception_mapper.dart:17–24`                                  | `DioExceptionType.unknown` **is mapped to** `InternetConnectionException`**.** `unknown` is Dio’s catch-all (parse errors, unexpected throws, some adapter failures). The UI will show “no internet” for failures that are not offline. Connection timeouts / `connectionError` belong here; `unknown` does not.                                                                                                                                                                                                                |
-| H2  | `api_interceptors.dart:91–95` + `api_interceptors.dart:60`         | **Retry uses** `GetIt`**’s** `Dio`**, which is the same client that already has** `ApiInterceptor`**.** `fetch(retriedOptions)` re-enters interceptors. That is how the new Bearer token gets applied (`onRequest`). If retry is ever pointed at a Dio **without** this interceptor, the retried request keeps the **old** `Authorization` header (`retriedOptions` only copies `extra`). If interceptors are duplicated on that Dio (`DioConsumerImpl` always `interceptors.add`), refresh/retry can run twice.                |
-| H3  | `refresh_token_helper.dart:88–110` + `api_interceptors.dart:80–88` | **Refresh failure typing is inconsistent.** `_performRefresh` throws `UnauthorizedException` (not `DioException`) when the stored token is empty or the body has no access token. The interceptor’s `on DioException` branch does not run; the generic `catch (_)` clears tokens and rejects the **original** 401. That is acceptable for logout, but a 200 refresh body with `{status: error}` and no token looks the same as a dead session — no distinct handling, and the original “expired” message is what the user sees. |
-
-
-
+*None.*
 
 ### Medium
 
-
-| ID  | Location                                                                    | Finding                                                                                                                                                                                                                                                                                                                                                                           |
-| --- | --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| M1  | `dio_http_adapter.dart:11–14` + `:22–26`                                    | **Debug builds disable TLS authentication** (`badCertificateCallback => true`). Gating with `kDebugMode` is correct for store/release, but **profile is production-like** (certs validated) while **any debug APK/IPA** still accepts MITM. Debug logging (`PrettyDioLogger` with `requestHeader: true` in `dio_consumer.dart:67–74`) also prints `Authorization` to the console. |
-| M2  | `dio_exception_mapper.dart:26`                                              | `cancel` **is mapped to** `ServerException`**.** User-initiated cancel (route pop, `CancelToken`) is not a server failure. Callers cannot distinguish abort from 500.                                                                                                                                                                                                             |
-| M3  | `dio_exception_mapper.dart:30–43`                                           | **Status handling is incomplete vs** `StatusCode`**.** Only 401 and 301 are special-cased. `403`, `422`, `429`, `409` all become generic `ServerException`. `extractErrorMessage` does not unwrap validation maps (`errors: {email: [...]}`), so 422 UIs get a blunt `message` or `map.toString()`.                                                                               |
-| M4  | `dio_consumer.dart:145–154`                                                 | `delete` **ignores** `formData` **and** `body` even though the sealed API advertises them. `get` on the impl accepts unused `formData`. Callers can pass a body that is silently dropped.                                                                                                                                                                                         |
-| M5  | `dio_consumer.dart:57–65` + POST/PUT/PATCH                                  | **Global** `contentType: application/json`**.** Multipart `FormData` often still works because Dio sets a boundary, but this is a known footgun if a caller sends `FormData` and the server sees JSON content-type.                                                                                                                                                               |
-| M6  | `refresh_token_helper.dart:117–119`                                         | `isRefreshPath` **uses** `contains`**.** Any path that *includes* `/common/refresh-token` as a substring skips refresh. Prefer exact match or `endsWith` only.                                                                                                                                                                                                                    |
-| M7  | `refresh_token_helper.dart:160–178`                                         | `parseAccessToken` **accepts any non-null value via** `toString()`**.** A numeric or map `token` field would be persisted as a garbage string, then sent as `Bearer ...` until the next 401.                                                                                                                                                                                      |
-| M8  | `api_constants.dart:2–4`                                                    | `staging` **is unused;** `baseUrl` **is hard-coded to** `live`**.** There is no debug/staging switch analogous to the TLS adapter. Debug builds still hit production unless someone changes this by hand.                                                                                                                                                                         |
-| M9  | `dio_consumer.dart:15`                                                      | `sealed class DioConsumer` **lives in the app library.** Fakes in `test/` cannot `implements DioConsumer` (sealed). Tests go through `DioConsumerImpl` + scripted adapters, which is heavier and does not unit-test the consumer in isolation.                                                                                                                                    |
-| M10 | `api_interceptors.dart` / `refresh_token_helper.dart` / `dio_consumer.dart` | `dart:io` **(**`HttpHeaders`**,** `SocketException`**,** `HttpClient`**).** This layer cannot compile for web. Fine if the app is mobile-only; it is an unhandled platform case.                                                                                                                                                                                                  |
-
-
-
+| ID | Location | Finding |
+| --- | --- | --- |
+| **M1** | `exceptions.dart` `ValidationException.toFailure()` (124–128) | **Field-level 422 errors are dropped at the domain boundary.** The mapper builds `fieldErrors`, but `toFailure()` returns `ServerFailure` with only `message`. Repositories only expose `Failure`. Forms cannot bind per-field errors. `ForbiddenException` / `ConflictException` / `TooManyRequestsException` collapse to `ServerFailure` (recoverable via `statusCode`; `fieldErrors` are not). |
+| **M2** | interceptor retry-still-401; asserted in tests | **Refresh success + retry 401 does not clear the session.** The new token is kept. The next user action is a new request (no `retriedRequestExtraKey`), so `shouldRefresh` is true again. If the resource keeps returning 401 while refresh still returns a token, each tap hits `/common/refresh-token` again. |
+| **M3** | `clearAuthTokens()` only | **Clearing the access token is not a logout.** `UserType`, in-memory profile, and navigation are untouched. After a true session kill (refresh 401/403 / empty token body) the user can remain on authenticated screens until the next call fails. No callback / event from this layer. |
+| **M4** | `dio_consumer.dart` 61–63; `refresh_token_helper.dart` 164–166 | **`receiveTimeout` is 360s** on both the main client **and** the refresh client. A hung refresh holds `_refreshLock`; concurrent 401s wait the same interval. Send timeout is 120s. Unnamed magic numbers (§1.3). |
+| **M5** | `dio_consumer.dart` 83–88 | **Debug `PrettyDioLogger` logs request bodies.** Headers are not logged by default, but login/reset bodies still include passwords in the debug console. `kDebugMode` only. |
+| **M6** | `dio_http_adapter.dart` 13–28 | **Debug + `AppFlavor.dev` disables TLS authentication.** Live debug, profile, and release validate certificates. Debug **dev** APK/IPA still accepts MITM. Staging is a real host; if its cert is valid, the bypass is unnecessary. |
+| **M7** | Dio `BaseOptions` defaults | **Redirects are followed with the original headers.** Authenticated calls can forward `Authorization` to another host on 301/302. Public auth paths no longer attach a token (H2), so this no longer applies to login/register. |
+| **M8** | `DioConsumer` methods | **No `CancelToken` on the public API.** `RequestCancelledException` is mapped, but callers cannot abort on dispose. Worst case: wait up to 360s after leaving the screen. |
+| **M9** | `refresh_token_helper.dart` `_performRefresh` save | **`tokenStorage.save` returning `false` is ignored.** Refresh looks successful; `retriedOptions` reads the old token; retry 401s with the retry flag and stops. Disk and in-memory session can diverge. |
+| **M10** | `dio_exception_mapper.dart` 32–38 | **`transformTimeout` is treated as offline.** UI copy will say “no internet” after a parse/transform stall. |
+| **M11** | `api_interceptors.dart` 92–101 | **Non-`DioException` failures during retry reject the original 401**, not the retry error. Production `AccessTokenStorage.read` swallows errors, so this is mostly a test-double / future-impl concern. |
+| **M12** | `extractErrorMessage` | **Non-JSON string bodies become the user-facing message.** An HTML 502 page can surface in a snackbar. Maps without `message` / `errors` yield `null` (good). |
 
 ### Low
 
-
-| ID  | Location                                                                  | Finding                                                                                                                                                                                                          |
-| --- | ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| L1  | `dio_consumer.dart:63–65`                                                 | Timeouts are extreme (`send` 120s, `receive` 360s) vs refresh client (30s). Hung calls occupy the isolate and the refresh lock is unrelated, but UX can spin for minutes.                                        |
-| L2  | `dio_consumer.dart:66`                                                    | Constructor **always appends** an interceptor. Safe with GetIt lazy-singleton; unsafe if `DioConsumerImpl` is constructed more than once on the same `Dio`.                                                      |
-| L3  | `test/core/api/api_interceptor_test.dart` vs `api_interceptors_test.dart` | **Duplicate test files** (same cases, different formatting). CI pays twice; edits will drift.                                                                                                                    |
-| L4  | `status_code.dart`                                                        | Many constants are unused by the mapper. Harmless, but implies 4xx/5xx policy was never finished.                                                                                                                |
-| L5  | `ApiInterceptor` / `RefreshTokenHelper` singletons                        | Production never calls `init()`. That is OK (GetIt / `Language.instance` fallbacks), but a request before `ServiceLocator.init()` / `Language.init()` throws from GetIt or reads an uninitialized language code. |
-| L6  | `extractErrorMessage`                                                     | Non-map data uses `toString()`; map without `message` uses the whole map `toString()`. Snackbars can show `{status: error, data: ...}`.                                                                          |
-
+| ID | Location | Finding |
+| --- | --- | --- |
+| **L1** | `AppException.toString()` | `'$message'` becomes the literal `"null"` when `message` is null. Cubits using `failure.message ?? fallback` are fine. |
+| **L2** | `get(..., body:)` | GET still accepts a JSON `body`. Unusual; datasources do not need it. |
+| **L3** | `dart:io` | Cannot compile for web. App is android/ios today — accepted constraint. |
+| **L4** | `status_code.dart` vs mapper | `400` / `404` / `408` unused; they correctly become `ServerException`. |
+| **L5** | Interceptor / helper / mapper `init()` | Production never calls `init()`. Fallbacks work after `ServiceLocator.init()` + `Language.init()`. Latent if HTTP runs earlier. |
+| **L6** | `_addInterceptorOnce` | `contains` is identity. Safe for the singleton interceptor. |
+| **L7** | GetIt `Dio` | Unconfigured until `DioConsumerImpl` mutates it. Retry uses that same instance. Works because the consumer is the first resolver. |
+| **L8** | `AppException` / `Failure` | Not `sealed`; cubits cannot exhaustively switch (§4.2). |
 
 ---
-
-
 
 ## Case handling matrix
 
-
-| Case                                       | Handled?    | Where                         | Notes                                                                                         |
-| ------------------------------------------ | ----------- | ----------------------------- | --------------------------------------------------------------------------------------------- |
-| 2xx success, return `response.data`        | Yes         | `DioConsumerImpl._send`       | Includes `204` → `null` data; callers must tolerate null.                                     |
-| GET/POST/PUT/PATCH with JSON body          | Yes         | `DioConsumerImpl`             | GET-with-body is unusual but forwarded.                                                       |
-| POST/PUT/PATCH `FormData`                  | Partial     | `formData ?? body`            | JSON content-type still set on the client.                                                    |
-| DELETE with body / FormData                | **No**      | `delete`                      | Parameters ignored.                                                                           |
-| 401 public (no `Authorization`)            | Yes         | `shouldRefresh` + mapper      | Covered by tests.                                                                             |
-| 401 with token, refresh succeeds, retry    | Yes         | interceptor + helper          | Covered; retry depends on `onRequest` rewriting the header.                                   |
-| Concurrent 401s, one refresh               | Yes         | `Completer` lock              | Covered.                                                                                      |
-| Already retried (`retriedRequestExtraKey`) | Yes         | `shouldRefresh`               | Covered.                                                                                      |
-| 401 on refresh path                        | Yes         | `isRefreshPath`               | Covered; `contains` is broader than needed.                                                   |
-| Refresh HTTP 401                           | Yes         | interceptor `on DioException` | Clears token; user sees original 401 mapping.                                                 |
-| Refresh HTTP 200, no token in body         | Partial     | `_performRefresh`             | Throws `UnauthorizedException`; interceptor generic catch; original 401 message. **No test.** |
-| Refresh network timeout                    | Yes         | `_mapFailedRefresh`           | Does **not** clear tokens (good). **No dedicated test.**                                      |
-| Empty / missing stored token + 401         | Yes         | `shouldRefresh` / `_hasValue` | No refresh. **No unit test** for empty string token.                                          |
-| 403 / 422 / 429 / 409                      | Weak        | mapper                        | All `ServerException`. No field-level 422 parse.                                              |
-| 301                                        | Yes         | mapper `preferDataField`      | Tested.                                                                                       |
-| Cancelled request                          | Weak        | mapper                        | Treated as server error.                                                                      |
-| TLS bad certificate (release)              | Yes         | default Dio adapter           | Trust-all only in `kDebugMode`.                                                               |
-| TLS bad certificate (debug)                | Intentional | `dio_http_adapter.dart`       | MITM possible.                                                                                |
-| SocketException bypassing Dio              | Partial     | `_send`                       | Mapped to offline. Rare if Dio wraps it first.                                                |
-| Interceptor `onRequest` throws             | Yes         | reject `DioException`         | Then `_send` may wrap as `ServerException` if `error` is not `AppException`.                  |
-| Language / token header attach             | Yes         | `_attachHeaders`              | Tested.                                                                                       |
-| Staging vs live base URL                   | **No**      | `ApiConstants.baseUrl`        | Always live.                                                                                  |
-
+| Case | Handled? | Where | Notes |
+| --- | --- | --- | --- |
+| 2xx success, return `response.data` | Yes | `DioConsumerImpl._send` | `204` → `null`. Datasources that do `response['status']` will throw. |
+| GET/POST/PUT/PATCH/DELETE JSON | Yes | `DioConsumerImpl` | DELETE body forwarded. GET-with-body forwarded (L2). |
+| POST/PUT/PATCH/DELETE `FormData` | Yes | `_optionsFor` | Multipart content-type override. `formData` wins over `body`. |
+| 401 public (no `Authorization`) | Yes | `shouldRefresh` | Covered. |
+| 401 with token, refresh 200 + token, retry | Yes | interceptor + helper | Covered. |
+| Concurrent 401s, one refresh | Yes | `Completer` lock | Covered. |
+| Already retried | Yes | `retriedRequestExtraKey` | Covered; does **not** logout (M2). |
+| 401 on refresh path | Yes | `isRefreshPath` | Covered. |
+| Refresh HTTP 401 / 403 | Yes | `_mapFailedRefresh` | Clears token; user sees original 401. Covered (401 + 403). |
+| Refresh HTTP 200, no access token | Yes | `UnauthorizedException` | Clears token; user sees refresh `message`. Covered. |
+| Refresh timeout / connectionError | Yes | `_mapFailedRefresh` | Keeps tokens. Covered. |
+| Refresh HTTP 5xx / 429 / cancel | Yes | `_isUnrecoverableRefreshFailure` | **Keeps tokens.** Covered. |
+| Unexpected error during refresh | Yes | generic `catch` | Keeps tokens; original 401. Covered. |
+| Empty / missing stored token + 401 | Yes | `shouldRefresh` | Covered. |
+| 401 on `/auth/login` with leftover token | Yes | public auth paths | No Bearer, no refresh, token kept. Covered. |
+| 403 / 409 / 422 / 429 on normal APIs | Partial | mapper | Distinct exceptions. 422 `fieldErrors` lost in `toFailure()` (M1). |
+| 400 / 404 / 5xx | Weak | mapper default | `ServerException` + `statusCode`. |
+| 301 | Yes | `preferDataField` | Covered. |
+| Cancelled request | Mapped | mapper | Callers cannot trigger cancel (M8). |
+| TLS (release / live debug) | Yes | default adapter | Trust-all only debug+dev. |
+| TLS (debug + dev) | Intentional | adapter | MITM possible (M6). |
+| Token persist failure after refresh | **No** | `_performRefresh` | `save == false` ignored (M9). |
+| Web / `dart:io` | N/A | L3 | Mobile-only. |
 
 ---
 
+## Security
 
+| Topic | Assessment |
+| --- | --- |
+| Access token storage | `FlutterSecureStorage`. Read fails closed (no header). Write fail after refresh is fail-open (M9). |
+| Refresh model | Same access token is sent to `/common/refresh-token`. No separate refresh credential. Matches current API shape. |
+| Token on public auth routes | **Fixed (H2).** Other authenticated routes still send Bearer (correct). |
+| TLS | Production / live-debug validate. Debug+dev trust-all (M6). No pinning. |
+| Debug logs | Request bodies in debug (M5). Headers not logged by default. |
+| Redirects | Authenticated `Authorization` can follow 301/302 (M7). |
+| Logout completeness | Token delete only (M3). No revoke call, no navigation. |
+
+---
 
 ## Test coverage
 
 **Present (useful):**
 
-- Mapper: timeouts → offline, 401 message, 301 `data`, other status → `ServerException`, `extractErrorMessage` null/string/map.
-- Helper: parse camelCase/snake_case/missing token, `shouldRefresh` for 500 / already-retried / refresh path / happy 401.
-- Interceptor + consumer: headers, public 401, 500, refresh+retry, concurrent 401, failed refresh clears storage.
+- Mapper: connection-class → offline; `unknown` / `badCertificate` → `ServerException`; cancel; 401/403/409/422/429/301/500; `extractErrorMessage` / `extractFieldErrors`.
+- Helper: token parse (string-only); `shouldRefresh` for 500, already-retried, refresh path, **public auth paths**, missing header, empty token, happy 401; `retriedOptions`; persist; 200-without-token; coalescing; lazy client base URL.
+- Interceptor + consumer: headers on/off; **public auth omits Bearer**; public 401; 500; refresh + retry; concurrent 401; refresh 401 clears; 200 without token; timeout / **500 / 429 / cancel keep token**; **refresh 403 clears**; **login 401 does not refresh**; retry-still-401; unexpected refresh keeps token; FormData; DELETE body; 204; flavor `baseUrl`; interceptor-once.
+- Constants: flavor URLs, auth paths, **`isPublicAuthPath` / `matchesPath`**, `StatusCode` values.
 
 **Missing (highest value first):**
 
-1. Refresh **200** body without `access_token` / `accessToken` / `token`.
-2. Refresh **timeout / connectionError** does not clear storage; user can retry.
-3. `shouldRefresh` with **no Authorization header** and with **empty stored token**.
-4. Retry **after** refresh still 401 (`retriedRequestExtraKey`) — no second refresh, token left as the new value.
-5. `DioConsumerImpl.delete` does not send body (or document and drop the params).
-6. Mapper: `unknown` should **not** be offline; `cancel` should **not** be `ServerException` (once behavior is defined).
-7. `DioConsumerImpl` constructed twice on one `Dio` — interceptor duplication (or assert interceptors are not re-added).
-8. Drop duplicate `api_interceptor_test.dart` / `api_interceptors_test.dart`.
-
-There are **no** tests for `applyHttpAdapter`, `ApiConstants.baseUrl`, or `StatusCode` usage beyond 401/301/500/429.
+1. Retry-still-401 policy: logout vs keep; a **follow-up** request must not hammer refresh if you choose logout (M2).
+2. `tokenStorage.save` → `false` after a successful refresh body (M9).
+3. `ValidationException.toFailure()` preserves `fieldErrors` (M1) — once `ValidationFailure` exists.
+4. Interceptor path for 403/422/429 on **normal** APIs (mapper-only today).
+5. `applyHttpAdapter` actually sets `badCertificateCallback` (test only checks `createHttpClient != null`).
+6. Redirect: `Authorization` not forwarded to another host (M7).
+7. `transformTimeout` / HTML string body messaging (M10, M12).
+8. `DioConsumer` cancel — not testable until `CancelToken` is on the interface (M8).
 
 ---
 
+## Code quality (structure / SOLID)
 
+| Rule | Observation |
+| --- | --- |
+| §1.1 / §3.1 | `_isUnrecoverableRefreshFailure` is the logout policy. `onError` still orchestrates refresh + retry + mapping; that is acceptable now that the keep-vs-clear branch is named. |
+| §1.3 | Timeouts (30 / 120 / 360) and `'Bearer '` remain raw literals. |
+| §1.5 | Path matching is shared via `ApiConstants.matchesPath`. Bearer attach is still duplicated in `_attachHeaders`, `retriedOptions`, and refresh `Options` (intentional for retry safety). |
+| §2.3 / §3.5 | Retry client and token storage still default to GetIt concrete types. Tests inject via `init()`. |
+| §4.2 | `AppException` / `Failure` are not sealed. |
+| §5.1 | `AppException.toString()` should not print `"null"` (L1). |
 
-## What is in good shape
+**What is in good shape**
 
-- Refresh lock + `whenComplete` clearing `_refreshLock` is the right concurrency pattern.
-- Failed refresh vs offline refresh is distinguished (`InternetConnectionException` does not log the user out).
-- Interceptor unwraps `AppException` already on `DioException.error`, so `_send` can rethrow typed errors.
-- Release TLS validation is the Dio default (only debug opts out).
-- `PrettyDioLogger` is debug-only.
+- Refresh lock + `identical(_refreshLock, completer)` + `whenComplete`.
+- Logout only on unrecoverable refresh auth failures; connectivity and 5xx keep the session.
+- Public auth paths never send or refresh a leftover token.
+- `retriedOptions` sets `Authorization` from storage.
+- `parseAccessToken` accepts only non-empty strings.
+- Interceptor unwraps `AppException` on `DioException.error`.
+- Flavor `baseUrl`; debug-only logger; TLS bypass not applied to live/profile/release.
 
 ---
-
-
 
 ## Recommended order of work
 
-1. Stop mapping `DioExceptionType.unknown` (and probably `cancel`) to offline/server catch-alls — define real types or fall back to `ServerException` / ignore cancel.
-2. Make retry token-safe without depending on interceptor re-entry: set `Authorization` from `tokenStorage` inside `retriedOptions` (or a dedicated retry Dio that still runs `onRequest` once).
-3. Align `ApiConstants.baseUrl` with the same debug/production split as the HTTP adapter (or flavor/env).
-4. Add the missing refresh/retry tests listed above; delete the duplicate interceptor test file.
-5. Either send DELETE bodies or remove those parameters from `DioConsumer`.
-6. Narrow `parseAccessToken` to non-empty `String` values only.
+1. **M1** — Add `ValidationFailure` (with `fieldErrors`) and map `ValidationException` to it.
+2. **M3 / M2** — After a true session kill, notify the app (user-type + navigation). Decide whether retry-still-401 is a session kill.
+3. **M4** — Lower refresh `receiveTimeout` (e.g. 30s) independently of large uploads; name the constants.
+4. **M5 / M6 / M7** — Redact auth bodies in the logger; keep TLS bypass behind an explicit local flag; do not follow cross-origin redirects with `Authorization`.
+5. **M8 / M9** — Plumb `CancelToken`; treat failed `save` after refresh as refresh failure.
 
 ---
 
-*Review only — no code was changed.*
+*Files reviewed: `lib/core/api/*`, `lib/core/error/exceptions.dart`, `lib/core/error/failures.dart`, `test/core/api/*`, `lib/injection_container.dart` (Dio wiring only).*

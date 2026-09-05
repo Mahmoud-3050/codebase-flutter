@@ -1,3 +1,5 @@
+import 'package:dio/dio.dart';
+
 import '../../../../core/error/exceptions.dart';
 import '../../../../injection_container.dart';
 import '../models/change_company_password_model.dart';
@@ -26,9 +28,9 @@ abstract class ProfileRemoteDataSource {
     required ChangeStudentPasswordParams params,
   });
 
-  Future<GetCompanyProfileModel> getCompanyProfile();
+  Future<GetCompanyProfileModel> getCompanyProfile({Object? cancellation});
 
-  Future<GetStudentProfileModel> getStudentProfile();
+  Future<GetStudentProfileModel> getStudentProfile({Object? cancellation});
 
   Future<UpdateCompanyProfileModel> updateCompanyProfile({
     required UpdateCompanyProfileParams params,
@@ -49,6 +51,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       final dynamic response = await dioConsumer.patch(
         changeCompanyPasswordEndpoint,
         body: params.toJson(),
+        cancelToken: _cancelToken(params.cancellation),
       );
 
       if (response['status'] == 'success') {
@@ -69,6 +72,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       final dynamic response = await dioConsumer.put(
         updateCompanyUserProfileEndpoint,
         body: params.toJson(),
+        cancelToken: _cancelToken(params.cancellation),
       );
 
       if (response['status'] == 'success') {
@@ -89,6 +93,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       final dynamic response = await dioConsumer.patch(
         changeStudentPasswordEndpoint,
         body: params.toJson(),
+        cancelToken: _cancelToken(params.cancellation),
       );
 
       if (response['status'] == 'success') {
@@ -101,10 +106,15 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<GetCompanyProfileModel> getCompanyProfile() async {
+  Future<GetCompanyProfileModel> getCompanyProfile({
+    Object? cancellation,
+  }) async {
     try {
       const String getCompanyProfileEndpoint = '/company/profile/edit';
-      final dynamic response = await dioConsumer.get(getCompanyProfileEndpoint);
+      final dynamic response = await dioConsumer.get(
+        getCompanyProfileEndpoint,
+        cancelToken: _cancelToken(cancellation),
+      );
 
       if (response['status'] == 'success') {
         return GetCompanyProfileModel.fromJson(response);
@@ -116,10 +126,15 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
   }
 
   @override
-  Future<GetStudentProfileModel> getStudentProfile() async {
+  Future<GetStudentProfileModel> getStudentProfile({
+    Object? cancellation,
+  }) async {
     try {
       const String getStudentProfileEndpoint = '/student/profile/edit';
-      final dynamic response = await dioConsumer.get(getStudentProfileEndpoint);
+      final dynamic response = await dioConsumer.get(
+        getStudentProfileEndpoint,
+        cancelToken: _cancelToken(cancellation),
+      );
 
       if (response['status'] == 'success') {
         return GetStudentProfileModel.fromJson(response);
@@ -139,6 +154,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       final dynamic response = await dioConsumer.put(
         updateCompanyProfileEndpoint,
         body: params.toJson(),
+        cancelToken: _cancelToken(params.cancellation),
       );
 
       if (response['status'] == 'success') {
@@ -159,6 +175,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       final dynamic response = await dioConsumer.put(
         updateStudentProfileEndpoint,
         body: params.toJson(),
+        cancelToken: _cancelToken(params.cancellation),
       );
 
       if (response['status'] == 'success') {
@@ -169,4 +186,11 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       rethrow;
     }
   }
+}
+
+CancelToken? _cancelToken(Object? cancellation) {
+  if (cancellation is CancelToken) {
+    return cancellation;
+  }
+  return null;
 }

@@ -1,4 +1,7 @@
+import 'dart:async';
+
 import 'package:bloc_test/bloc_test.dart';
+import 'package:dio/dio.dart';
 import 'package:either/either.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -63,8 +66,9 @@ void main() {
   blocTest<GetStudentProfileCubit, GetStudentProfileState>(
     'emits [Loading, Success] when use case returns Right',
     build: () {
-      final MockGetStudentProfileUseCase useCase = MockGetStudentProfileUseCase();
-      when(useCase.call(NoParams())).thenAnswer(
+      final MockGetStudentProfileUseCase useCase =
+          MockGetStudentProfileUseCase();
+      when(useCase.call(any)).thenAnswer(
         (_) async => const Right<Failure, GetStudentProfileResponse>(tResponse),
       );
       return GetStudentProfileCubit(useCase);
@@ -79,8 +83,9 @@ void main() {
   blocTest<GetStudentProfileCubit, GetStudentProfileState>(
     'emits [Loading, Error] when use case returns Left',
     build: () {
-      final MockGetStudentProfileUseCase useCase = MockGetStudentProfileUseCase();
-      when(useCase.call(NoParams())).thenAnswer(
+      final MockGetStudentProfileUseCase useCase =
+          MockGetStudentProfileUseCase();
+      when(useCase.call(any)).thenAnswer(
         (_) async => const Left<Failure, GetStudentProfileResponse>(
           ServerFailure(message: 'Server error'),
         ),
@@ -97,11 +102,11 @@ void main() {
   blocTest<GetStudentProfileCubit, GetStudentProfileState>(
     'emits fallback error message when failure message is null',
     build: () {
-      final MockGetStudentProfileUseCase useCase = MockGetStudentProfileUseCase();
-      when(useCase.call(NoParams())).thenAnswer(
-        (_) async => const Left<Failure, GetStudentProfileResponse>(
-          ServerFailure(),
-        ),
+      final MockGetStudentProfileUseCase useCase =
+          MockGetStudentProfileUseCase();
+      when(useCase.call(any)).thenAnswer(
+        (_) async =>
+            const Left<Failure, GetStudentProfileResponse>(ServerFailure()),
       );
       return GetStudentProfileCubit(useCase);
     },
@@ -111,4 +116,46 @@ void main() {
       GetStudentProfileErrorState(message: Strings.pleaseTryAgainLater),
     ],
   );
+
+  blocTest<GetStudentProfileCubit, GetStudentProfileState>(
+    'does not emit error when the request is cancelled',
+    build: () {
+      final MockGetStudentProfileUseCase useCase =
+          MockGetStudentProfileUseCase();
+      when(useCase.call(any)).thenAnswer(
+        (_) async =>
+            const Left<Failure, GetStudentProfileResponse>(CancelledFailure()),
+      );
+      return GetStudentProfileCubit(useCase);
+    },
+    act: (GetStudentProfileCubit cubit) => cubit.fGetStudentProfile(),
+    expect: () => <GetStudentProfileState>[
+      const GetStudentProfileLoadingState(),
+    ],
+  );
+
+  test('cancels the in-flight token when the cubit is closed', () async {
+    final MockGetStudentProfileUseCase useCase = MockGetStudentProfileUseCase();
+    final Completer<Either<Failure, GetStudentProfileResponse>> pending =
+        Completer<Either<Failure, GetStudentProfileResponse>>();
+    CancellableParams? captured;
+    when(useCase.call(any)).thenAnswer((Invocation invocation) {
+      captured = invocation.positionalArguments.first as CancellableParams;
+      return pending.future;
+    });
+
+    final GetStudentProfileCubit cubit = GetStudentProfileCubit(useCase);
+    final Future<void> inFlight = cubit.fGetStudentProfile();
+    await Future<void>.delayed(Duration.zero);
+    await cubit.close();
+
+    final Object? cancellation = captured?.cancellation;
+    expect(cancellation, isA<CancelToken>());
+    expect((cancellation as CancelToken).isCancelled, isTrue);
+
+    pending.complete(
+      const Left<Failure, GetStudentProfileResponse>(CancelledFailure()),
+    );
+    await inFlight;
+  });
 }

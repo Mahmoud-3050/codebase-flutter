@@ -8,6 +8,21 @@ abstract class UseCase<T, Params> {
 }
 
 class NoParams extends Equatable {
+  const NoParams();
+
   @override
   List<Object?> get props => <Object?>[];
+}
+
+/// Use-case params that can carry a presentation-owned cancel handle.
+///
+/// The value is opaque in domain (no Dio). Data sources accept a Dio
+/// [CancelToken] instance.
+class CancellableParams extends Equatable {
+  const CancellableParams({this.cancellation});
+
+  final Object? cancellation;
+
+  @override
+  List<Object?> get props => const <Object?>[];
 }

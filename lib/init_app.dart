@@ -1,13 +1,15 @@
 import 'dart:async';
 
-import 'package:language/language.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:language/language.dart';
 import 'package:themes/themes.dart';
 
 import 'config/language/language_change_adapter.dart';
+import 'config/routes/app_router.dart';
+import 'config/routes/app_routes.dart';
 import 'config/themes/colors_palettes.dart';
+import 'core/api/refresh_token_helper.dart';
 import 'core/services/bloc_observer/bloc_observer.dart';
 import 'core/services/local_storage/impl/language_code_storage.dart';
 import 'core/services/local_storage/impl/theme_mode_storage.dart';
@@ -27,6 +29,8 @@ Future<void> initApp() async {
     storage: ThemeModeStorage(sharedPreferences),
   );
   await AppNotificationsService.initNotifications();
-  
+  RefreshTokenHelper.instance.setOnSessionExpired(() async {
+    AppRouter.router.go(AppRoutes.splash);
+  });
   Bloc.observer = AppBlocObserver();
 }

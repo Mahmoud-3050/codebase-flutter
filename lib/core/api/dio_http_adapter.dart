@@ -4,14 +4,42 @@ import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:flutter/foundation.dart';
 
-/// Configures Dio's dart:io adapter for the current build.
+import '../utils/enums.dart';
+
+/// Compile-time opt-in for self-signed/invalid TLS in debug + dev only.
 ///
-/// Debug: accept invalid/self-signed TLS certificates (local / staging).
-/// Profile & release: leave Dio's default client (certificates are validated).
+/// Pass `--dart-define=TRUST_BAD_CERTIFICATES=true` (see the "dev (trust bad
+/// certs)" launch config). Profile, release, and live debug always validate.
+const bool kTrustBadCertificates = bool.fromEnvironment(
+  'TRUST_BAD_CERTIFICATES',
+);
+
+bool? _trustBadCertificatesOverride;
+
+/// Test-only override for [kTrustBadCertificates].
+@visibleForTesting
+void debugTrustBadCertificates({required bool enabled}) {
+  _trustBadCertificatesOverride = enabled;
+}
+
+@visibleForTesting
+void resetDebugTrustBadCertificates() {
+  _trustBadCertificatesOverride = null;
+}
+
+/// Configures Dio's dart:io adapter for the current build.
 void applyHttpAdapter(Dio client) {
-  if (kDebugMode) {
-    _applyTrustingHttpAdapter(client);
+  if (!_shouldTrustBadCertificates) {
+    return;
   }
+  _applyTrustingHttpAdapter(client);
+}
+
+bool get _shouldTrustBadCertificates {
+  if (!kDebugMode || !AppFlavor.current.isDev) {
+    return false;
+  }
+  return _trustBadCertificatesOverride ?? kTrustBadCertificates;
 }
 
 void _applyTrustingHttpAdapter(Dio client) {

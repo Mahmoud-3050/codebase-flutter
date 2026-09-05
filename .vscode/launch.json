@@ -9,6 +9,17 @@
       "args": ["--flavor", "dev"]
     },
     {
+      "name": "dev (trust bad certs)",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main_dev.dart",
+      "args": [
+        "--flavor",
+        "dev",
+        "--dart-define=TRUST_BAD_CERTIFICATES=true"
+      ]
+    },
+    {
       "name": "live",
       "request": "launch",
       "type": "dart",

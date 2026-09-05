@@ -4,12 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../../../../config/language/strings.dart';
+import '../../../../../core/presentation/cubit_request_canceller.dart';
 import '../../../domain/usecases/update_company_profile_usecase.dart';
 import '../../../domain/entities/update_company_profile_response.dart';
 
 part 'update_company_profile_states.dart';
 
-class UpdateCompanyProfileCubit extends Cubit<UpdateCompanyProfileState> {
+class UpdateCompanyProfileCubit extends Cubit<UpdateCompanyProfileState>
+    with CubitRequestCanceller<UpdateCompanyProfileState> {
   final UpdateCompanyProfileUseCase updateCompanyProfileUseCase;
 
   UpdateCompanyProfileCubit(this.updateCompanyProfileUseCase)
@@ -31,10 +33,14 @@ class UpdateCompanyProfileCubit extends Cubit<UpdateCompanyProfileState> {
             about: about,
             logo: logo,
             description: description,
+            cancellation: nextRequestCancelToken(),
           ),
         );
     eitherResult.fold(
       (Failure failure) {
+        if (shouldIgnoreFailure(failure)) {
+          return;
+        }
         emit(
           UpdateCompanyProfileErrorState(
             message: failure.message ?? Strings.pleaseTryAgainLater,
@@ -42,6 +48,9 @@ class UpdateCompanyProfileCubit extends Cubit<UpdateCompanyProfileState> {
         );
       },
       (UpdateCompanyProfileResponse response) {
+        if (isClosed) {
+          return;
+        }
         emit(UpdateCompanyProfileSuccessState(data: response.data));
       },
     );

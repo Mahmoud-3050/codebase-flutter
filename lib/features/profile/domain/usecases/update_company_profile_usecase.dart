@@ -26,6 +26,7 @@ class UpdateCompanyProfileParams extends Equatable {
   final String? about;
   final String? logo;
   final String? description;
+  final Object? cancellation;
 
   const UpdateCompanyProfileParams({
     required this.companyName,
@@ -33,6 +34,7 @@ class UpdateCompanyProfileParams extends Equatable {
     required this.about,
     required this.logo,
     required this.description,
+    this.cancellation,
   });
 
   Map<String, dynamic> toJson() {

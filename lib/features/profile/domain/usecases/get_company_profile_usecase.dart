@@ -6,14 +6,14 @@ import '../entities/get_company_profile_response.dart';
 import '../repositories/profile_repo.dart';
 
 class GetCompanyProfileUseCase
-    extends UseCase<GetCompanyProfileResponse, NoParams> {
+    extends UseCase<GetCompanyProfileResponse, CancellableParams> {
   final ProfileRepository repository;
 
   GetCompanyProfileUseCase({required this.repository});
 
   @override
   Future<Either<Failure, GetCompanyProfileResponse>> call(
-    NoParams params,
+    CancellableParams params,
   ) async {
     return await repository.getCompanyProfile(params: params);
   }

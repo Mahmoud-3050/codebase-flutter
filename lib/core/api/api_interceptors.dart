@@ -1,13 +1,12 @@
-import 'dart:io';
-
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:get_it/get_it.dart';
 import 'package:language/language.dart';
 
-import '../../config/language/strings.dart';
 import '../error/exceptions.dart';
+import 'api_constants.dart';
 import 'dio_exception_mapper.dart';
+import 'redirect_interceptor.dart';
 import 'refresh_token_helper.dart';
 
 final class ApiInterceptor extends Interceptor {
@@ -20,8 +19,6 @@ final class ApiInterceptor extends Interceptor {
   Dio? _retryClient;
   RefreshTokenHelper? _refreshTokenHelper;
   String Function()? _getLanguageCode;
-  String Function()? _noInternetMessage;
-  DioExceptionMapper? _mapper;
 
   /// Optional overrides. Production uses GetIt / [Language.instance].
   void init({
@@ -33,8 +30,7 @@ final class ApiInterceptor extends Interceptor {
     _retryClient = retryClient;
     _refreshTokenHelper = refreshTokenHelper;
     _getLanguageCode = getLanguageCode;
-    _noInternetMessage = noInternetMessage;
-    _mapper = null;
+    DioExceptionMapper.instance.init(noInternetMessage: noInternetMessage);
   }
 
   @visibleForTesting
@@ -42,30 +38,31 @@ final class ApiInterceptor extends Interceptor {
     _retryClient = null;
     _refreshTokenHelper = null;
     _getLanguageCode = null;
-    _noInternetMessage = null;
-    _mapper = null;
   }
 
-  RefreshTokenHelper get refreshTokenHelper =>
-      _refreshTokenHelper ?? .instance;
+  RefreshTokenHelper get refreshTokenHelper => _refreshTokenHelper ?? .instance;
 
   String Function() get getLanguageCode =>
       _getLanguageCode ?? () => Language.instance.currentCode;
 
-  DioExceptionMapper get _resolvedMapper =>
-      _mapper ??= DioExceptionMapper(
-        noInternetMessage: _noInternetMessage ?? () => Strings.noInternetConnection,
-      );
-
   Dio get retryClient => _retryClient ?? GetIt.instance<Dio>();
 
   @override
-  void onRequest(RequestOptions options, RequestInterceptorHandler handler) async {
+  void onRequest(
+    RequestOptions options,
+    RequestInterceptorHandler handler,
+  ) async {
     try {
       await _attachHeaders(options);
       handler.next(options);
     } catch (error, stackTrace) {
-      handler.reject(DioException(requestOptions: options, error: error, stackTrace: stackTrace));
+      handler.reject(
+        DioException(
+          requestOptions: options,
+          error: error,
+          stackTrace: stackTrace,
+        ),
+      );
     }
   }
 
@@ -82,19 +79,29 @@ final class ApiInterceptor extends Interceptor {
       } on DioException catch (refreshError) {
         handler.reject(await _mapFailedRefresh(err, refreshError));
         return;
+      } on AppException catch (refreshError) {
+        if (_isUnrecoverableRefreshFailure(refreshError)) {
+          await refreshTokenHelper.invalidateSession();
+        }
+        handler.reject(_wrap(err, refreshError));
+        return;
       } catch (_) {
-        await refreshTokenHelper.clearAuthTokens();
         handler.reject(_asAppException(err));
         return;
       }
 
       try {
         final Response<dynamic> response = await retryClient.fetch<dynamic>(
-          refreshTokenHelper.retriedOptions(err.requestOptions),
+          await refreshTokenHelper.retriedOptions(err.requestOptions),
         );
         handler.resolve(response);
       } on DioException catch (retryError) {
+        if (_exceptionFrom(retryError) is UnauthorizedException) {
+          await refreshTokenHelper.invalidateSession();
+        }
         handler.reject(_asAppException(retryError));
+      } catch (retryError) {
+        handler.reject(_wrapUnexpected(err, retryError));
       }
     } catch (_) {
       handler.reject(_asAppException(err));
@@ -102,24 +109,41 @@ final class ApiInterceptor extends Interceptor {
   }
 
   Future<void> _attachHeaders(RequestOptions options) async {
-    options.headers[HttpHeaders.acceptHeader] = 'application/json';
-    options.headers[HttpHeaders.acceptLanguageHeader] = getLanguageCode();
+    options.headers[ApiHeaders.accept] = 'application/json';
+    options.headers[ApiHeaders.acceptLanguage] = getLanguageCode();
+
+    if (ApiConstants.isPublicAuthPath(options.path) ||
+        options.extra[SafeRedirectInterceptor.omitAuthorizationExtraKey] ==
+            true) {
+      options.headers.remove(ApiHeaders.authorization);
+      return;
+    }
 
     final String? accessToken = await refreshTokenHelper.accessToken();
     if (accessToken != null && accessToken.isNotEmpty) {
-      options.headers[HttpHeaders.authorizationHeader] = 'Bearer $accessToken';
+      options.headers[ApiHeaders.authorization] = 'Bearer $accessToken';
     } else {
-      options.headers.remove(HttpHeaders.authorizationHeader);
+      options.headers.remove(ApiHeaders.authorization);
     }
   }
 
-  Future<DioException> _mapFailedRefresh(DioException original, DioException refreshError) async {
+  Future<DioException> _mapFailedRefresh(
+    DioException original,
+    DioException refreshError,
+  ) async {
     final AppException mapped = _exceptionFrom(refreshError);
-    if (mapped is InternetConnectionException) {
-      return _wrap(refreshError, mapped);
+    if (_isUnrecoverableRefreshFailure(mapped)) {
+      await refreshTokenHelper.invalidateSession();
+      return _asAppException(original);
     }
-    await refreshTokenHelper.clearAuthTokens();
-    return _asAppException(original);
+    return _wrap(refreshError, mapped);
+  }
+
+  /// Refresh 401/403 (or a 200 with no token) means the session is dead.
+  /// 5xx, 429, cancel, and connectivity must not log the user out.
+  bool _isUnrecoverableRefreshFailure(AppException exception) {
+    return exception is UnauthorizedException ||
+        exception is ForbiddenException;
   }
 
   DioException _asAppException(DioException err) {
@@ -127,7 +151,7 @@ final class ApiInterceptor extends Interceptor {
     if (cause is AppException) {
       return err;
     }
-    return _wrap(err, _resolvedMapper.map(err));
+    return _wrap(err, DioExceptionMapper.instance.map(err));
   }
 
   AppException _exceptionFrom(DioException err) {
@@ -135,7 +159,7 @@ final class ApiInterceptor extends Interceptor {
     if (cause is AppException) {
       return cause;
     }
-    return _resolvedMapper.map(err);
+    return DioExceptionMapper.instance.map(err);
   }
 
   DioException _wrap(DioException err, AppException cause) {
@@ -146,5 +170,12 @@ final class ApiInterceptor extends Interceptor {
       error: cause,
       message: cause.message,
     );
+  }
+
+  DioException _wrapUnexpected(DioException original, Object retryError) {
+    if (retryError is AppException) {
+      return _wrap(original, retryError);
+    }
+    return _wrap(original, ServerException(message: retryError.toString()));
   }
 }

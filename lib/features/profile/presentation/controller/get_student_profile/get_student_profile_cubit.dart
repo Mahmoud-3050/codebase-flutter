@@ -4,13 +4,15 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../../../../config/language/strings.dart';
+import '../../../../../core/presentation/cubit_request_canceller.dart';
 import '../../../../../core/usecases/usecase.dart';
 import '../../../domain/usecases/get_student_profile_usecase.dart';
 import '../../../domain/entities/get_student_profile_response.dart';
 
 part 'get_student_profile_states.dart';
 
-class GetStudentProfileCubit extends Cubit<GetStudentProfileState> {
+class GetStudentProfileCubit extends Cubit<GetStudentProfileState>
+    with CubitRequestCanceller<GetStudentProfileState> {
   final GetStudentProfileUseCase getStudentProfileUseCase;
 
   GetStudentProfileCubit(this.getStudentProfileUseCase)
@@ -19,9 +21,14 @@ class GetStudentProfileCubit extends Cubit<GetStudentProfileState> {
   Future<void> fGetStudentProfile() async {
     emit(const GetStudentProfileLoadingState());
     final Either<Failure, GetStudentProfileResponse> eitherResult =
-        await getStudentProfileUseCase(NoParams());
+        await getStudentProfileUseCase(
+          CancellableParams(cancellation: nextRequestCancelToken()),
+        );
     eitherResult.fold(
       (Failure failure) {
+        if (shouldIgnoreFailure(failure)) {
+          return;
+        }
         emit(
           GetStudentProfileErrorState(
             message: failure.message ?? Strings.pleaseTryAgainLater,
@@ -29,6 +36,9 @@ class GetStudentProfileCubit extends Cubit<GetStudentProfileState> {
         );
       },
       (GetStudentProfileResponse response) {
+        if (isClosed) {
+          return;
+        }
         emit(GetStudentProfileSuccessState(data: response.data));
       },
     );

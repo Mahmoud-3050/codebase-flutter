@@ -6,14 +6,14 @@ import '../entities/get_student_profile_response.dart';
 import '../repositories/profile_repo.dart';
 
 class GetStudentProfileUseCase
-    extends UseCase<GetStudentProfileResponse, NoParams> {
+    extends UseCase<GetStudentProfileResponse, CancellableParams> {
   final ProfileRepository repository;
 
   GetStudentProfileUseCase({required this.repository});
 
   @override
   Future<Either<Failure, GetStudentProfileResponse>> call(
-    NoParams params,
+    CancellableParams params,
   ) async {
     return await repository.getStudentProfile(params: params);
   }

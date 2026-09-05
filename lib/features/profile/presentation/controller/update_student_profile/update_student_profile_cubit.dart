@@ -4,12 +4,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../../../../config/language/strings.dart';
+import '../../../../../core/presentation/cubit_request_canceller.dart';
 import '../../../domain/usecases/update_student_profile_usecase.dart';
 import '../../../domain/entities/update_student_profile_response.dart';
 
 part 'update_student_profile_states.dart';
 
-class UpdateStudentProfileCubit extends Cubit<UpdateStudentProfileState> {
+class UpdateStudentProfileCubit extends Cubit<UpdateStudentProfileState>
+    with CubitRequestCanceller<UpdateStudentProfileState> {
   final UpdateStudentProfileUseCase updateStudentProfileUseCase;
 
   UpdateStudentProfileCubit(this.updateStudentProfileUseCase)
@@ -49,10 +51,14 @@ class UpdateStudentProfileCubit extends Cubit<UpdateStudentProfileState> {
             graduationDate: graduationDate,
             gpaFile: gpaFile,
             cvFile: cvFile,
+            cancellation: nextRequestCancelToken(),
           ),
         );
     eitherResult.fold(
       (Failure failure) {
+        if (shouldIgnoreFailure(failure)) {
+          return;
+        }
         emit(
           UpdateStudentProfileErrorState(
             message: failure.message ?? Strings.pleaseTryAgainLater,
@@ -60,6 +66,9 @@ class UpdateStudentProfileCubit extends Cubit<UpdateStudentProfileState> {
         );
       },
       (UpdateStudentProfileResponse response) {
+        if (isClosed) {
+          return;
+        }
         emit(UpdateStudentProfileSuccessState(data: response.data));
       },
     );

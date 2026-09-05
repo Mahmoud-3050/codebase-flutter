@@ -69,13 +69,19 @@ class ProfileRepositoryImpl implements ProfileRepository {
 
   @override
   Future<Either<Failure, GetCompanyProfileResponse>> getCompanyProfile({
-    required NoParams params,
-  }) => _guard(() => remote.getCompanyProfile(), 'getCompanyProfile');
+    required CancellableParams params,
+  }) => _guard(
+    () => remote.getCompanyProfile(cancellation: params.cancellation),
+    'getCompanyProfile',
+  );
 
   @override
   Future<Either<Failure, GetStudentProfileResponse>> getStudentProfile({
-    required NoParams params,
-  }) => _guard(() => remote.getStudentProfile(), 'getStudentProfile');
+    required CancellableParams params,
+  }) => _guard(
+    () => remote.getStudentProfile(cancellation: params.cancellation),
+    'getStudentProfile',
+  );
 
   @override
   Future<Either<Failure, UpdateCompanyProfileResponse>> updateCompanyProfile({

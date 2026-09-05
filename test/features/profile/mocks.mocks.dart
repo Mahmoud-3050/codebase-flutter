@@ -3,6 +3,7 @@
 // Do not manually edit this file.
 
 // ignore_for_file: no_leading_underscores_for_library_prefixes
+
 import 'dart:async' as _i11;
 
 import 'package:codebase/core/error/failures.dart' as _i19;
@@ -60,13 +61,8 @@ import 'package:mockito/src/dummies.dart' as _i22;
 
 class _FakeChangeCompanyPasswordModel_0 extends _i1.SmartFake
     implements _i2.ChangeCompanyPasswordModel {
-  _FakeChangeCompanyPasswordModel_0(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeChangeCompanyPasswordModel_0(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeUpdateCompanyUserProfileModel_1 extends _i1.SmartFake
@@ -74,76 +70,43 @@ class _FakeUpdateCompanyUserProfileModel_1 extends _i1.SmartFake
   _FakeUpdateCompanyUserProfileModel_1(
     Object parent,
     Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  ) : super(parent, parentInvocation);
 }
 
 class _FakeChangeStudentPasswordModel_2 extends _i1.SmartFake
     implements _i4.ChangeStudentPasswordModel {
-  _FakeChangeStudentPasswordModel_2(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeChangeStudentPasswordModel_2(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeGetCompanyProfileModel_3 extends _i1.SmartFake
     implements _i5.GetCompanyProfileModel {
-  _FakeGetCompanyProfileModel_3(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeGetCompanyProfileModel_3(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeGetStudentProfileModel_4 extends _i1.SmartFake
     implements _i6.GetStudentProfileModel {
-  _FakeGetStudentProfileModel_4(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeGetStudentProfileModel_4(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeUpdateCompanyProfileModel_5 extends _i1.SmartFake
     implements _i7.UpdateCompanyProfileModel {
-  _FakeUpdateCompanyProfileModel_5(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeUpdateCompanyProfileModel_5(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeUpdateStudentProfileModel_6 extends _i1.SmartFake
     implements _i8.UpdateStudentProfileModel {
-  _FakeUpdateStudentProfileModel_6(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeUpdateStudentProfileModel_6(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 class _FakeProfileRepository_7 extends _i1.SmartFake
     implements _i9.ProfileRepository {
-  _FakeProfileRepository_7(
-    Object parent,
-    Invocation parentInvocation,
-  ) : super(
-          parent,
-          parentInvocation,
-        );
+  _FakeProfileRepository_7(Object parent, Invocation parentInvocation)
+    : super(parent, parentInvocation);
 }
 
 /// A class which mocks [ProfileRemoteDataSource].
@@ -156,138 +119,123 @@ class MockProfileRemoteDataSource extends _i1.Mock
   }
 
   @override
-  _i11.Future<_i2.ChangeCompanyPasswordModel> changeCompanyPassword(
-          {required _i12.ChangeCompanyPasswordParams? params}) =>
+  _i11.Future<_i2.ChangeCompanyPasswordModel> changeCompanyPassword({
+    required _i12.ChangeCompanyPasswordParams? params,
+  }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #changeCompanyPassword,
-          [],
-          {#params: params},
-        ),
-        returnValue: _i11.Future<_i2.ChangeCompanyPasswordModel>.value(
-            _FakeChangeCompanyPasswordModel_0(
-          this,
-          Invocation.method(
-            #changeCompanyPassword,
-            [],
-            {#params: params},
-          ),
-        )),
-      ) as _i11.Future<_i2.ChangeCompanyPasswordModel>);
+            Invocation.method(#changeCompanyPassword, [], {#params: params}),
+            returnValue: _i11.Future<_i2.ChangeCompanyPasswordModel>.value(
+              _FakeChangeCompanyPasswordModel_0(
+                this,
+                Invocation.method(#changeCompanyPassword, [], {
+                  #params: params,
+                }),
+              ),
+            ),
+          )
+          as _i11.Future<_i2.ChangeCompanyPasswordModel>);
 
   @override
-  _i11.Future<_i3.UpdateCompanyUserProfileModel> updateCompanyUserProfile(
-          {required _i13.UpdateCompanyUserProfileParams? params}) =>
+  _i11.Future<_i3.UpdateCompanyUserProfileModel> updateCompanyUserProfile({
+    required _i13.UpdateCompanyUserProfileParams? params,
+  }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #updateCompanyUserProfile,
-          [],
-          {#params: params},
-        ),
-        returnValue: _i11.Future<_i3.UpdateCompanyUserProfileModel>.value(
-            _FakeUpdateCompanyUserProfileModel_1(
-          this,
-          Invocation.method(
-            #updateCompanyUserProfile,
-            [],
-            {#params: params},
-          ),
-        )),
-      ) as _i11.Future<_i3.UpdateCompanyUserProfileModel>);
+            Invocation.method(#updateCompanyUserProfile, [], {#params: params}),
+            returnValue: _i11.Future<_i3.UpdateCompanyUserProfileModel>.value(
+              _FakeUpdateCompanyUserProfileModel_1(
+                this,
+                Invocation.method(#updateCompanyUserProfile, [], {
+                  #params: params,
+                }),
+              ),
+            ),
+          )
+          as _i11.Future<_i3.UpdateCompanyUserProfileModel>);
 
   @override
-  _i11.Future<_i4.ChangeStudentPasswordModel> changeStudentPassword(
-          {required _i14.ChangeStudentPasswordParams? params}) =>
+  _i11.Future<_i4.ChangeStudentPasswordModel> changeStudentPassword({
+    required _i14.ChangeStudentPasswordParams? params,
+  }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #changeStudentPassword,
-          [],
-          {#params: params},
-        ),
-        returnValue: _i11.Future<_i4.ChangeStudentPasswordModel>.value(
-            _FakeChangeStudentPasswordModel_2(
-          this,
-          Invocation.method(
-            #changeStudentPassword,
-            [],
-            {#params: params},
-          ),
-        )),
-      ) as _i11.Future<_i4.ChangeStudentPasswordModel>);
+            Invocation.method(#changeStudentPassword, [], {#params: params}),
+            returnValue: _i11.Future<_i4.ChangeStudentPasswordModel>.value(
+              _FakeChangeStudentPasswordModel_2(
+                this,
+                Invocation.method(#changeStudentPassword, [], {
+                  #params: params,
+                }),
+              ),
+            ),
+          )
+          as _i11.Future<_i4.ChangeStudentPasswordModel>);
 
   @override
-  _i11.Future<_i5.GetCompanyProfileModel> getCompanyProfile() =>
+  _i11.Future<_i5.GetCompanyProfileModel> getCompanyProfile({
+    Object? cancellation,
+  }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getCompanyProfile,
-          [],
-        ),
-        returnValue: _i11.Future<_i5.GetCompanyProfileModel>.value(
-            _FakeGetCompanyProfileModel_3(
-          this,
-          Invocation.method(
-            #getCompanyProfile,
-            [],
-          ),
-        )),
-      ) as _i11.Future<_i5.GetCompanyProfileModel>);
+            Invocation.method(#getCompanyProfile, [], {
+              #cancellation: cancellation,
+            }),
+            returnValue: _i11.Future<_i5.GetCompanyProfileModel>.value(
+              _FakeGetCompanyProfileModel_3(
+                this,
+                Invocation.method(#getCompanyProfile, [], {
+                  #cancellation: cancellation,
+                }),
+              ),
+            ),
+          )
+          as _i11.Future<_i5.GetCompanyProfileModel>);
 
   @override
-  _i11.Future<_i6.GetStudentProfileModel> getStudentProfile() =>
+  _i11.Future<_i6.GetStudentProfileModel> getStudentProfile({
+    Object? cancellation,
+  }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #getStudentProfile,
-          [],
-        ),
-        returnValue: _i11.Future<_i6.GetStudentProfileModel>.value(
-            _FakeGetStudentProfileModel_4(
-          this,
-          Invocation.method(
-            #getStudentProfile,
-            [],
-          ),
-        )),
-      ) as _i11.Future<_i6.GetStudentProfileModel>);
+            Invocation.method(#getStudentProfile, [], {
+              #cancellation: cancellation,
+            }),
+            returnValue: _i11.Future<_i6.GetStudentProfileModel>.value(
+              _FakeGetStudentProfileModel_4(
+                this,
+                Invocation.method(#getStudentProfile, [], {
+                  #cancellation: cancellation,
+                }),
+              ),
+            ),
+          )
+          as _i11.Future<_i6.GetStudentProfileModel>);
 
   @override
-  _i11.Future<_i7.UpdateCompanyProfileModel> updateCompanyProfile(
-          {required _i15.UpdateCompanyProfileParams? params}) =>
+  _i11.Future<_i7.UpdateCompanyProfileModel> updateCompanyProfile({
+    required _i15.UpdateCompanyProfileParams? params,
+  }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #updateCompanyProfile,
-          [],
-          {#params: params},
-        ),
-        returnValue: _i11.Future<_i7.UpdateCompanyProfileModel>.value(
-            _FakeUpdateCompanyProfileModel_5(
-          this,
-          Invocation.method(
-            #updateCompanyProfile,
-            [],
-            {#params: params},
-          ),
-        )),
-      ) as _i11.Future<_i7.UpdateCompanyProfileModel>);
+            Invocation.method(#updateCompanyProfile, [], {#params: params}),
+            returnValue: _i11.Future<_i7.UpdateCompanyProfileModel>.value(
+              _FakeUpdateCompanyProfileModel_5(
+                this,
+                Invocation.method(#updateCompanyProfile, [], {#params: params}),
+              ),
+            ),
+          )
+          as _i11.Future<_i7.UpdateCompanyProfileModel>);
 
   @override
-  _i11.Future<_i8.UpdateStudentProfileModel> updateStudentProfile(
-          {required _i16.UpdateStudentProfileParams? params}) =>
+  _i11.Future<_i8.UpdateStudentProfileModel> updateStudentProfile({
+    required _i16.UpdateStudentProfileParams? params,
+  }) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #updateStudentProfile,
-          [],
-          {#params: params},
-        ),
-        returnValue: _i11.Future<_i8.UpdateStudentProfileModel>.value(
-            _FakeUpdateStudentProfileModel_6(
-          this,
-          Invocation.method(
-            #updateStudentProfile,
-            [],
-            {#params: params},
-          ),
-        )),
-      ) as _i11.Future<_i8.UpdateStudentProfileModel>);
+            Invocation.method(#updateStudentProfile, [], {#params: params}),
+            returnValue: _i11.Future<_i8.UpdateStudentProfileModel>.value(
+              _FakeUpdateStudentProfileModel_6(
+                this,
+                Invocation.method(#updateStudentProfile, [], {#params: params}),
+              ),
+            ),
+          )
+          as _i11.Future<_i8.UpdateStudentProfileModel>);
 }
 
 /// A class which mocks [GetStudentProfileUseCase].
@@ -300,33 +248,32 @@ class MockGetStudentProfileUseCase extends _i1.Mock
   }
 
   @override
-  _i9.ProfileRepository get repository => (super.noSuchMethod(
-        Invocation.getter(#repository),
-        returnValue: _FakeProfileRepository_7(
-          this,
-          Invocation.getter(#repository),
-        ),
-      ) as _i9.ProfileRepository);
+  _i9.ProfileRepository get repository =>
+      (super.noSuchMethod(
+            Invocation.getter(#repository),
+            returnValue: _FakeProfileRepository_7(
+              this,
+              Invocation.getter(#repository),
+            ),
+          )
+          as _i9.ProfileRepository);
 
   @override
   _i11.Future<_i18.Either<_i19.Failure, _i20.GetStudentProfileResponse>> call(
-          _i21.NoParams? params) =>
+    _i21.CancellableParams? params,
+  ) =>
       (super.noSuchMethod(
-        Invocation.method(
-          #call,
-          [params],
-        ),
-        returnValue: _i11.Future<
-                _i18
-                .Either<_i19.Failure, _i20.GetStudentProfileResponse>>.value(
-            _i22.dummyValue<
-                _i18.Either<_i19.Failure, _i20.GetStudentProfileResponse>>(
-          this,
-          Invocation.method(
-            #call,
-            [params],
-          ),
-        )),
-      ) as _i11
-          .Future<_i18.Either<_i19.Failure, _i20.GetStudentProfileResponse>>);
+            Invocation.method(#call, [params]),
+            returnValue:
+                _i11.Future<
+                  _i18.Either<_i19.Failure, _i20.GetStudentProfileResponse>
+                >.value(
+                  _i22.dummyValue<
+                    _i18.Either<_i19.Failure, _i20.GetStudentProfileResponse>
+                  >(this, Invocation.method(#call, [params])),
+                ),
+          )
+          as _i11.Future<
+            _i18.Either<_i19.Failure, _i20.GetStudentProfileResponse>
+          >);
 }

@@ -8,6 +8,7 @@ abstract final class StatusCode {
   // 3xx redirection
   static const int movedPermanently = 301;
   static const int found = 302;
+  static const int seeOther = 303;
   static const int notModified = 304;
   static const int temporaryRedirect = 307;
   static const int permanentRedirect = 308;

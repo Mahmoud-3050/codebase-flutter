@@ -34,6 +34,7 @@ class UpdateCompanyUserProfileParams extends Equatable {
   final String? birthdate;
   final int? cityId;
   final String? image;
+  final Object? cancellation;
 
   const UpdateCompanyUserProfileParams({
     required this.firstName,
@@ -45,6 +46,7 @@ class UpdateCompanyUserProfileParams extends Equatable {
     required this.birthdate,
     required this.cityId,
     required this.image,
+    this.cancellation,
   });
 
   Map<String, dynamic> toJson() {

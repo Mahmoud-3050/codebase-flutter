@@ -47,3 +47,24 @@ class FetchDataFailure extends Failure {
 
   const FetchDataFailure({this.message});
 }
+
+class CancelledFailure extends Failure {
+  @override
+  final String? message;
+
+  const CancelledFailure({this.message});
+}
+
+class ValidationFailure extends Failure {
+  @override
+  final String? message;
+  final Map<String, List<String>> fieldErrors;
+
+  const ValidationFailure({
+    this.message,
+    this.fieldErrors = const <String, List<String>>{},
+  });
+
+  @override
+  List<Object?> get props => <Object?>[message, fieldErrors];
+}

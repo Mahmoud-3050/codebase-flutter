@@ -1,22 +1,23 @@
-import 'dart:developer';
 import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
-import 'package:pretty_dio_logger/pretty_dio_logger.dart';
 
-import '../error/exceptions.dart';
 import '../../config/language/strings.dart';
+import '../error/exceptions.dart';
 import 'api_constants.dart';
 import 'api_interceptors.dart';
+import 'debug_api_logger.dart';
+import 'dio_exception_mapper.dart';
 import 'dio_http_adapter.dart';
+import 'redirect_interceptor.dart';
 
-
-sealed class DioConsumer {
+abstract interface class DioConsumer {
   Future<dynamic> get(
     String path, {
     Map<String, dynamic>? queryParameters,
     Map<String, dynamic>? body,
+    CancelToken? cancelToken,
   });
 
   Future<dynamic> post(
@@ -24,6 +25,7 @@ sealed class DioConsumer {
     FormData? formData,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
   });
 
   Future<dynamic> put(
@@ -31,6 +33,7 @@ sealed class DioConsumer {
     FormData? formData,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
   });
 
   Future<dynamic> patch(
@@ -38,6 +41,7 @@ sealed class DioConsumer {
     FormData? formData,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
   });
 
   Future<dynamic> delete(
@@ -45,6 +49,7 @@ sealed class DioConsumer {
     FormData? formData,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
   });
 }
 
@@ -54,41 +59,53 @@ class DioConsumerImpl implements DioConsumer {
     @visibleForTesting Interceptor? apiInterceptor,
   }) {
     applyHttpAdapter(client);
+    applyRedirectPolicy(client);
     client.options
       ..baseUrl = ApiConstants.baseUrl
-      ..contentType = 'application/json'
-      ..headers = <String, String?>{
-        HttpHeaders.acceptHeader: 'application/json',
-      }
-      ..sendTimeout = const Duration(seconds: 120)
-      ..receiveTimeout = const Duration(seconds: 360)
-      ..connectTimeout = const Duration(seconds: 30);
-    client.interceptors.add(apiInterceptor ?? ApiInterceptor.instance);
+      ..contentType = Headers.jsonContentType
+      ..headers = <String, String?>{ApiHeaders.accept: 'application/json'}
+      ..connectTimeout = ApiTimeouts.connect
+      ..sendTimeout = ApiTimeouts.send
+      ..receiveTimeout = ApiTimeouts.receive
+      ..followRedirects = false;
+    // Dio 5 runs error interceptors in add-order. Redirect must see 3xx
+    // before [ApiInterceptor] rejects them as failed responses.
+    addRedirectInterceptor(client);
+    _addInterceptorOnce(apiInterceptor ?? ApiInterceptor.instance);
     if (kDebugMode) {
-      client.interceptors.add(
-        PrettyDioLogger(
-          requestHeader: true,
-          requestBody: true,
-          logPrint: (Object text) => log(text.toString(), name: 'logger'),
-        ),
-      );
+      _addDebugLogger();
     }
   }
 
   final Dio client;
 
+  void _addInterceptorOnce(Interceptor interceptor) {
+    if (client.interceptors.contains(interceptor)) {
+      return;
+    }
+    client.interceptors.add(interceptor);
+  }
+
+  void _addDebugLogger() {
+    if (client.interceptors.whereType<DebugApiLogger>().isNotEmpty) {
+      return;
+    }
+    client.interceptors.add(DebugApiLogger());
+  }
+
   @override
   Future<dynamic> get(
     String path, {
-    FormData? formData,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
   }) {
     return _send(
       () => client.get<dynamic>(
         path,
         queryParameters: queryParameters,
         data: body,
+        cancelToken: cancelToken,
       ),
     );
   }
@@ -99,12 +116,15 @@ class DioConsumerImpl implements DioConsumer {
     FormData? formData,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
   }) {
     return _send(
       () => client.post<dynamic>(
         path,
         queryParameters: queryParameters,
         data: formData ?? body,
+        cancelToken: cancelToken,
+        options: _optionsFor(formData),
       ),
     );
   }
@@ -115,12 +135,15 @@ class DioConsumerImpl implements DioConsumer {
     FormData? formData,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
   }) {
     return _send(
       () => client.put<dynamic>(
         path,
         queryParameters: queryParameters,
         data: formData ?? body,
+        cancelToken: cancelToken,
+        options: _optionsFor(formData),
       ),
     );
   }
@@ -131,12 +154,15 @@ class DioConsumerImpl implements DioConsumer {
     FormData? formData,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
   }) {
     return _send(
       () => client.patch<dynamic>(
         path,
         queryParameters: queryParameters,
         data: formData ?? body,
+        cancelToken: cancelToken,
+        options: _optionsFor(formData),
       ),
     );
   }
@@ -147,10 +173,24 @@ class DioConsumerImpl implements DioConsumer {
     FormData? formData,
     Map<String, dynamic>? body,
     Map<String, dynamic>? queryParameters,
+    CancelToken? cancelToken,
   }) {
     return _send(
-      () => client.delete<dynamic>(path, queryParameters: queryParameters),
+      () => client.delete<dynamic>(
+        path,
+        queryParameters: queryParameters,
+        data: formData ?? body,
+        cancelToken: cancelToken,
+        options: _optionsFor(formData),
+      ),
     );
+  }
+
+  Options? _optionsFor(FormData? formData) {
+    if (formData == null) {
+      return null;
+    }
+    return Options(contentType: Headers.multipartFormDataContentType);
   }
 
   Future<dynamic> _send(Future<Response<dynamic>> Function() request) async {
@@ -162,10 +202,12 @@ class DioConsumerImpl implements DioConsumer {
       if (cause is AppException) {
         throw cause;
       }
-      throw ServerException(
-        message: error.message,
-        statusCode: error.response?.statusCode,
-      );
+      if (cause is SocketException) {
+        throw InternetConnectionException(
+          message: Strings.noInternetConnection,
+        );
+      }
+      throw DioExceptionMapper.instance.map(error);
     } on SocketException {
       throw InternetConnectionException(message: Strings.noInternetConnection);
     } on AppException {
