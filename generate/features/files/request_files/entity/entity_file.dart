@@ -21,6 +21,9 @@ class EntityFile extends RequestFile {
           .generateImports(isDataModel: request.response['data'] != null)
           .toString(),
     );
+    if (request.usesSharedEntity) {
+      buffer.writeln("import '${request.sharedEntityImport}';");
+    }
 
     ///-> Class Response
     buffer.writeln(

@@ -33,6 +33,11 @@ class DatasourceImplFile extends ProjectFile {
             )
             .toString(),
       );
+      if (request.hasFileParams) {
+        buffer.writeln(
+          "import '../../domain/usecases/${request.names.snakeCase}_usecase.dart';",
+        );
+      }
     }
 
     buffer.writeln();
@@ -58,43 +63,7 @@ class DatasourceImplFile extends ProjectFile {
   Future<void> modify({
     required Names featureNames,
     required List<Request> requests,
-  }) async {
-    if (requests.isEmpty) {
-      return;
-    }
-
-    final List<String> lines = file.readAsLinesSync();
-    final StringBuffer buffer = StringBuffer();
-
-    for (final String line in lines) {
-      if (line.contains('implements')) {
-        for (final Request request in requests) {
-          buffer.write(
-            request.buffers.datasource
-                .generateImports(
-                  featureNameSnakeCase: featureNames.snakeCase,
-                  requestNameSnakeCase: request.names.snakeCase,
-                  hasParams: request.params != null,
-                )
-                .toString(),
-          );
-        }
-      }
-
-      buffer.writeln(line);
-
-      if (line.contains('implements')) {
-        for (final Request request in requests) {
-          final String funcImpl = request.buffers.datasource
-              .generateBody(featureNames: featureNames, request: request)
-              .toString()
-              .split('***')
-              .last;
-          buffer.write(funcImpl);
-        }
-      }
-    }
-
-    await file.writeAsString(buffer.toString());
+  }) {
+    return generate(featureNames: featureNames, requests: requests);
   }
 }

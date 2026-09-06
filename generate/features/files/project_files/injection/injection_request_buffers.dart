@@ -26,27 +26,14 @@ class InjectionRequestBuffers extends BaseRequestBuffers {
     required Request request,
   }) {
     final StringBuffer buffer = StringBuffer();
-
-    ///-> Cubit
+    buffer.writeln('void register${request.names.classCase}(GetIt sl) {');
     buffer.writeln(
-      '  _sl.registerFactory<${request.names.classCase}Cubit>(() => ${request.names.classCase}Cubit(_sl()));',
+      '  sl.registerFactory<${request.names.classCase}Cubit>(() => ${request.names.classCase}Cubit(sl()));',
     );
-
-    buffer.writeln('***');
-
-    ///-> UseCase
-    buffer.write(
-      '  _sl.registerLazySingleton<${request.names.classCase}UseCase>(() => ${request.names.classCase}UseCase(repository: _sl()));',
-    );
-
-    buffer.writeln('***');
-
-    ///-> BlocProvider
-    buffer.writeln('  BlocProvider<${request.names.classCase}Cubit>(');
     buffer.writeln(
-      '    create: (BuildContext context) => _sl<${request.names.classCase}Cubit>(),',
+      '  sl.registerLazySingleton<${request.names.classCase}UseCase>(() => ${request.names.classCase}UseCase(repository: sl()));',
     );
-    buffer.writeln('  ),');
+    buffer.writeln('}');
     return buffer;
   }
 }

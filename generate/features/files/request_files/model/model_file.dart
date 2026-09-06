@@ -21,6 +21,9 @@ class ModelFile extends RequestFile {
           .generateImports(requestNameSnakeCase: request.names.snakeCase)
           .toString(),
     );
+    if (request.usesSharedEntity) {
+      buffer.writeln("import '${request.sharedEntityImport}';");
+    }
 
     ///-> Class Response
     buffer.writeln(

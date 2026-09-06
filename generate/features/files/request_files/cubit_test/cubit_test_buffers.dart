@@ -82,8 +82,8 @@ class CubitTestRequestBuffers extends BaseRequestBuffers {
       buffer.writeln('    final tParams = ${responseClassName}Params(');
       request.params?.forEach((String key, dynamic value) {
         final Names keyNames = Names.fromString(key);
-        String dartType = getDartType(value);
-        String defaultValue = _getDefaultValue(dartType);
+        String dartType = request.dartTypeForParam(key, value);
+        String defaultValue = defaultValueForDartType(dartType);
         buffer.writeln('      ${keyNames.camelCase}: $defaultValue,');
       });
       buffer.writeln('    );');
@@ -124,8 +124,8 @@ class CubitTestRequestBuffers extends BaseRequestBuffers {
     if (hasParams) {
       request.params?.forEach((String key, dynamic value) {
         final Names keyNames = Names.fromString(key);
-        String dartType = getDartType(value);
-        String fallback = _getFallbackValue(dartType);
+        String dartType = request.dartTypeForParam(key, value);
+        String fallback = fallbackValueForDartType(dartType);
         buffer.writeln(
           '        ${keyNames.camelCase}: tParams.${keyNames.camelCase} $fallback,',
         );
@@ -160,8 +160,8 @@ class CubitTestRequestBuffers extends BaseRequestBuffers {
     if (hasParams) {
       request.params?.forEach((String key, dynamic value) {
         final Names keyNames = Names.fromString(key);
-        String dartType = getDartType(value);
-        String fallback = _getFallbackValue(dartType);
+        String dartType = request.dartTypeForParam(key, value);
+        String fallback = fallbackValueForDartType(dartType);
         buffer.writeln(
           '        ${keyNames.camelCase}: tParams.${keyNames.camelCase} $fallback,',
         );
@@ -180,35 +180,5 @@ class CubitTestRequestBuffers extends BaseRequestBuffers {
     buffer.writeln('}');
 
     return buffer;
-  }
-
-  String _getDefaultValue(String dartType) {
-    switch (dartType) {
-      case 'int':
-        return '0';
-      case 'double':
-        return '0.0';
-      case 'String':
-        return "''";
-      case 'bool':
-        return 'false';
-      default:
-        return 'null';
-    }
-  }
-
-  String _getFallbackValue(String dartType) {
-    switch (dartType) {
-      case 'int':
-        return '?? 0';
-      case 'double':
-        return '?? 0.0';
-      case 'String':
-        return "?? ''";
-      case 'bool':
-        return '?? false';
-      default:
-        return '!';
-    }
   }
 }

@@ -1,4 +1,5 @@
 import '../../utils/functions.dart';
+import '../../utils/json_meta.dart';
 import 'names.dart';
 
 class GenerateModel {
@@ -18,32 +19,72 @@ class GenerateModel {
     required this.modelBuffer,
   });
 
+  static List<GenerateModel> collectModels({
+    required String rootName,
+    required Map<String, dynamic> dataMap,
+  }) {
+    final List<GenerateModel> models = <GenerateModel>[];
+
+    void fetchJsonKeys(String key, Map<String, dynamic> currentMap) {
+      final Map<String, String> classNameOverrides =
+          JsonMeta.classNameOverrides(currentMap);
+      final Map<String, dynamic> fields = JsonMeta.strip(currentMap);
+
+      for (final MapEntry<String, dynamic> entry in fields.entries) {
+        if (entry.value is Map) {
+          final String nestedName = classNameOverrides[entry.key] ?? entry.key;
+          fetchJsonKeys(nestedName, JsonMeta.asStringKeyedMap(entry.value));
+        }
+        if (entry.value is List &&
+            (entry.value as List).isNotEmpty &&
+            (entry.value as List).first is Map) {
+          final String nestedName =
+              classNameOverrides[entry.key] ?? singularizeKey(entry.key);
+          fetchJsonKeys(
+            nestedName,
+            JsonMeta.asStringKeyedMap((entry.value as List).first),
+          );
+        }
+      }
+      models.add(
+        GenerateModel.generate(name: key, map: currentMap, parent: key),
+      );
+    }
+
+    fetchJsonKeys(rootName, dataMap);
+    return models;
+  }
+
   factory GenerateModel.generate({
     required String name,
     required Map<String, dynamic> map,
     required String parent,
   }) {
-    ///-> Names
     final Names names = Names.fromString(name);
+    final Map<String, String> classNameOverrides = JsonMeta.classNameOverrides(
+      map,
+    );
+    final Map<String, String> typeOverrides = JsonMeta.typeOverrides(map);
+    final Map<String, dynamic> fields = JsonMeta.strip(map);
 
-    ///-> Attributes
-    Map<Names, String> attributes = <Names, String>{};
-    for (MapEntry<String, dynamic> entry in map.entries) {
+    final Map<Names, String> attributes = <Names, String>{};
+    for (final MapEntry<String, dynamic> entry in fields.entries) {
       Names keyNames = Names.fromString(entry.key);
       String dartType = getDartType(entry.value);
       if (dartType.startsWith('Map')) {
-        dartType = keyNames.classCase;
+        dartType = classNameOverrides[entry.key] ?? keyNames.classCase;
+        if (classNameOverrides[entry.key] != null) {
+          keyNames = keyNames.copyWith(classCase: dartType);
+        }
       } else if (dartType.startsWith('List')) {
         final List<dynamic> list = entry.value as List<dynamic>;
         if (list.isNotEmpty) {
           if (list[0] is Map) {
-            keyNames = keyNames.copyWith(
-              classCase: keyNames.classCase.substring(
-                0,
-                keyNames.classCase.length - 1,
-              ),
-            );
-            dartType = 'List<${keyNames.classCase}>';
+            final String itemClass =
+                classNameOverrides[entry.key] ??
+                Names.fromString(singularizeKey(entry.key)).classCase;
+            keyNames = keyNames.copyWith(classCase: itemClass);
+            dartType = 'List<$itemClass>';
           }
           if (list[0] is String) {
             dartType = 'List<String>';
@@ -58,11 +99,15 @@ class GenerateModel {
             dartType = 'List<bool>';
           }
         }
+      } else if (isDateTimeField(
+        entry.key,
+        typeOverride: typeOverrides[entry.key],
+      )) {
+        dartType = 'DateTime';
       }
       attributes.putIfAbsent(keyNames, () => dartType);
     }
 
-    ///-> Buffers
     final StringBuffer entityBuffer = _generateEntity(
       names: names,
       attributes: attributes,
@@ -82,25 +127,32 @@ class GenerateModel {
     );
   }
 
+  static bool _isNullableField(Names keyNames, String dartType) {
+    if (dartType == 'DateTime') {
+      return true;
+    }
+    if (dartType.startsWith('List') || isPrimitiveDartType(dartType)) {
+      return false;
+    }
+    return true;
+  }
+
   static StringBuffer _generateEntity({
     required Names names,
     required Map<Names, String> attributes,
   }) {
     final StringBuffer buffer = StringBuffer();
 
-    ///-> Entity Class
     buffer.writeln('class ${names.classCase} extends Equatable {');
 
-    ///-> Attributes
-    for (MapEntry<Names, String> entry in attributes.entries) {
-      if (entry.value == entry.key.classCase) {
+    for (final MapEntry<Names, String> entry in attributes.entries) {
+      if (_isNullableField(entry.key, entry.value)) {
         buffer.writeln('  final ${entry.value}? ${entry.key.camelCase};');
       } else {
         buffer.writeln('  final ${entry.value} ${entry.key.camelCase};');
       }
     }
 
-    ///-> Named Argument Constructor
     buffer.writeln();
     buffer.writeln('  const ${names.classCase}({');
     attributes.forEach((Names keyNames, String value) {
@@ -108,7 +160,6 @@ class GenerateModel {
     });
     buffer.writeln('  });\n');
 
-    ///CopyWith
     buffer.writeln('  ${names.classCase} copyWith({');
     attributes.forEach((Names keyNames, String value) {
       buffer.writeln('    $value? ${keyNames.camelCase},');
@@ -123,7 +174,6 @@ class GenerateModel {
     buffer.writeln('    );');
     buffer.writeln('  }\n');
 
-    ///Equatable props
     buffer.writeln('  @override');
     buffer.writeln('  List<Object?> get props => <Object?>[');
     attributes.forEach((Names keyNames, String value) {
@@ -132,7 +182,6 @@ class GenerateModel {
     buffer.writeln('  ];');
     buffer.writeln();
 
-    ///End of Data Class
     buffer.writeln('}');
 
     return buffer;
@@ -144,25 +193,22 @@ class GenerateModel {
   }) {
     final StringBuffer buffer = StringBuffer();
 
-    ///-> Entity Class
     buffer.writeln(
       'class ${names.classCase}Model extends ${names.classCase} {',
     );
     buffer.writeln('  const ${names.classCase}Model({');
 
-    ///-> Attributes
-    for (MapEntry<Names, dynamic> entry in attributes.entries) {
+    for (final MapEntry<Names, dynamic> entry in attributes.entries) {
       buffer.writeln('    required super.${entry.key.camelCase},');
     }
     buffer.writeln('  });');
     buffer.writeln();
 
-    ///-> FromJson
     buffer.writeln(
       '  factory ${names.classCase}Model.fromJson(Map<String, dynamic> json) => ${names.classCase}Model(',
     );
     attributes.forEach((Names key, String value) {
-      String jsonKeyName = 'json[\'${key.snakeCase}\']';
+      final String jsonKeyName = 'json[\'${key.snakeCase}\']';
       if (value == 'int') {
         buffer.writeln(
           '    ${key.camelCase}: ($jsonKeyName as Object?).toIntOrZero(),',
@@ -171,12 +217,16 @@ class GenerateModel {
         buffer.writeln(
           '    ${key.camelCase}: ($jsonKeyName as Object?).toDoubleOrZero(),',
         );
+      } else if (value == 'DateTime') {
+        buffer.writeln(
+          '    ${key.camelCase}: ($jsonKeyName as Object?).toDateTimeOrNull(),',
+        );
       } else if (value.contains('List')) {
         String fromJsonStr = '';
         String modelName = '';
         if (value == 'List<dynamic>') {
           buffer.writeln(
-            '    ${key.camelCase}: $jsonKeyName != null? $jsonKeyName as List<dynamic> : <dynamic>[]',
+            '    ${key.camelCase}: $jsonKeyName != null? $jsonKeyName as List<dynamic> : <dynamic>[],',
           );
         } else if (value == 'List<String>') {
           modelName = 'String';
@@ -191,22 +241,25 @@ class GenerateModel {
           modelName = 'bool';
           fromJsonStr = '(e as Object?).toBoolOrFalse()';
         } else {
-          modelName = key.classCase;
+          final Match? match = RegExp(r'List<(.+)>').firstMatch(value);
+          modelName = match?.group(1) ?? key.classCase;
           fromJsonStr = '${modelName}Model.fromJson(e)';
         }
 
-        buffer.writeln(
-          '    ${key.camelCase}: $jsonKeyName != null? ($jsonKeyName as List<dynamic>)'
-          '.map((dynamic e) => $fromJsonStr).toList() : '
-          'const <$modelName>[],',
-        );
-      } else if (value == key.classCase) {
-        buffer.writeln(
-          '    ${key.camelCase}: $jsonKeyName != null? ${key.classCase}Model.fromJson($jsonKeyName) : null,',
-        );
+        if (value != 'List<dynamic>') {
+          buffer.writeln(
+            '    ${key.camelCase}: $jsonKeyName != null? ($jsonKeyName as List<dynamic>)'
+            '.map((dynamic e) => $fromJsonStr).toList() : '
+            'const <$modelName>[],',
+          );
+        }
       } else if (value == 'bool') {
         buffer.writeln(
           '    ${key.camelCase}: ($jsonKeyName as Object?).toBoolOrFalse(),',
+        );
+      } else if (!isPrimitiveDartType(value)) {
+        buffer.writeln(
+          '    ${key.camelCase}: $jsonKeyName != null? ${value}Model.fromJson($jsonKeyName) : null,',
         );
       } else {
         buffer.writeln(
@@ -216,18 +269,6 @@ class GenerateModel {
     });
     buffer.writeln('  );\n');
 
-    // ///-> ToJson
-    // buffer.writeln('  static Map<String, dynamic> toJson(${names.classCase}? value) => <String, dynamic>{');
-    // attributes.forEach((Names key, String value){
-    //   if(value.startsWith('Map')){
-    //     buffer.writeln("    '${key.snakeCase}': ${key.classCase}Model.toJson(value?.${key.camelCase}),");
-    //   }else{
-    //     buffer.writeln("    '${key.snakeCase}': value?.${key.camelCase},");
-    //   }
-    // });
-    // buffer.writeln('  };\n');
-
-    ///-> End of Data Class
     buffer.writeln('}\n');
 
     return buffer;

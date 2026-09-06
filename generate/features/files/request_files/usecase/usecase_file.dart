@@ -16,6 +16,11 @@ class UseCaseFile extends RequestFile {
     final StringBuffer buffer = StringBuffer();
 
     ///-> File imports
+    if (request.hasFileParams) {
+      buffer.writeln("import 'dart:io';");
+      buffer.writeln();
+      buffer.writeln("import 'package:dio/dio.dart';");
+    }
     buffer.writeln(
       request.buffers.useCase
           .generateImports(

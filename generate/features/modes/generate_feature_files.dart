@@ -24,11 +24,7 @@ abstract class GenerateFeature {
     required Feature feature,
     bool generateTest = false,
   }) async {
-    final Directory projectRoot = .current;
-    final String featurePath =
-        '${projectRoot.absolute.path}/${GenerateConstants.projectFeaturesPath}/${feature.names.snakeCase}';
-
-    for (final Request request in feature.requests) {
+    for (final Request request in feature.activeRequests) {
       generateSingleRequestFiles(
         feature: feature,
         request: request,
@@ -36,33 +32,47 @@ abstract class GenerateFeature {
       );
     }
 
-    DatasourceFile(
+    await generateProjectFiles(
+      feature: feature,
+      requests: feature.activeRequests,
+    );
+  }
+
+  static Future<void> generateProjectFiles({
+    required Feature feature,
+    required List<Request> requests,
+  }) async {
+    final Directory projectRoot = .current;
+    final String featurePath =
+        '${projectRoot.absolute.path}/${GenerateConstants.projectFeaturesPath}/${feature.names.snakeCase}';
+
+    await DatasourceFile(
       file: File(
         '$featurePath/data/datasources/${feature.names.snakeCase}_remote_datasource.dart',
       ),
-    ).generate(featureNames: feature.names, requests: feature.requests);
+    ).generate(featureNames: feature.names, requests: requests);
 
-    DatasourceImplFile(
+    await DatasourceImplFile(
       file: File(
         '$featurePath/data/datasources/${feature.names.snakeCase}_remote_datasource_impl.dart',
       ),
-    ).generate(featureNames: feature.names, requests: feature.requests);
+    ).generate(featureNames: feature.names, requests: requests);
 
-    RepositoryFile(
+    await RepositoryFile(
       file: File(
         '$featurePath/domain/repositories/${feature.names.snakeCase}_repo.dart',
       ),
-    ).generate(featureNames: feature.names, requests: feature.requests);
+    ).generate(featureNames: feature.names, requests: requests);
 
-    RepositoryImplFile(
+    await RepositoryImplFile(
       file: File(
         '$featurePath/data/repositories/${feature.names.snakeCase}_repo_impl.dart',
       ),
-    ).generate(featureNames: feature.names, requests: feature.requests);
+    ).generate(featureNames: feature.names, requests: requests);
 
-    InjectionFile(
+    await InjectionFile(
       file: File('$featurePath/${feature.names.snakeCase}_injection.dart'),
-    ).generate(featureNames: feature.names, requests: feature.requests);
+    ).generate(featureNames: feature.names, requests: requests);
   }
 
   static void generateSingleRequestFiles({

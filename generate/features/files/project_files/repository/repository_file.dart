@@ -6,8 +6,6 @@ import '../../../models/request.dart';
 import '../../project_file.dart';
 
 class RepositoryFile extends ProjectFile {
-  bool isNoParamsImports = false;
-
   RepositoryFile({required super.file});
 
   @override
@@ -62,54 +60,8 @@ class RepositoryFile extends ProjectFile {
   Future<void> modify({
     required Names featureNames,
     required List<Request> requests,
-  }) async {
-    List<String> lines = file.readAsLinesSync();
-    final StringBuffer buffer = StringBuffer();
-    if (requests.isEmpty) {
-      return;
-    }
-
-    for (String line in lines) {
-      buffer.writeln(line);
-
-      ///-> Func imports
-      if (line.contains('core/error/failures.dart')) {
-        for (Request request in requests) {
-          List<String> importsLines = request.buffers.repository
-              .generateImports(
-                featureNameSnakeCase: featureNames.snakeCase,
-                requestNameSnakeCase: request.names.snakeCase,
-                hasParams: request.params != null,
-              )
-              .toString()
-              .split('\n');
-
-          ///-> Filter duplicated imports
-          for (String line in importsLines) {
-            if (line.contains('core/usecases/usecases.dart')) {
-              if (isNoParamsImports) {
-                continue;
-              }
-              isNoParamsImports = true;
-            }
-            buffer.writeln(line);
-          }
-        }
-      }
-
-      ///-> Func
-      if (line.contains('abstract class')) {
-        for (Request request in requests) {
-          String func = request.buffers.repository
-              .generateBody(featureNames: featureNames, request: request)
-              .toString();
-          buffer.writeln(func);
-        }
-      }
-    }
-
-    ///-> Write file
-    await file.writeAsString(buffer.toString());
+  }) {
+    return generate(featureNames: featureNames, requests: requests);
   }
 }
 

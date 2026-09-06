@@ -1,15 +1,11 @@
 import 'dart:io';
 
-import '../../../../utils/extension.dart';
 import '../../../../utils/functions.dart';
 import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../project_file.dart';
 
 class RepositoryImplFile extends ProjectFile {
-  bool isNoParamsImports = false;
-  bool isAuthLocalImports = false;
-
   RepositoryImplFile({required super.file});
 
   @override
@@ -82,141 +78,8 @@ class RepositoryImplFile extends ProjectFile {
   Future<void> modify({
     required Names featureNames,
     required List<Request> requests,
-  }) async {
-    final List<String> lines = file.readAsLinesSync();
-    if (requests.isEmpty) {
-      return;
-    }
-
-    bool isOneRequestHasToken = false;
-    for (Request request in requests) {
-      if (request.hasToken) {
-        isOneRequestHasToken = true;
-        break;
-      }
-    }
-
-    List<String> fileLines = .from(lines);
-    List<String> importsLines = <String>[];
-    List<String> constructorLines = <String>[];
-    List<String> functionsLines = <String>[];
-
-    int index = 0;
-    int constructorIndex = 0;
-    int functionsIndex = 0;
-    int currentIndex = 0;
-    bool isAuthLocalImports = false;
-    bool isNoParamsImports = false;
-
-    ///-> Detect isAuthLocalImports
-    if (fileLines.lineContains('local_datasource')) {
-      isAuthLocalImports = true;
-    }
-
-    ///-> Remove last curly brace of end of class
-    final StringBuffer tempBuffer = StringBuffer();
-    tempBuffer.writeAll(fileLines, '\n');
-    final String tempContent = tempBuffer.toString().trim();
-    fileLines = tempContent.substring(0, tempContent.length - 1).split('\n');
-
-    ///-> Separator file lines and detect indexes
-    for (String line in fileLines) {
-      ///-> Detect constructorIndex
-      if (line.contains('class') &&
-          line.contains('implements') &&
-          currentIndex == 0) {
-        constructorIndex = index + 1;
-        currentIndex = constructorIndex;
-      }
-      ///-> Detect functionsIndex
-      else if (currentIndex == constructorIndex && line.contains('@override')) {
-        functionsIndex = index - 1;
-        currentIndex = functionsIndex;
-      }
-
-      ///-> Add imports lines
-      if (currentIndex == 0) {
-        importsLines.add(line);
-      }
-      ///-> Add constructor lines
-      else if (currentIndex == constructorIndex) {
-        constructorLines.add(line);
-      }
-      ///-> Add functions lines
-      else if (currentIndex == functionsIndex) {
-        functionsLines.add(line);
-      }
-      index++;
-    }
-
-    ///-> AuthLocalImports
-    if (!isAuthLocalImports &&
-        isOneRequestHasToken &&
-        !importsLines.lineContains('local_datasource.dart')) {
-      importsLines.add(
-        "import '../../../../core/local/auth_local_datasource.dart';",
-      );
-      isAuthLocalImports = true;
-    }
-
-    ///-> Func imports
-    for (Request request in requests) {
-      List<String> funcImportsLines = request.buffers.repositoryImpl
-          .generateImports(
-            featureNameSnakeCase: featureNames.snakeCase,
-            requestNameSnakeCase: request.names.snakeCase,
-            hasParams: request.params != null,
-          )
-          .toString()
-          .split('\n');
-
-      ///-> Filter duplicated imports
-      for (String line in funcImportsLines) {
-        if (line.contains('core/usecases/usecases.dart')) {
-          if (isNoParamsImports) {
-            continue;
-          }
-          isNoParamsImports = true;
-        }
-        importsLines.add(line);
-      }
-    }
-
-    ///-> Constructor
-    if (isAuthLocalImports &&
-        !constructorLines.lineContains('LocalDataSource')) {
-      constructorLines.insert(1, '  final AuthLocalDataSource local;');
-      constructorLines.insert(
-        constructorLines.length - 2,
-        '    required this.local,',
-      );
-    }
-
-    ///-> Functions Impl
-    for (Request request in requests) {
-      String func = request.buffers.repositoryImpl
-          .generateBody(featureNames: featureNames, request: request)
-          .toString();
-      functionsLines.add(func);
-    }
-
-    ///-> Write Buffer
-    final StringBuffer fileBuffer = StringBuffer();
-    for (String line in importsLines) {
-      fileBuffer.writeln(line);
-    }
-    fileBuffer.writeln();
-    for (String line in constructorLines) {
-      fileBuffer.writeln(line);
-    }
-    fileBuffer.writeln();
-    for (String line in functionsLines) {
-      fileBuffer.writeln(line);
-    }
-    fileBuffer.writeln('}');
-
-    ///-> Write file
-    await file.writeAsString(fileBuffer.toString());
+  }) {
+    return generate(featureNames: featureNames, requests: requests);
   }
 }
 

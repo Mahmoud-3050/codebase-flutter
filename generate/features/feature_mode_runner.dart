@@ -3,7 +3,7 @@ import 'dart:io';
 import '../utils/console_logger.dart';
 import 'models/feature.dart';
 import 'models/feature_paths.dart';
-import 'models/request.dart';
+import 'modes/delete_feature_files.dart';
 import 'modes/generate_feature_directories.dart';
 import 'modes/generate_feature_files.dart';
 import 'modes/modify_feature_files.dart';
@@ -23,7 +23,7 @@ class FeatureModeRunner {
       case .modify:
         await _runModifyMode();
       case .delete:
-        _runDeleteMode();
+        await _runDeleteMode();
       case .protected:
         ConsoleLogger.info('Feature is in PROTECTED mode.');
         ConsoleLogger.error('CLOSED!');
@@ -36,6 +36,13 @@ class FeatureModeRunner {
       paths.featureProjectPath,
       generateTest: generateTest,
     );
+
+    if (feature.deleteRequests.isNotEmpty) {
+      await DeleteFeature.deleteRequests(
+        feature: feature,
+        requests: feature.deleteRequests,
+      );
+    }
 
     await GenerateFeature.generateFeature(
       feature: feature,
@@ -53,13 +60,17 @@ class FeatureModeRunner {
   }
 
   Future<void> _runModifyMode() async {
-    final List<Request> pendingRequests = feature.requests
-        .where((request) => request.mode == .generate)
-        .toList();
+    if (feature.deleteRequests.isNotEmpty) {
+      await DeleteFeature.deleteRequests(
+        feature: feature,
+        requests: feature.deleteRequests,
+      );
+    }
 
     await ModifyFeature.modifyFeature(
       feature: feature,
-      requests: pendingRequests,
+      pendingRequests: feature.pendingRequests,
+      generateTest: generateTest,
     );
 
     if (generateTest) {
@@ -71,10 +82,19 @@ class FeatureModeRunner {
     );
   }
 
-  void _runDeleteMode() {
-    // TODO: Implement delete mode feature removal logic
-    ConsoleLogger.warning(
-      'Delete mode is not yet implemented for feature "${feature.names.original}".',
+  Future<void> _runDeleteMode() async {
+    await DeleteFeature.deleteRequests(
+      feature: feature,
+      requests: feature.deleteRequests,
+    );
+
+    await GenerateFeature.generateProjectFiles(
+      feature: feature,
+      requests: feature.activeRequests,
+    );
+
+    ConsoleLogger.success(
+      'Delete mode finished for feature "${feature.names.original}".',
     );
   }
 

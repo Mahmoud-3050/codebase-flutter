@@ -3,6 +3,7 @@ import 'dart:io';
 
 import '../../utils/enums.dart';
 import '../../utils/extension.dart';
+import '../../utils/functions.dart';
 import '../files/project_files/datasource/datasource_request_buffers.dart';
 import '../files/project_files/injection/injection_request_buffers.dart';
 import '../files/project_files/repository/repository_request_buffers.dart';
@@ -20,6 +21,7 @@ import 'endpoint.dart';
 import 'names.dart';
 import 'request_buffers.dart';
 import 'request_files.dart';
+import 'shared_entity_lookup.dart';
 
 class Request {
   final File file;
@@ -30,10 +32,13 @@ class Request {
   final RequestType type;
   final bool hasToken;
   final Map<String, dynamic>? params;
+  final Map<String, String> paramTypes;
   final Map<String, dynamic> response;
   final RequestBuffers buffers;
   final RequestFiles files;
   final ModeType mode;
+  final bool hasExplicitModelClass;
+  final File? sharedEntityFile;
 
   const Request({
     required this.file,
@@ -47,8 +52,34 @@ class Request {
     required this.buffers,
     required this.files,
     required this.mode,
+    required this.paramTypes,
+    required this.hasExplicitModelClass,
     this.params,
+    this.sharedEntityFile,
   });
+
+  bool get usesSharedEntity => sharedEntityFile != null;
+
+  String? get sharedEntityImport => sharedEntityFile == null
+      ? null
+      : SharedEntityLookup.packageImport(sharedEntityFile!);
+
+  bool isFileParam(String key) => isFileParamType(paramTypes[key]);
+
+  bool get hasFileParams {
+    final Map<String, dynamic>? requestParams = params;
+    if (requestParams == null) {
+      return false;
+    }
+    return requestParams.keys.any(isFileParam);
+  }
+
+  String dartTypeForParam(String key, dynamic value) {
+    if (isFileParam(key)) {
+      return 'File';
+    }
+    return getDartType(value);
+  }
 
   factory Request.init({
     required File file,
@@ -56,10 +87,13 @@ class Request {
     required Map<String, dynamic> json,
   }) {
     final Names names = Names.fromString(json['name']?.toString() ?? '');
-    final Names modelClassNames = _resolveModelClassNames(
-      names,
-      json['model_class'],
-    );
+    final dynamic rawModelClass = json['model_class'];
+    final bool hasExplicitModelClass =
+        rawModelClass != null && rawModelClass.toString().trim().isNotEmpty;
+    final Names modelClassNames = _resolveModelClassNames(names, rawModelClass);
+    final File? sharedEntityFile = hasExplicitModelClass
+        ? SharedEntityLookup.find(modelClassNames.classCase)
+        : null;
 
     DartType? dartType;
     if (json['response'] != null && json['response']['data'] != null) {
@@ -100,12 +134,15 @@ class Request {
           .get,
       hasToken: (json['token'] as bool?) ?? false,
       params: json['params'] as Map<String, dynamic>?,
+      paramTypes: _parseParamTypes(json['param_types']),
       response:
           (json['response'] as Map<String, dynamic>?) ??
           <String, dynamic>{'status': true, 'message': '', 'data': null},
       buffers: buffers,
       files: files,
       mode: modeType,
+      hasExplicitModelClass: hasExplicitModelClass,
+      sharedEntityFile: sharedEntityFile,
     );
   }
 
@@ -114,6 +151,16 @@ class Request {
         jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
     jsonMap['mode'] = 0;
     file.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(jsonMap));
+  }
+
+  static Map<String, String> _parseParamTypes(dynamic raw) {
+    if (raw is! Map) {
+      return const <String, String>{};
+    }
+    return raw.map(
+      (dynamic key, dynamic value) =>
+          MapEntry(key.toString(), value.toString()),
+    );
   }
 
   static Names _resolveModelClassNames(

@@ -56,6 +56,15 @@ class Feature {
     return copyWith(settings: updatedSettings, modeType: .protected);
   }
 
+  List<Request> get activeRequests =>
+      requests.where((Request request) => request.mode != .delete).toList();
+
+  List<Request> get pendingRequests =>
+      requests.where((Request request) => request.mode == .generate).toList();
+
+  List<Request> get deleteRequests =>
+      requests.where((Request request) => request.mode == .delete).toList();
+
   Feature copyWith({
     Names? names,
     List<Request>? requests,

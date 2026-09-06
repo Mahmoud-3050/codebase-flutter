@@ -44,11 +44,67 @@ String getDartType(dynamic value) {
     return 'bool';
   } else if (value is List) {
     return 'List<dynamic>';
-  } else if (value is Map<String, dynamic>) {
+  } else if (value is Map) {
     return 'Map<String, dynamic>';
   } else {
     return 'dynamic';
   }
+}
+
+/// [typeOverride] wins when present. Otherwise keys ending in `_at` / `_date`
+/// or containing `date` are treated as DateTime.
+bool isDateTimeField(String jsonKey, {String? typeOverride}) {
+  if (typeOverride != null && typeOverride.trim().isNotEmpty) {
+    return typeOverride.trim().toLowerCase() == 'datetime';
+  }
+  final String lower = jsonKey.toLowerCase();
+  return lower.endsWith('_at') ||
+      lower.endsWith('_date') ||
+      lower.contains('date');
+}
+
+bool isFileParamType(String? type) {
+  final String normalized = type?.trim().toLowerCase() ?? '';
+  return normalized == 'file' || normalized == 'image';
+}
+
+bool isPrimitiveDartType(String dartType) {
+  return dartType == 'int' ||
+      dartType == 'double' ||
+      dartType == 'String' ||
+      dartType == 'bool' ||
+      dartType == 'dynamic' ||
+      dartType == 'DateTime' ||
+      dartType == 'File' ||
+      dartType.startsWith('List');
+}
+
+String defaultValueForDartType(String dartType) {
+  return switch (dartType) {
+    'int' => '0',
+    'double' => '0.0',
+    'String' => "''",
+    'bool' => 'false',
+    'File' => "File('test')",
+    _ => 'null',
+  };
+}
+
+String fallbackValueForDartType(String dartType) {
+  return switch (dartType) {
+    'int' => '?? 0',
+    'double' => '?? 0.0',
+    'String' => "?? ''",
+    'bool' => '?? false',
+    _ => '!',
+  };
+}
+
+String singularizeKey(String key) {
+  if (key.endsWith('s') && key.length > 1) {
+    return key.substring(0, key.length - 1);
+  }
+  return key;
 }
 
 Map<String, dynamic> getDataKeys(

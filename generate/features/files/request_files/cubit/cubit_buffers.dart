@@ -1,5 +1,4 @@
 import '../../../../utils/enums.dart';
-import '../../../../utils/functions.dart';
 import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_buffers.dart';
@@ -71,7 +70,7 @@ class CubitRequestBuffers extends BaseRequestBuffers {
       request.params?.forEach((String key, dynamic value) {
         final Names keyNames = Names.fromString(key);
         buffer.writeln(
-          '   required ${getDartType(value)} ${keyNames.camelCase},',
+          '   required ${request.dartTypeForParam(key, value)} ${keyNames.camelCase},',
         );
       });
       buffer.writeln('  }) async {');

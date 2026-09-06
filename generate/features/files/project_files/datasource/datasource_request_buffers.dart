@@ -58,7 +58,13 @@ class DatasourceRequestBuffers extends BaseRequestBuffers {
     final bool isBodyRequest =
         request.type == .post || request.type == .put || request.type == .patch;
     if (hasParams && isBodyRequest) {
-      buffer.writeln('        body: params.toJson(),');
+      if (request.hasFileParams) {
+        buffer.writeln(
+          '        formData: (params as ${request.names.classCase}Params).toFormData(),',
+        );
+      } else {
+        buffer.writeln('        body: params.toJson(),');
+      }
     }
     if (hasParams && request.type == .get && request.endpoint.hasQueryParams) {
       buffer.writeln('        queryParameters: params.toJson(),');

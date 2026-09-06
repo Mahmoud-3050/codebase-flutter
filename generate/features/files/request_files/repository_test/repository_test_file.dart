@@ -16,6 +16,10 @@ class RepositoryTestFile extends RequestFile {
     final StringBuffer buffer = StringBuffer();
 
     ///--> File imports
+    if (request.hasFileParams) {
+      buffer.writeln("import 'dart:io';");
+      buffer.writeln();
+    }
     buffer.writeln(
       request.buffers.repositoryTest
           .generateImports(

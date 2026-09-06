@@ -167,11 +167,12 @@ Example: `dart generate/features/main.dart auth`
 2. Locates JSON config files in `generate/requests/<feature_name>/`.
 3. Reads `settings.json` to determine the **mode**:
    - `mode: 1` → **Generate** — creates the full feature directory structure and all files from scratch.
-   - `mode: 2` → **Modify** — adds new requests to an existing feature (appends to datasource, repo, injection, etc.).
+   - `mode: 2` → **Modify** — fully regenerates pending request files (`mode: 1`) and rewrites datasource/repo/injection from the current active request list. Also processes any request with `mode: 3` (delete).
+   - `mode: 3` → **Delete** — deletes generated files for requests marked `mode: 3` and rewrites aggregate files without them.
    - `mode: 0` → **Protected** — no changes allowed (auto-set after generation).
 4. For each request JSON, it parses models, endpoints, params, and response structure.
 5. Generates Dart files using `StringBuffer`-based templates.
-6. After generation, sets each request's `mode` to `0` (protected).
+6. After generation/modify, sets each processed request's `mode` to `0` (protected). Deleted requests stay at `mode: 3` as a tombstone.
 
 ### JSON Request Config Format
 
@@ -186,14 +187,30 @@ Each JSON file in `generate/requests/<feature>/` defines one API request:
   "token": false,
   "params": {
     "login": "123456789",
-    "password": "1111"
+    "password": "1111",
+    "image": "avatar.png"
+  },
+  "param_types": {
+    "image": "file"
   },
   "response": {
     "status": "success",
     "data": {
       "id": 97,
       "first_name": "Alice",
-      "email": "alice@example.com"
+      "birthdate": "1995-08-24",
+      "created_at": "2024-10-18 10:48:37",
+      "class_name$company": "Company",
+      "company": {
+        "id": 1,
+        "name": "Acme"
+      },
+      "class_name$items": "Item",
+      "items": [
+        { "id": 1, "title": "One" }
+      ],
+      "type$note": "String",
+      "note": "keep as String even if it looks like a date"
     },
     "message": "api.login successfully"
   },
@@ -204,13 +221,90 @@ Each JSON file in `generate/requests/<feature>/` defines one API request:
 | Field | Description |
 |---|---|
 | `name` | Request name (used for file naming / class naming) |
-| `model_class` | Optional custom model class name (defaults to `<name>Data`) |
+| `model_class` | Optional data class name. The generator looks for that class under `lib/shared/domain/entities` (see Shared entities). If found, the local entity is skipped and the per-request model extends the shared entity. If not found, the class is generated locally as usual. Defaults to `<name>_data` when omitted (no shared lookup). |
 | `endpoint` | API endpoint path |
 | `type` | HTTP method: `GET`, `POST`, `PUT`, `PATCH`, `DELETE` |
 | `token` | Whether the request requires authentication |
-| `params` | Request parameters (used to generate use case params class) |
+| `params` | Request parameters (sample JSON shape used to generate the use case Params class) |
+| `param_types` | Optional map of param key → `"file"` or `"image"`. Those params become `File?` and the datasource sends `FormData` instead of a JSON body. |
 | `response` | Sample API response — `data` structure is used for entity/model generation |
-| `mode` | `1`=generate, `2`=modify, `0`=protected |
+| `class_name$<field>` | Sibling meta-key in any response object. Forces the Dart class name for that nested object or list item (instead of deriving it from the key / stripping a trailing `s`). Stripped out of generated fields. |
+| `type$<field>` | Sibling meta-key. Forces the Dart type (`DateTime` or `String`) over the DateTime naming heuristic. |
+| `mode` | `0`=protected, `1`=generate (pending overwrite), `2`=modify (unused at request level; feature `settings.json` uses it), `3`=delete |
+
+### DateTime fields
+
+String fields are generated as `DateTime?` when:
+
+1. An explicit `type$<field>: "DateTime"` override is present, **or**
+2. The JSON key ends with `_at`, `_date`, or contains `date` (case-insensitive)
+
+Use `type$<field>: "String"` to keep a field as `String` when the heuristic would otherwise pick DateTime. Parsing uses `toDateTimeOrNull()` from `lib/core/utils/extensions.dart`.
+
+### Shared entities (`model_class`)
+
+Path is configured in `generate/utils/constants.dart`:
+
+```dart
+static const String sharedEntitiesPath = 'lib/shared/domain/entities';
+```
+
+On each run the generator scans that folder for `class <ModelClass>`. Promoting a model to shared is **manual**: move the entity file into that folder. The next generate/modify run will import it instead of emitting a local copy. Per-request `{Name}Response` / `{Name}Model` wrappers always stay in the feature. Shared entity files are never deleted by delete mode.
+
+### File / image uploads
+
+```json
+"params": { "title": "cv", "file": "cv.pdf" },
+"param_types": { "file": "file" }
+```
+
+Generates `File? file` on Params, a `toFormData()` method, and `dioConsumer.post(..., formData: params.toFormData())` in the datasource.
+
+### Dependency injection
+
+Generated `{feature}_injection.dart` does **not** register every request in one feature-wide scope. It emits:
+
+- `register{Feature}DataLayer(GetIt sl)` — repository + datasource
+- `register{Request}(GetIt sl)` — that request's cubit (`registerFactory`) and use case (`registerLazySingleton`)
+
+Each navigation flow pushes its **own** named GetIt scope and lists only the registrations that screen needs. `FeatureScope` pushes the scope, runs those functions, and drops the scope on exit.
+
+```dart
+const String _studentProfileScopeName = 'StudentProfileScope';
+
+FeatureScope(
+  scopeName: _studentProfileScopeName,
+  registrations: [
+    registerProfileDataLayer,
+    registerGetStudentProfile,
+    registerUpdateStudentProfile,
+  ],
+  child: MultiBlocProvider(
+    providers: [
+      BlocProvider(
+        create: (_) => ServiceLocator.instance<GetStudentProfileCubit>(),
+      ),
+      BlocProvider(
+        create: (_) => ServiceLocator.instance<UpdateStudentProfileCubit>(),
+      ),
+    ],
+    child: const StudentProfileScreen(),
+  ),
+)
+```
+
+A company-profile route would use a different `scopeName` and only `registerGetCompanyProfile` / `registerUpdateCompanyProfile`. Unused requests stay unregistered until their flow opens.
+
+`ServiceLocator.init()` only registers core singletons.
+
+### Delete mode
+
+Set a request JSON `"mode": 3` and run the generator (feature `settings.json` in generate, modify, or delete). The generator:
+
+1. Logs and deletes that request's entity, model, usecase, cubit, states, and tests
+2. Regenerates datasource / repository / injection **without** that request
+3. Leaves the JSON file in place at `mode: 3` (tombstone). Delete the JSON yourself to forget it entirely
+4. Never deletes a shared entity under `sharedEntitiesPath`
 
 ### Generated Directory Structure
 

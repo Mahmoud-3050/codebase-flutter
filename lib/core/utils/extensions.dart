@@ -5,11 +5,9 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:themes/themes.dart';
 
-
-
 extension DateTimeExtension on DateTime {
   String _padTwoDigits(int value) => value.toString().padLeft(2, '0');
-  
+
   String get displayFormat =>
       '$year-${_padTwoDigits(month)}-${_padTwoDigits(day)}';
 
@@ -207,4 +205,23 @@ extension ObjectParsingX on Object? {
   // ---- bool ----
   bool toBoolOrFalse() => _asBool() ?? false;
   bool? toBoolOrNull() => _asBool();
+
+  // ---- DateTime ----
+  DateTime? toDateTimeOrNull() {
+    if (this == null) {
+      return null;
+    }
+    if (this is DateTime) {
+      return this as DateTime;
+    }
+    final String raw = toString().trim();
+    if (raw.isEmpty) {
+      return null;
+    }
+    return DateTime.tryParse(raw) ??
+        DateTime.tryParse(raw.replaceFirst(' ', 'T'));
+  }
+
+  DateTime toDateTimeOrMin() =>
+      toDateTimeOrNull() ?? .fromMillisecondsSinceEpoch(0);
 }

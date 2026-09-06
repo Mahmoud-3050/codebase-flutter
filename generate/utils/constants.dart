@@ -23,4 +23,6 @@ abstract class GenerateConstants {
   //generate_features
   static const String projectFeaturesPath = 'lib/features';
   static const String requestsAssetsPath = 'generate/requests';
+  static const String dartPackageName = 'codebase';
+  static const String sharedEntitiesPath = 'lib/shared/domain/entities';
 }

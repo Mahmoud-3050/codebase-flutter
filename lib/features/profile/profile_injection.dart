@@ -1,113 +1,92 @@
-import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:get_it/get_it.dart';
 
-import '../../injection_container.dart';
 import 'data/datasources/profile_remote_datasource.dart';
 import 'data/datasources/profile_remote_datasource_impl.dart';
 import 'data/repositories/profile_repo_impl.dart';
 import 'domain/repositories/profile_repo.dart';
 import 'domain/usecases/change_company_password_usecase.dart';
-import 'presentation/controller/change_company_password/change_company_password_cubit.dart';
-import 'domain/usecases/update_company_user_profile_usecase.dart';
-import 'presentation/controller/update_company_user_profile/update_company_user_profile_cubit.dart';
 import 'domain/usecases/change_student_password_usecase.dart';
-import 'presentation/controller/change_student_password/change_student_password_cubit.dart';
 import 'domain/usecases/get_company_profile_usecase.dart';
-import 'presentation/controller/get_company_profile/get_company_profile_cubit.dart';
 import 'domain/usecases/get_student_profile_usecase.dart';
-import 'presentation/controller/get_student_profile/get_student_profile_cubit.dart';
 import 'domain/usecases/update_company_profile_usecase.dart';
-import 'presentation/controller/update_company_profile/update_company_profile_cubit.dart';
+import 'domain/usecases/update_company_user_profile_usecase.dart';
 import 'domain/usecases/update_student_profile_usecase.dart';
+import 'presentation/controller/change_company_password/change_company_password_cubit.dart';
+import 'presentation/controller/change_student_password/change_student_password_cubit.dart';
+import 'presentation/controller/get_company_profile/get_company_profile_cubit.dart';
+import 'presentation/controller/get_student_profile/get_student_profile_cubit.dart';
+import 'presentation/controller/update_company_profile/update_company_profile_cubit.dart';
+import 'presentation/controller/update_company_user_profile/update_company_user_profile_cubit.dart';
 import 'presentation/controller/update_student_profile/update_student_profile_cubit.dart';
 
-final _sl = ServiceLocator.instance;
-
-Future<void> initProfileFeatureInjection() async {
-  ///-> Cubits
-  _sl.registerFactory<ChangeCompanyPasswordCubit>(
-    () => ChangeCompanyPasswordCubit(_sl()),
-  );
-  _sl.registerFactory<UpdateCompanyUserProfileCubit>(
-    () => UpdateCompanyUserProfileCubit(_sl()),
-  );
-  _sl.registerFactory<ChangeStudentPasswordCubit>(
-    () => ChangeStudentPasswordCubit(_sl()),
-  );
-  _sl.registerFactory<GetCompanyProfileCubit>(
-    () => GetCompanyProfileCubit(_sl()),
-  );
-  _sl.registerFactory<GetStudentProfileCubit>(
-    () => GetStudentProfileCubit(_sl()),
-  );
-  _sl.registerFactory<UpdateCompanyProfileCubit>(
-    () => UpdateCompanyProfileCubit(_sl()),
-  );
-  _sl.registerFactory<UpdateStudentProfileCubit>(
-    () => UpdateStudentProfileCubit(_sl()),
-  );
-
-  ///-> UseCases
-  _sl.registerLazySingleton<ChangeCompanyPasswordUseCase>(
-    () => ChangeCompanyPasswordUseCase(repository: _sl()),
-  );
-  _sl.registerLazySingleton<UpdateCompanyUserProfileUseCase>(
-    () => UpdateCompanyUserProfileUseCase(repository: _sl()),
-  );
-  _sl.registerLazySingleton<ChangeStudentPasswordUseCase>(
-    () => ChangeStudentPasswordUseCase(repository: _sl()),
-  );
-  _sl.registerLazySingleton<GetCompanyProfileUseCase>(
-    () => GetCompanyProfileUseCase(repository: _sl()),
-  );
-  _sl.registerLazySingleton<GetStudentProfileUseCase>(
-    () => GetStudentProfileUseCase(repository: _sl()),
-  );
-  _sl.registerLazySingleton<UpdateCompanyProfileUseCase>(
-    () => UpdateCompanyProfileUseCase(repository: _sl()),
-  );
-  _sl.registerLazySingleton<UpdateStudentProfileUseCase>(
-    () => UpdateStudentProfileUseCase(repository: _sl()),
-  );
-
-  ///-> Repository
-  _sl.registerLazySingleton<ProfileRepository>(
-    () => ProfileRepositoryImpl(remote: _sl()),
-  );
-
-  ///-> DataSource
-  _sl.registerLazySingleton<ProfileRemoteDataSource>(
+void registerProfileDataLayer(GetIt sl) {
+  sl.registerLazySingleton<ProfileRemoteDataSource>(
     () => ProfileRemoteDataSourceImpl(),
+  );
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(remote: sl()),
   );
 }
 
-///-> BlocProvider
-List<BlocProvider> get profileBlocs => <BlocProvider>[
-  BlocProvider<ChangeCompanyPasswordCubit>(
-    create: (BuildContext context) => _sl<ChangeCompanyPasswordCubit>(),
-  ),
+void registerChangeCompanyPassword(GetIt sl) {
+  sl.registerFactory<ChangeCompanyPasswordCubit>(
+    () => ChangeCompanyPasswordCubit(sl()),
+  );
+  sl.registerLazySingleton<ChangeCompanyPasswordUseCase>(
+    () => ChangeCompanyPasswordUseCase(repository: sl()),
+  );
+}
 
-  BlocProvider<UpdateCompanyUserProfileCubit>(
-    create: (BuildContext context) => _sl<UpdateCompanyUserProfileCubit>(),
-  ),
+void registerUpdateCompanyUserProfile(GetIt sl) {
+  sl.registerFactory<UpdateCompanyUserProfileCubit>(
+    () => UpdateCompanyUserProfileCubit(sl()),
+  );
+  sl.registerLazySingleton<UpdateCompanyUserProfileUseCase>(
+    () => UpdateCompanyUserProfileUseCase(repository: sl()),
+  );
+}
 
-  BlocProvider<ChangeStudentPasswordCubit>(
-    create: (BuildContext context) => _sl<ChangeStudentPasswordCubit>(),
-  ),
+void registerChangeStudentPassword(GetIt sl) {
+  sl.registerFactory<ChangeStudentPasswordCubit>(
+    () => ChangeStudentPasswordCubit(sl()),
+  );
+  sl.registerLazySingleton<ChangeStudentPasswordUseCase>(
+    () => ChangeStudentPasswordUseCase(repository: sl()),
+  );
+}
 
-  BlocProvider<GetCompanyProfileCubit>(
-    create: (BuildContext context) => _sl<GetCompanyProfileCubit>(),
-  ),
+void registerGetCompanyProfile(GetIt sl) {
+  sl.registerFactory<GetCompanyProfileCubit>(
+    () => GetCompanyProfileCubit(sl()),
+  );
+  sl.registerLazySingleton<GetCompanyProfileUseCase>(
+    () => GetCompanyProfileUseCase(repository: sl()),
+  );
+}
 
-  BlocProvider<GetStudentProfileCubit>(
-    create: (BuildContext context) => _sl<GetStudentProfileCubit>(),
-  ),
+void registerGetStudentProfile(GetIt sl) {
+  sl.registerFactory<GetStudentProfileCubit>(
+    () => GetStudentProfileCubit(sl()),
+  );
+  sl.registerLazySingleton<GetStudentProfileUseCase>(
+    () => GetStudentProfileUseCase(repository: sl()),
+  );
+}
 
-  BlocProvider<UpdateCompanyProfileCubit>(
-    create: (BuildContext context) => _sl<UpdateCompanyProfileCubit>(),
-  ),
+void registerUpdateCompanyProfile(GetIt sl) {
+  sl.registerFactory<UpdateCompanyProfileCubit>(
+    () => UpdateCompanyProfileCubit(sl()),
+  );
+  sl.registerLazySingleton<UpdateCompanyProfileUseCase>(
+    () => UpdateCompanyProfileUseCase(repository: sl()),
+  );
+}
 
-  BlocProvider<UpdateStudentProfileCubit>(
-    create: (BuildContext context) => _sl<UpdateStudentProfileCubit>(),
-  ),
-];
+void registerUpdateStudentProfile(GetIt sl) {
+  sl.registerFactory<UpdateStudentProfileCubit>(
+    () => UpdateStudentProfileCubit(sl()),
+  );
+  sl.registerLazySingleton<UpdateStudentProfileUseCase>(
+    () => UpdateStudentProfileUseCase(repository: sl()),
+  );
+}
