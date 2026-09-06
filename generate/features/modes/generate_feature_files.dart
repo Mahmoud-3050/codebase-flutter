@@ -3,6 +3,7 @@ import 'dart:io';
 import '../../utils/constants.dart';
 import '../../utils/functions.dart';
 import '../files/project_files/datasource/datasource_file.dart';
+import '../files/project_files/datasource/datasource_impl_file.dart';
 import '../files/project_files/injection/injection_file.dart';
 import '../files/project_files/repository/repository_file.dart';
 import '../files/project_files/repository_impl/repository_impl_file.dart';
@@ -38,6 +39,12 @@ abstract class GenerateFeature {
     DatasourceFile(
       file: File(
         '$featurePath/data/datasources/${feature.names.snakeCase}_remote_datasource.dart',
+      ),
+    ).generate(featureNames: feature.names, requests: feature.requests);
+
+    DatasourceImplFile(
+      file: File(
+        '$featurePath/data/datasources/${feature.names.snakeCase}_remote_datasource_impl.dart',
       ),
     ).generate(featureNames: feature.names, requests: feature.requests);
 

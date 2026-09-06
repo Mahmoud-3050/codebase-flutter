@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:either/either.dart';
 
 import '../../../../core/error/failures.dart';
@@ -20,7 +19,7 @@ class UpdateStudentProfileUseCase
   }
 }
 
-class UpdateStudentProfileParams extends Equatable {
+class UpdateStudentProfileParams extends Params {
   final String? firstName;
   final String? secondName;
   final String? lastName;
@@ -35,6 +34,7 @@ class UpdateStudentProfileParams extends Equatable {
   final String? graduationDate;
   final String? gpaFile;
   final String? cvFile;
+  @override
   final Object? cancellation;
 
   const UpdateStudentProfileParams({
@@ -55,6 +55,7 @@ class UpdateStudentProfileParams extends Equatable {
     this.cancellation,
   });
 
+  @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> map = {};
     if (firstName != null) {

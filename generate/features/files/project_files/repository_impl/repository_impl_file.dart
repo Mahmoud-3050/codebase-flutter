@@ -22,10 +22,9 @@ class RepositoryImplFile extends ProjectFile {
     ///-> File imports
     buffer.writeln("import 'package:either/either.dart';");
     buffer.writeln();
-    buffer.writeln("import '../../../../../core/error/exceptions.dart';");
-    buffer.writeln("import '../../../../core/utils/log_utils.dart';");
+    buffer.writeln("import '../../../../core/data/repository_guard.dart';");
     buffer.writeln("import '../../../../core/error/failures.dart';");
-    buffer.writeln("import '../../../../config/language/strings.dart';");
+    buffer.writeln("import '../../../../core/usecases/usecase.dart';");
     buffer.writeln(
       "import '../../data/datasources/${featureNames.snakeCase}_remote_datasource.dart';",
     );
@@ -46,12 +45,6 @@ class RepositoryImplFile extends ProjectFile {
 
       ///-> Filter duplicated imports
       for (String line in importsLines) {
-        if (line.contains('core/usecases/usecase.dart')) {
-          if (isNoParamsImports) {
-            continue;
-          }
-          isNoParamsImports = true;
-        }
         buffer.writeln(line);
       }
     }
@@ -60,7 +53,7 @@ class RepositoryImplFile extends ProjectFile {
     ///-> Class RepositoryImpl
     buffer.writeln();
     buffer.writeln(
-      'class ${featureNames.classCase}RepositoryImpl implements ${featureNames.classCase}Repository {',
+      'class ${featureNames.classCase}RepositoryImpl with RepositoryGuard implements ${featureNames.classCase}Repository {',
     );
     buffer.writeln('  final ${featureNames.classCase}RemoteDataSource remote;');
     buffer.writeln();

@@ -165,11 +165,11 @@ class GenerateModel {
       String jsonKeyName = 'json[\'${key.snakeCase}\']';
       if (value == 'int') {
         buffer.writeln(
-          '    ${key.camelCase}: $jsonKeyName != null? num.tryParse($jsonKeyName.toString())?.toInt()?? 0: 0,',
+          '    ${key.camelCase}: ($jsonKeyName as Object?).toIntOrZero(),',
         );
       } else if (value == 'double') {
         buffer.writeln(
-          '    ${key.camelCase}: $jsonKeyName != null? num.tryParse($jsonKeyName.toString())?.toDouble()?? 0.0: 0.0,',
+          '    ${key.camelCase}: ($jsonKeyName as Object?).toDoubleOrZero(),',
         );
       } else if (value.contains('List')) {
         String fromJsonStr = '';
@@ -180,16 +180,16 @@ class GenerateModel {
           );
         } else if (value == 'List<String>') {
           modelName = 'String';
-          fromJsonStr = "e?.toString()?? ''";
+          fromJsonStr = '(e as Object?).toStringOrEmpty()';
         } else if (value == 'List<int>') {
           modelName = 'int';
-          fromJsonStr = 'num.tryParse(e.toString())?.toInt()?? 0';
+          fromJsonStr = '(e as Object?).toIntOrZero()';
         } else if (value == 'List<double>') {
           modelName = 'double';
-          fromJsonStr = 'num.tryParse(e.toString())?.toDouble()?? 0.0';
+          fromJsonStr = '(e as Object?).toDoubleOrZero()';
         } else if (value == 'List<bool>') {
           modelName = 'bool';
-          fromJsonStr = "e?.toString() == 'true' ? true : false";
+          fromJsonStr = '(e as Object?).toBoolOrFalse()';
         } else {
           modelName = key.classCase;
           fromJsonStr = '${modelName}Model.fromJson(e)';
@@ -206,10 +206,12 @@ class GenerateModel {
         );
       } else if (value == 'bool') {
         buffer.writeln(
-          "    ${key.camelCase}: $jsonKeyName != null? $jsonKeyName.toString() == 'true' ? true : false : false,",
+          '    ${key.camelCase}: ($jsonKeyName as Object?).toBoolOrFalse(),',
         );
       } else {
-        buffer.writeln("    ${key.camelCase}: $jsonKeyName ?? '',");
+        buffer.writeln(
+          '    ${key.camelCase}: ($jsonKeyName as Object?).toStringOrEmpty(),',
+        );
       }
     });
     buffer.writeln('  );\n');

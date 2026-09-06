@@ -1,3 +1,4 @@
+import '../../../../core/utils/extensions.dart';
 import '../../domain/entities/get_company_profile_response.dart';
 
 class GetCompanyProfileModel extends GetCompanyProfileResponse {
@@ -9,8 +10,8 @@ class GetCompanyProfileModel extends GetCompanyProfileResponse {
 
   factory GetCompanyProfileModel.fromJson(Map<String, dynamic> json) =>
       GetCompanyProfileModel(
-        status: json['status'] ?? '',
-        message: json['message'] ?? '',
+        status: (json['status'] as Object?).toStringOrEmpty(),
+        message: (json['message'] as Object?).toStringOrEmpty(),
         data: CompanyModel.fromJson(json['data']),
       );
 }
@@ -38,27 +39,23 @@ class CompanyModel extends Company {
   });
 
   factory CompanyModel.fromJson(Map<String, dynamic> json) => CompanyModel(
-    id: json['id'] != null
-        ? num.tryParse(json['id'].toString())?.toInt() ?? 0
-        : 0,
-    firstName: json['first_name'] ?? '',
-    secondName: json['second_name'] ?? '',
-    lastName: json['last_name'] ?? '',
-    fullName: json['full_name'] ?? '',
-    dialingCode: json['dialing_code'] ?? '',
-    phone: json['phone'] ?? '',
-    email: json['email'] ?? '',
-    birthdate: json['birthdate'] ?? '',
-    cityId: json['city_id'] != null
-        ? num.tryParse(json['city_id'].toString())?.toInt() ?? 0
-        : 0,
-    verifiedAt: json['verified_at'] ?? '',
-    companyName: json['company_name'] ?? '',
-    industry: json['industry'] ?? '',
-    about: json['about'] ?? '',
-    logo: json['logo'] ?? '',
-    description: json['description'] ?? '',
-    createdAt: json['created_at'] ?? '',
-    accessToken: json['access_token'] ?? '',
+    id: (json['id'] as Object?).toIntOrZero(),
+    firstName: (json['first_name'] as Object?).toStringOrEmpty(),
+    secondName: (json['second_name'] as Object?).toStringOrEmpty(),
+    lastName: (json['last_name'] as Object?).toStringOrEmpty(),
+    fullName: (json['full_name'] as Object?).toStringOrEmpty(),
+    dialingCode: (json['dialing_code'] as Object?).toStringOrEmpty(),
+    phone: (json['phone'] as Object?).toStringOrEmpty(),
+    email: (json['email'] as Object?).toStringOrEmpty(),
+    birthdate: (json['birthdate'] as Object?).toStringOrEmpty(),
+    cityId: (json['city_id'] as Object?).toIntOrZero(),
+    verifiedAt: (json['verified_at'] as Object?).toStringOrEmpty(),
+    companyName: (json['company_name'] as Object?).toStringOrEmpty(),
+    industry: (json['industry'] as Object?).toStringOrEmpty(),
+    about: (json['about'] as Object?).toStringOrEmpty(),
+    logo: (json['logo'] as Object?).toStringOrEmpty(),
+    description: (json['description'] as Object?).toStringOrEmpty(),
+    createdAt: (json['created_at'] as Object?).toStringOrEmpty(),
+    accessToken: (json['access_token'] as Object?).toStringOrEmpty(),
   );
 }

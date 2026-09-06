@@ -14,13 +14,6 @@ class RepositoryImplRequestBuffers extends BaseRequestBuffers {
     buffer.writeln(
       "import '../../domain/entities/${requestNameSnakeCase}_response.dart';",
     );
-    if (hasParams) {
-      buffer.write(
-        "import '../../domain/usecases/${requestNameSnakeCase}_usecase.dart';",
-      );
-    } else {
-      buffer.write("import '../../../../core/usecases/usecase.dart';");
-    }
     return buffer;
   }
 
@@ -29,52 +22,18 @@ class RepositoryImplRequestBuffers extends BaseRequestBuffers {
     required Names featureNames,
     required Request request,
   }) {
-    bool hasParams = request.params != null;
-
     final StringBuffer buffer = StringBuffer();
     buffer.writeln('  @override');
-    String params = 'NoParams';
-    if (hasParams) {
-      params = '${request.names.classCase}Params';
-    }
     buffer.writeln(
-      '  Future<Either<Failure, ${request.names.classCase}Response>> ${request.names.camelCase}({required $params params}) async {',
+      '  Future<Either<Failure, ${request.names.classCase}Response>> ${request.names.camelCase}({required Params params}) =>',
     );
-    // buffer.writeln('    if (await networkInfo.isConnected) {');
-    buffer.writeln('    try {');
-    if (hasParams) {
-      buffer.writeln(
-        '      final ${request.names.classCase}Response response = await remote.${request.names.camelCase}(params: params);',
-      );
-    } else {
-      buffer.writeln(
-        '      final ${request.names.classCase}Response response = await remote.${request.names.camelCase}();',
-      );
-    }
+    buffer.writeln('      guard(');
     buffer.writeln(
-      '        return Right<Failure, ${request.names.classCase}Response>(response);',
+      '        () => remote.${request.names.camelCase}(params: params),',
     );
-    buffer.writeln('      } on AppException catch (error) {');
-    buffer.writeln(
-      "        Log.e('[${request.names.camelCase}] [\${error.runtimeType.toString()}] ---- \${error.message}');",
-    );
-    buffer.writeln(
-      '        return Left<Failure, ${request.names.classCase}Response>(error.toFailure());',
-    );
-    buffer.writeln('      } on Object catch (error, stackTrace) {');
-    buffer.writeln(
-      "        Log.e('[${request.names.camelCase}] [\${error.runtimeType}] ---- \$error\\n\$stackTrace');",
-    );
-    buffer.writeln(
-      '        return Left<Failure, ${request.names.classCase}Response>(ServerFailure(message: Strings.pleaseTryAgainLater));',
-    );
-    buffer.writeln('      }');
-    // buffer.writeln('    } else {');
-    // buffer.writeln('      return Left(NetworkFailure(message: Strings.noInternetConnection));');
-    // buffer.writeln('    }');
-    buffer.writeln('  }');
+    buffer.writeln("        '${request.names.camelCase}',");
+    buffer.writeln('      );');
     buffer.writeln();
-
     return buffer;
   }
 }

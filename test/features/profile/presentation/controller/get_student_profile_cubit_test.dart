@@ -138,9 +138,9 @@ void main() {
     final MockGetStudentProfileUseCase useCase = MockGetStudentProfileUseCase();
     final Completer<Either<Failure, GetStudentProfileResponse>> pending =
         Completer<Either<Failure, GetStudentProfileResponse>>();
-    CancellableParams? captured;
+    Params? captured;
     when(useCase.call(any)).thenAnswer((Invocation invocation) {
-      captured = invocation.positionalArguments.first as CancellableParams;
+      captured = invocation.positionalArguments.first as Params;
       return pending.future;
     });
 

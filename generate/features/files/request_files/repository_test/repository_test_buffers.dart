@@ -20,9 +20,8 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
     buffer.writeln();
     buffer.writeln("import 'package:base/core/error/exceptions.dart';");
     buffer.writeln("import 'package:base/core/error/failures.dart';");
-    if (!hasParams) {
-      buffer.writeln("import 'package:base/core/usecases/usecase.dart';");
-    } else {
+    buffer.writeln("import 'package:base/core/usecases/usecase.dart';");
+    if (hasParams) {
       buffer.writeln(
         "import 'package:base/features/$featureNameSnakeCase/domain/usecases/${requestNameSnakeCase}_usecase.dart';",
       );
@@ -116,12 +115,12 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
       );
     } else {
       buffer.writeln(
-        '      when(mockRemoteDataSource.${request.names.camelCase}())',
+        '      when(mockRemoteDataSource.${request.names.camelCase}(params: anyNamed(\'params\')))',
       );
       buffer.writeln('          .thenAnswer((_) async => tModel);');
       buffer.writeln();
       buffer.writeln(
-        '      final result = await repository.${request.names.camelCase}(params: NoParams());',
+        '      final result = await repository.${request.names.camelCase}(params: const NoParams());',
       );
     }
     buffer.writeln();
@@ -132,7 +131,7 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
       );
     } else {
       buffer.writeln(
-        '      verify(mockRemoteDataSource.${request.names.camelCase}());',
+        '      verify(mockRemoteDataSource.${request.names.camelCase}(params: anyNamed(\'params\')));',
       );
     }
     buffer.writeln('      verifyNoMoreInteractions(mockRemoteDataSource);');
@@ -155,14 +154,14 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
       );
     } else {
       buffer.writeln(
-        '      when(mockRemoteDataSource.${request.names.camelCase}())',
+        '      when(mockRemoteDataSource.${request.names.camelCase}(params: anyNamed(\'params\')))',
       );
       buffer.writeln(
         "          .thenThrow(const ServerException(message: 'Server error'));",
       );
       buffer.writeln();
       buffer.writeln(
-        '      final result = await repository.${request.names.camelCase}(params: NoParams());',
+        '      final result = await repository.${request.names.camelCase}(params: const NoParams());',
       );
     }
     buffer.writeln();
@@ -175,7 +174,7 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
       );
     } else {
       buffer.writeln(
-        '      verify(mockRemoteDataSource.${request.names.camelCase}());',
+        '      verify(mockRemoteDataSource.${request.names.camelCase}(params: anyNamed(\'params\')));',
       );
     }
     buffer.writeln('      verifyNoMoreInteractions(mockRemoteDataSource);');

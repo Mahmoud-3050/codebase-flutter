@@ -27,6 +27,9 @@ class InjectionFile extends ProjectFile {
       "import 'data/datasources/${featureNames.snakeCase}_remote_datasource.dart';",
     );
     buffer.writeln(
+      "import 'data/datasources/${featureNames.snakeCase}_remote_datasource_impl.dart';",
+    );
+    buffer.writeln(
       "import 'data/repositories/${featureNames.snakeCase}_repo_impl.dart';",
     );
     buffer.writeln(

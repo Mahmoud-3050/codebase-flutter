@@ -14,6 +14,7 @@ class ModelRequestBuffers extends BaseRequestBuffers {
     bool isDataModel = false,
   }) {
     final StringBuffer buffer = StringBuffer();
+    buffer.writeln("import '../../../../core/utils/extensions.dart';");
     buffer.writeln(
       "import '../../domain/entities/${requestNameSnakeCase}_response.dart';",
     );
@@ -101,12 +102,8 @@ class ModelRequestBuffers extends BaseRequestBuffers {
     buffer.writeln('      ${responseClassName}Model(');
     for (MapEntry<String, dynamic> attribute in attributes.entries) {
       final Names keyNames = Names.fromString(attribute.key);
-      String stringTermNull = "?? ''";
-      if (attribute.value == 'bool') {
-        stringTermNull = '?? true';
-      }
       buffer.writeln(
-        "        ${attribute.key}: json['${keyNames.snakeCase}'] $stringTermNull,",
+        "        ${attribute.key}: (json['${keyNames.snakeCase}'] as Object?).toStringOrEmpty(),",
       );
     }
     // if(isDataModel){

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import '../../utils/constants.dart';
 import '../files/project_files/datasource/datasource_file.dart';
+import '../files/project_files/datasource/datasource_impl_file.dart';
 import '../files/project_files/injection/injection_file.dart';
 import '../files/project_files/repository/repository_file.dart';
 import '../files/project_files/repository_impl/repository_impl_file.dart';
@@ -28,6 +29,12 @@ abstract class ModifyFeature {
     DatasourceFile(
       file: File(
         '$featurePath/data/datasources/${feature.names.snakeCase}_remote_datasource.dart',
+      ),
+    ).modify(featureNames: feature.names, requests: requests);
+
+    DatasourceImplFile(
+      file: File(
+        '$featurePath/data/datasources/${feature.names.snakeCase}_remote_datasource_impl.dart',
       ),
     ).modify(featureNames: feature.names, requests: requests);
 

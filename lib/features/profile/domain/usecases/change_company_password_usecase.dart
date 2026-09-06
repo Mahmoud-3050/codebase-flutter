@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:either/either.dart';
 
 import '../../../../core/error/failures.dart';
@@ -21,10 +20,11 @@ class ChangeCompanyPasswordUseCase
   }
 }
 
-class ChangeCompanyPasswordParams extends Equatable {
+class ChangeCompanyPasswordParams extends Params {
   final String? oldPassword;
   final String? newPassword;
   final String? newPasswordConfirmation;
+  @override
   final Object? cancellation;
 
   const ChangeCompanyPasswordParams({
@@ -34,6 +34,7 @@ class ChangeCompanyPasswordParams extends Equatable {
     this.cancellation,
   });
 
+  @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> map = {};
     if (oldPassword != null) {

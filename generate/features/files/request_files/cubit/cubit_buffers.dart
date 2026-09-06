@@ -19,9 +19,10 @@ class CubitRequestBuffers extends BaseRequestBuffers {
     buffer.writeln();
     buffer.writeln("import '../../../../../core/error/failures.dart';");
     buffer.writeln("import '../../../../../config/language/strings.dart';");
-    if (!hasParams) {
-      buffer.writeln("import '../../../../../core/usecases/usecase.dart';");
-    }
+    buffer.writeln(
+      "import '../../../../../core/presentation/cubit_request_canceller.dart';",
+    );
+    buffer.writeln("import '../../../../../core/usecases/usecase.dart';");
     buffer.writeln(
       "import '../../../domain/usecases/${requestNameSnakeCase}_usecase.dart';",
     );
@@ -44,7 +45,7 @@ class CubitRequestBuffers extends BaseRequestBuffers {
     bool hasParams = request.params != null;
     DartType? dataType = request.dartType;
     buffer.writeln(
-      'class ${responseClassName}Cubit extends Cubit<${responseClassName}State> {',
+      'class ${responseClassName}Cubit extends Cubit<${responseClassName}State> with CubitRequestCanceller<${responseClassName}State> {',
     );
     buffer.writeln(
       '  final ${responseClassName}UseCase ${responseNameCamelCase}UseCase;',
@@ -87,13 +88,17 @@ class CubitRequestBuffers extends BaseRequestBuffers {
         final Names keyNames = Names.fromString(key);
         buffer.writeln('      ${keyNames.camelCase}: ${keyNames.camelCase},');
       });
+      buffer.writeln('      cancellation: nextRequestCancelToken(),');
       buffer.writeln('    ));');
     } else {
       buffer.writeln(
-        '    final Either<Failure, ${responseClassName}Response> eitherResult = await ${responseNameCamelCase}UseCase(NoParams());',
+        '    final Either<Failure, ${responseClassName}Response> eitherResult = await ${responseNameCamelCase}UseCase(NoParams(cancellation: nextRequestCancelToken()));',
       );
     }
     buffer.writeln('    eitherResult.fold((Failure failure) {');
+    buffer.writeln('      if (shouldIgnoreFailure(failure)) {');
+    buffer.writeln('        return;');
+    buffer.writeln('      }');
     buffer.writeln(
       '      emit(${responseClassName}ErrorState(message: failure.message?? Strings.pleaseTryAgainLater));',
     );
@@ -112,10 +117,16 @@ class CubitRequestBuffers extends BaseRequestBuffers {
     // }
 
     if (dataType != null) {
+      buffer.writeln('      if (isClosed) {');
+      buffer.writeln('        return;');
+      buffer.writeln('      }');
       buffer.writeln(
         '      emit(${responseClassName}SuccessState(data: response.data));',
       );
     } else {
+      buffer.writeln('      if (isClosed) {');
+      buffer.writeln('        return;');
+      buffer.writeln('      }');
       buffer.writeln('      emit(const ${responseClassName}SuccessState());');
     }
 

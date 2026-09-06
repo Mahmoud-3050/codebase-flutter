@@ -12,11 +12,6 @@ class DatasourceRequestBuffers extends BaseRequestBuffers {
   }) {
     final StringBuffer buffer = StringBuffer();
     buffer.writeln("import '../models/${requestNameSnakeCase}_model.dart';");
-    if (hasParams) {
-      buffer.writeln(
-        "import '../../domain/usecases/${requestNameSnakeCase}_usecase.dart';",
-      );
-    }
     return buffer;
   }
 
@@ -25,23 +20,15 @@ class DatasourceRequestBuffers extends BaseRequestBuffers {
     required Names featureNames,
     required Request request,
   }) {
-    bool hasParams = request.params != null;
-
+    final bool hasParams = request.params != null;
     final StringBuffer buffer = StringBuffer();
 
     /// Func
-    if (hasParams) {
-      buffer.writeln(
-        '  Future<${request.names.classCase}Model> ${request.names.camelCase}({',
-      );
-      buffer.writeln('    required ${request.names.classCase}Params params,');
-      buffer.writeln('  });');
-    } else {
-      buffer.writeln(
-        '  Future<${request.names.classCase}Model> ${request.names.camelCase}();',
-      );
-    }
-
+    buffer.writeln(
+      '  Future<${request.names.classCase}Model> ${request.names.camelCase}({',
+    );
+    buffer.writeln('    required Params params,');
+    buffer.writeln('  });');
     buffer.writeln();
 
     /// Separator
@@ -49,18 +36,11 @@ class DatasourceRequestBuffers extends BaseRequestBuffers {
 
     /// Func impl
     buffer.writeln('  @override');
-    if (hasParams) {
-      buffer.writeln(
-        '  Future<${request.names.classCase}Model> ${request.names.camelCase}({',
-      );
-      buffer.writeln('    required ${request.names.classCase}Params params,');
-      buffer.writeln('  }) async {');
-    } else {
-      buffer.writeln(
-        '  Future<${request.names.classCase}Model> ${request.names.camelCase}() async {',
-      );
-    }
-
+    buffer.writeln(
+      '  Future<${request.names.classCase}Model> ${request.names.camelCase}({',
+    );
+    buffer.writeln('    required Params params,');
+    buffer.writeln('  }) async {');
     buffer.writeln('    try {');
     if (request.endpoint.hasParams) {
       buffer.writeln(
@@ -75,7 +55,7 @@ class DatasourceRequestBuffers extends BaseRequestBuffers {
       '      final dynamic response = await dioConsumer.${request.type.name.toLowerCase()}(',
     );
     buffer.writeln('        ${request.names.camelCase}Endpoint,');
-    bool isBodyRequest =
+    final bool isBodyRequest =
         request.type == .post || request.type == .put || request.type == .patch;
     if (hasParams && isBodyRequest) {
       buffer.writeln('        body: params.toJson(),');
@@ -83,15 +63,18 @@ class DatasourceRequestBuffers extends BaseRequestBuffers {
     if (hasParams && request.type == .get && request.endpoint.hasQueryParams) {
       buffer.writeln('        queryParameters: params.toJson(),');
     }
+    buffer.writeln(
+      '        cancelToken: requestCancelToken(params.cancellation),',
+    );
     buffer.writeln('      );');
     buffer.writeln();
-    buffer.writeln("      if(response['status'] == 'success'){");
+    buffer.writeln('      if (ApiResponse.isSuccess(response)) {');
     buffer.writeln(
       '        return ${request.names.classCase}Model.fromJson(response);',
     );
     buffer.writeln('      }');
     buffer.writeln(
-      "      throw ServerException(message: response['message']?? '');",
+      '      throw ServerException(message: ApiResponse.messageOf(response));',
     );
     buffer.writeln('    } catch (error) {');
     buffer.writeln('      rethrow;');

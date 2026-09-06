@@ -3,6 +3,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../injection_container.dart';
 import 'data/datasources/profile_remote_datasource.dart';
+import 'data/datasources/profile_remote_datasource_impl.dart';
 import 'data/repositories/profile_repo_impl.dart';
 import 'domain/repositories/profile_repo.dart';
 import 'domain/usecases/change_company_password_usecase.dart';

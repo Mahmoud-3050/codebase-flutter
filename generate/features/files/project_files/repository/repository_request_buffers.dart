@@ -14,13 +14,6 @@ class RepositoryRequestBuffers extends BaseRequestBuffers {
     buffer.writeln(
       "import '../../domain/entities/${requestNameSnakeCase}_response.dart';",
     );
-    if (hasParams) {
-      buffer.write(
-        "import '../../domain/usecases/${requestNameSnakeCase}_usecase.dart';",
-      );
-    } else {
-      buffer.write("import '../../../../core/usecases/usecase.dart';");
-    }
     return buffer;
   }
 
@@ -29,19 +22,13 @@ class RepositoryRequestBuffers extends BaseRequestBuffers {
     required Names featureNames,
     required Request request,
   }) {
-    bool hasParams = request.params != null;
     final StringBuffer buffer = StringBuffer();
     buffer.writeln(
       '  Future<Either<Failure, ${request.names.classCase}Response>> ${request.names.camelCase}({',
     );
-    if (hasParams) {
-      buffer.writeln('    required ${request.names.classCase}Params params,');
-    } else {
-      buffer.writeln('    required NoParams params,');
-    }
+    buffer.writeln('    required Params params,');
     buffer.writeln('  });');
     buffer.writeln();
-
     return buffer;
   }
 }

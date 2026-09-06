@@ -23,11 +23,11 @@ void main() {
   group('getStudentProfile', () {
     test('returns Left when remote throws AppException', () async {
       when(
-        remote.getStudentProfile(cancellation: anyNamed('cancellation')),
+        remote.getStudentProfile(params: anyNamed('params')),
       ).thenThrow(const ServerException(message: 'Server error'));
 
       final Either<Failure, GetStudentProfileResponse> result = await repository
-          .getStudentProfile(params: const CancellableParams());
+          .getStudentProfile(params: const NoParams());
 
       expect(result.isLeft, isTrue);
       result.fold(
@@ -39,9 +39,7 @@ void main() {
     test(
       'returns ValidationFailure when remote throws ValidationException',
       () async {
-        when(
-          remote.getStudentProfile(cancellation: anyNamed('cancellation')),
-        ).thenThrow(
+        when(remote.getStudentProfile(params: anyNamed('params'))).thenThrow(
           const ValidationException(
             message: 'invalid',
             fieldErrors: <String, List<String>>{
@@ -51,9 +49,7 @@ void main() {
         );
 
         final Either<Failure, GetStudentProfileResponse> result =
-            await repository.getStudentProfile(
-              params: const CancellableParams(),
-            );
+            await repository.getStudentProfile(params: const NoParams());
 
         expect(result.isLeft, isTrue);
         result.fold((Failure failure) {
@@ -67,11 +63,11 @@ void main() {
 
     test('returns Left when remote throws non-AppException', () async {
       when(
-        remote.getStudentProfile(cancellation: anyNamed('cancellation')),
+        remote.getStudentProfile(params: anyNamed('params')),
       ).thenThrow(TypeError());
 
       final Either<Failure, GetStudentProfileResponse> result = await repository
-          .getStudentProfile(params: const CancellableParams());
+          .getStudentProfile(params: const NoParams());
 
       expect(result.isLeft, isTrue);
       result.fold((Failure failure) {

@@ -21,6 +21,7 @@ class RepositoryFile extends ProjectFile {
     buffer.writeln("import 'package:either/either.dart';");
     buffer.writeln();
     buffer.writeln("import '../../../../core/error/failures.dart';");
+    buffer.writeln("import '../../../../core/usecases/usecase.dart';");
 
     ///-> Func imports
     for (Request request in requests) {
@@ -35,12 +36,6 @@ class RepositoryFile extends ProjectFile {
 
       ///-> Filter duplicated imports
       for (String line in importsLines) {
-        if (line.contains('core/usecases/usecase.dart')) {
-          if (isNoParamsImports) {
-            continue;
-          }
-          isNoParamsImports = true;
-        }
         buffer.writeln(line);
       }
     }

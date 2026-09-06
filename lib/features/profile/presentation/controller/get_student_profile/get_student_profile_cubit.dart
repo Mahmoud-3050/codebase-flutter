@@ -22,7 +22,7 @@ class GetStudentProfileCubit extends Cubit<GetStudentProfileState>
     emit(const GetStudentProfileLoadingState());
     final Either<Failure, GetStudentProfileResponse> eitherResult =
         await getStudentProfileUseCase(
-          CancellableParams(cancellation: nextRequestCancelToken()),
+          NoParams(cancellation: nextRequestCancelToken()),
         );
     eitherResult.fold(
       (Failure failure) {

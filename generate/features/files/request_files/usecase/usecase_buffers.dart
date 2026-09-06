@@ -12,13 +12,10 @@ class UseCaseRequestBuffers extends BaseRequestBuffers {
     bool isDataModel = false,
   }) {
     final StringBuffer buffer = StringBuffer();
-    if (hasParams) {
-      buffer.writeln('import \'package:equatable/equatable.dart\';');
-    }
     buffer.writeln('import \'package:either/either.dart\';');
     buffer.writeln();
     buffer.writeln('import \'../../../../core/error/failures.dart\';');
-    buffer.writeln('import \'../../../../core/usecases/usecase.dart\';');
+    buffer.writeln("import '../../../../core/usecases/usecase.dart';");
     buffer.writeln(
       'import \'../entities/${requestNameSnakeCase}_response.dart\';',
     );
@@ -74,7 +71,7 @@ class UseCaseRequestBuffers extends BaseRequestBuffers {
       );
     } else {
       buffer.writeln(
-        'class ${responseClassName}UseCase extends UseCase<${responseClassName}Response, NoParams> {',
+        'class ${responseClassName}UseCase extends UseCase<${responseClassName}Response, Params> {',
       );
     }
 
@@ -91,7 +88,7 @@ class UseCaseRequestBuffers extends BaseRequestBuffers {
       );
     } else {
       buffer.writeln(
-        '  Future<Either<Failure, ${responseClassName}Response>> call(NoParams params) async {',
+        '  Future<Either<Failure, ${responseClassName}Response>> call(Params params) async {',
       );
     }
     buffer.writeln(
@@ -109,7 +106,7 @@ class UseCaseRequestBuffers extends BaseRequestBuffers {
     required Map<String, dynamic> params,
   }) {
     final StringBuffer buffer = StringBuffer();
-    buffer.writeln('class ${responseClassName}Params extends Equatable {');
+    buffer.writeln('class ${responseClassName}Params extends Params {');
 
     ///Attributes
     Map<String, String> attributes =
@@ -120,6 +117,8 @@ class UseCaseRequestBuffers extends BaseRequestBuffers {
       buffer.writeln('  final $valueInStr? ${keyNames.camelCase};');
       attributes.putIfAbsent(keyNames.camelCase, () => valueInStr);
     });
+    buffer.writeln('  @override');
+    buffer.writeln('  final Object? cancellation;');
     buffer.writeln();
 
     ///Named Argument Constructor
@@ -127,9 +126,11 @@ class UseCaseRequestBuffers extends BaseRequestBuffers {
     attributes.forEach((String key, String value) {
       buffer.writeln('    required this.$key,');
     });
+    buffer.writeln('    this.cancellation,');
     buffer.writeln('  });\n');
 
     ///ToJson
+    buffer.writeln('  @override');
     buffer.writeln('  Map<String, dynamic> toJson() {');
     buffer.writeln('    final Map<String, dynamic> map = {};');
     attributes.forEach((String key, String value) {

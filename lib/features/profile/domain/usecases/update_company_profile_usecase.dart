@@ -1,4 +1,3 @@
-import 'package:equatable/equatable.dart';
 import 'package:either/either.dart';
 
 import '../../../../core/error/failures.dart';
@@ -20,12 +19,13 @@ class UpdateCompanyProfileUseCase
   }
 }
 
-class UpdateCompanyProfileParams extends Equatable {
+class UpdateCompanyProfileParams extends Params {
   final String? companyName;
   final String? industry;
   final String? about;
   final String? logo;
   final String? description;
+  @override
   final Object? cancellation;
 
   const UpdateCompanyProfileParams({
@@ -37,6 +37,7 @@ class UpdateCompanyProfileParams extends Equatable {
     this.cancellation,
   });
 
+  @override
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> map = {};
     if (companyName != null) {

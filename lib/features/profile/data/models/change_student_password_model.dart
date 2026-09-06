@@ -1,3 +1,4 @@
+import '../../../../core/utils/extensions.dart';
 import '../../domain/entities/change_student_password_response.dart';
 
 class ChangeStudentPasswordModel extends ChangeStudentPasswordResponse {
@@ -8,7 +9,7 @@ class ChangeStudentPasswordModel extends ChangeStudentPasswordResponse {
 
   factory ChangeStudentPasswordModel.fromJson(Map<String, dynamic> json) =>
       ChangeStudentPasswordModel(
-        status: json['status'] ?? '',
-        message: json['message'] ?? '',
+        status: (json['status'] as Object?).toStringOrEmpty(),
+        message: (json['message'] as Object?).toStringOrEmpty(),
       );
 }

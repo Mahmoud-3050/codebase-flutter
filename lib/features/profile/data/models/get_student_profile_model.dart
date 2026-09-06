@@ -1,3 +1,4 @@
+import '../../../../core/utils/extensions.dart';
 import '../../domain/entities/get_student_profile_response.dart';
 
 class GetStudentProfileModel extends GetStudentProfileResponse {
@@ -9,8 +10,8 @@ class GetStudentProfileModel extends GetStudentProfileResponse {
 
   factory GetStudentProfileModel.fromJson(Map<String, dynamic> json) =>
       GetStudentProfileModel(
-        status: json['status'] ?? '',
-        message: json['message'] ?? '',
+        status: (json['status'] as Object?).toStringOrEmpty(),
+        message: (json['message'] as Object?).toStringOrEmpty(),
         data: StudentModel.fromJson(json['data']),
       );
 }
@@ -44,35 +45,29 @@ class StudentModel extends Student {
   });
 
   factory StudentModel.fromJson(Map<String, dynamic> json) => StudentModel(
-    id: json['id'] != null
-        ? num.tryParse(json['id'].toString())?.toInt() ?? 0
-        : 0,
-    firstName: json['first_name'] ?? '',
-    secondName: json['second_name'] ?? '',
-    lastName: json['last_name'] ?? '',
-    fullName: json['full_name'] ?? '',
-    dialingCode: json['dialing_code'] ?? '',
-    phone: json['phone'] ?? '',
-    email: json['email'] ?? '',
-    birthdate: json['birthdate'] ?? '',
-    cityId: json['city_id'] != null
-        ? num.tryParse(json['city_id'].toString())?.toInt() ?? 0
-        : 0,
-    institute: json['institute'] ?? '',
-    major: json['major'] ?? '',
-    graduationDate: json['graduation_date'] ?? '',
-    degreeId: json['degree_id'] != null
-        ? num.tryParse(json['degree_id'].toString())?.toInt() ?? 0
-        : 0,
-    gpaFile: json['gpa_file'] ?? '',
-    cvFile: json['cv_file'] ?? '',
-    image: json['image'] ?? '',
-    gpaFilePath: json['gpa_file_path'] ?? '',
-    cvFilePath: json['cv_file_path'] ?? '',
-    imagePath: json['image_path'] ?? '',
-    guard: json['guard'] ?? '',
-    createdAt: json['created_at'] ?? '',
-    verifiedAt: json['verified_at'] ?? '',
-    accessToken: json['access_token'] ?? '',
+    id: (json['id'] as Object?).toIntOrZero(),
+    firstName: (json['first_name'] as Object?).toStringOrEmpty(),
+    secondName: (json['second_name'] as Object?).toStringOrEmpty(),
+    lastName: (json['last_name'] as Object?).toStringOrEmpty(),
+    fullName: (json['full_name'] as Object?).toStringOrEmpty(),
+    dialingCode: (json['dialing_code'] as Object?).toStringOrEmpty(),
+    phone: (json['phone'] as Object?).toStringOrEmpty(),
+    email: (json['email'] as Object?).toStringOrEmpty(),
+    birthdate: (json['birthdate'] as Object?).toStringOrEmpty(),
+    cityId: (json['city_id'] as Object?).toIntOrZero(),
+    institute: (json['institute'] as Object?).toStringOrEmpty(),
+    major: (json['major'] as Object?).toStringOrEmpty(),
+    graduationDate: (json['graduation_date'] as Object?).toStringOrEmpty(),
+    degreeId: (json['degree_id'] as Object?).toIntOrZero(),
+    gpaFile: (json['gpa_file'] as Object?).toStringOrEmpty(),
+    cvFile: (json['cv_file'] as Object?).toStringOrEmpty(),
+    image: (json['image'] as Object?).toStringOrEmpty(),
+    gpaFilePath: (json['gpa_file_path'] as Object?).toStringOrEmpty(),
+    cvFilePath: (json['cv_file_path'] as Object?).toStringOrEmpty(),
+    imagePath: (json['image_path'] as Object?).toStringOrEmpty(),
+    guard: (json['guard'] as Object?).toStringOrEmpty(),
+    createdAt: (json['created_at'] as Object?).toStringOrEmpty(),
+    verifiedAt: (json['verified_at'] as Object?).toStringOrEmpty(),
+    accessToken: (json['access_token'] as Object?).toStringOrEmpty(),
   );
 }

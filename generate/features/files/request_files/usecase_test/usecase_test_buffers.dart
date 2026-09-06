@@ -18,9 +18,7 @@ class UseCaseTestRequestBuffers extends BaseRequestBuffers {
     buffer.writeln("import 'package:mockito/annotations.dart';");
     buffer.writeln("import 'package:mockito/mockito.dart';");
     buffer.writeln();
-    if (!hasParams) {
-      buffer.writeln("import 'package:base/core/usecases/usecase.dart';");
-    }
+    buffer.writeln("import 'package:base/core/usecases/usecase.dart';");
     buffer.writeln(
       "import 'package:base/features/$featureNameSnakeCase/domain/repositories/${featureNameSnakeCase}_repo.dart';",
     );
@@ -104,7 +102,7 @@ class UseCaseTestRequestBuffers extends BaseRequestBuffers {
       );
       buffer.writeln('        .thenAnswer((_) async => Right(tResponse));');
       buffer.writeln();
-      buffer.writeln('    final result = await useCase(NoParams());');
+      buffer.writeln('    final result = await useCase(const NoParams());');
     }
     buffer.writeln();
     buffer.writeln('    expect(result, Right(tResponse));');
@@ -114,7 +112,7 @@ class UseCaseTestRequestBuffers extends BaseRequestBuffers {
       );
     } else {
       buffer.writeln(
-        '    verify(mockRepository.${request.names.camelCase}(params: NoParams()));',
+        '    verify(mockRepository.${request.names.camelCase}(params: const NoParams()));',
       );
     }
     buffer.writeln('    verifyNoMoreInteractions(mockRepository);');

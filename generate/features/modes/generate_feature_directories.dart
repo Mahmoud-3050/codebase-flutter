@@ -58,7 +58,10 @@ List<Layer> _buildCleanArchitectureLayers(String feature, String featurePath) {
       subLayers: [
         SubLayer(
           title: 'datasources',
-          filesName: ['${feature}_remote_datasource.dart'],
+          filesName: [
+            '${feature}_remote_datasource.dart',
+            '${feature}_remote_datasource_impl.dart',
+          ],
         ),
         SubLayer(
           title: 'repositories',

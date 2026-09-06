@@ -20,13 +20,14 @@ class DatasourceTestRequestBuffers extends BaseRequestBuffers {
     buffer.writeln("import 'package:base/injection_container.dart';");
     buffer.writeln("import 'package:base/core/api/dio_consumer.dart';");
     buffer.writeln("import 'package:base/core/error/exceptions.dart';");
+    buffer.writeln("import 'package:base/core/usecases/usecase.dart';");
     if (hasParams) {
       buffer.writeln(
         "import 'package:base/features/$featureNameSnakeCase/domain/usecases/${requestNameSnakeCase}_usecase.dart';",
       );
     }
     buffer.writeln(
-      "import 'package:base/features/$featureNameSnakeCase/data/datasources/${featureNameSnakeCase}_remote_datasource.dart';",
+      "import 'package:base/features/$featureNameSnakeCase/data/datasources/${featureNameSnakeCase}_remote_datasource_impl.dart';",
     );
     buffer.writeln(
       "import 'package:base/features/$featureNameSnakeCase/data/models/${requestNameSnakeCase}_model.dart';",
@@ -102,7 +103,7 @@ class DatasourceTestRequestBuffers extends BaseRequestBuffers {
       "    test('should perform $httpMethod request and return ${responseClassName}Model when response status is success', () async {",
     );
     buffer.writeln(
-      "      when(mockDioConsumer.$httpMethod(any, body: anyNamed('body'), queryParameters: anyNamed('queryParameters')))",
+      "      when(mockDioConsumer.$httpMethod(any, body: anyNamed('body'), queryParameters: anyNamed('queryParameters'), cancelToken: anyNamed('cancelToken')))",
     );
     buffer.writeln('          .thenAnswer((_) async => tJsonResponse);');
     buffer.writeln();
@@ -112,7 +113,7 @@ class DatasourceTestRequestBuffers extends BaseRequestBuffers {
       );
     } else {
       buffer.writeln(
-        '      final result = await dataSource.${request.names.camelCase}();',
+        '      final result = await dataSource.${request.names.camelCase}(params: const NoParams());',
       );
     }
     buffer.writeln();
@@ -124,7 +125,7 @@ class DatasourceTestRequestBuffers extends BaseRequestBuffers {
       "    test('should throw ServerException when response status is failure', () async {",
     );
     buffer.writeln(
-      '      when(mockDioConsumer.$httpMethod(any, body: anyNamed(\'body\'), queryParameters: anyNamed(\'queryParameters\')))',
+      '      when(mockDioConsumer.$httpMethod(any, body: anyNamed(\'body\'), queryParameters: anyNamed(\'queryParameters\'), cancelToken: anyNamed(\'cancelToken\')))',
     );
     buffer.writeln(
       "          .thenAnswer((_) async => {'status': 'error', 'message': 'Failed'});",
@@ -142,7 +143,7 @@ class DatasourceTestRequestBuffers extends BaseRequestBuffers {
         '      final call = dataSource.${request.names.camelCase};',
       );
       buffer.writeln(
-        '      expect(() => call(), throwsA(isA<ServerException>()));',
+        '      expect(() => call(params: const NoParams()), throwsA(isA<ServerException>()));',
       );
     }
     buffer.writeln('    });');

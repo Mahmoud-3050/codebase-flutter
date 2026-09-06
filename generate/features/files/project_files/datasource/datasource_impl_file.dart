@@ -5,8 +5,8 @@ import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../project_file.dart';
 
-class DatasourceFile extends ProjectFile {
-  DatasourceFile({required super.file});
+class DatasourceImplFile extends ProjectFile {
+  DatasourceImplFile({required super.file});
 
   @override
   Future<void> generate({
@@ -15,7 +15,14 @@ class DatasourceFile extends ProjectFile {
   }) async {
     final StringBuffer buffer = StringBuffer();
 
+    buffer.writeln("import '../../../../core/api/api_response.dart';");
+    buffer.writeln("import '../../../../core/api/request_cancel_token.dart';");
+    buffer.writeln("import '../../../../core/error/exceptions.dart';");
     buffer.writeln("import '../../../../core/usecases/usecase.dart';");
+    buffer.writeln("import '../../../../injection_container.dart';");
+    buffer.writeln(
+      "import '${featureNames.snakeCase}_remote_datasource.dart';",
+    );
     for (final Request request in requests) {
       buffer.write(
         request.buffers.datasource
@@ -30,16 +37,16 @@ class DatasourceFile extends ProjectFile {
 
     buffer.writeln();
     buffer.writeln(
-      'abstract class ${featureNames.classCase}RemoteDataSource {',
+      'class ${featureNames.classCase}RemoteDataSourceImpl implements ${featureNames.classCase}RemoteDataSource {',
     );
 
     for (final Request request in requests) {
-      final String func = request.buffers.datasource
+      final String funcImpl = request.buffers.datasource
           .generateBody(featureNames: featureNames, request: request)
           .toString()
           .split('***')
-          .first;
-      buffer.write(func);
+          .last;
+      buffer.write(funcImpl);
     }
     buffer.writeln('}');
 
@@ -60,7 +67,7 @@ class DatasourceFile extends ProjectFile {
     final StringBuffer buffer = StringBuffer();
 
     for (final String line in lines) {
-      if (line.contains('abstract class')) {
+      if (line.contains('implements')) {
         for (final Request request in requests) {
           buffer.write(
             request.buffers.datasource
@@ -76,14 +83,14 @@ class DatasourceFile extends ProjectFile {
 
       buffer.writeln(line);
 
-      if (line.contains('abstract class')) {
+      if (line.contains('implements')) {
         for (final Request request in requests) {
-          final String func = request.buffers.datasource
+          final String funcImpl = request.buffers.datasource
               .generateBody(featureNames: featureNames, request: request)
               .toString()
               .split('***')
-              .first;
-          buffer.write(func);
+              .last;
+          buffer.write(funcImpl);
         }
       }
     }

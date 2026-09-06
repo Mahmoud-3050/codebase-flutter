@@ -22,7 +22,7 @@ class GetCompanyProfileCubit extends Cubit<GetCompanyProfileState>
     emit(const GetCompanyProfileLoadingState());
     final Either<Failure, GetCompanyProfileResponse> eitherResult =
         await getCompanyProfileUseCase(
-          CancellableParams(cancellation: nextRequestCancelToken()),
+          NoParams(cancellation: nextRequestCancelToken()),
         );
     eitherResult.fold(
       (Failure failure) {

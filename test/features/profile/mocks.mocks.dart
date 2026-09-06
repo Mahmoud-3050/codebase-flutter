@@ -6,8 +6,8 @@
 
 import 'dart:async' as _i11;
 
-import 'package:codebase/core/error/failures.dart' as _i19;
-import 'package:codebase/core/usecases/usecase.dart' as _i21;
+import 'package:codebase/core/error/failures.dart' as _i15;
+import 'package:codebase/core/usecases/usecase.dart' as _i12;
 import 'package:codebase/features/profile/data/datasources/profile_remote_datasource.dart'
     as _i10;
 import 'package:codebase/features/profile/data/models/change_company_password_model.dart'
@@ -25,24 +25,14 @@ import 'package:codebase/features/profile/data/models/update_company_user_profil
 import 'package:codebase/features/profile/data/models/update_student_profile_model.dart'
     as _i8;
 import 'package:codebase/features/profile/domain/entities/get_student_profile_response.dart'
-    as _i20;
+    as _i16;
 import 'package:codebase/features/profile/domain/repositories/profile_repo.dart'
     as _i9;
-import 'package:codebase/features/profile/domain/usecases/change_company_password_usecase.dart'
-    as _i12;
-import 'package:codebase/features/profile/domain/usecases/change_student_password_usecase.dart'
-    as _i14;
 import 'package:codebase/features/profile/domain/usecases/get_student_profile_usecase.dart'
-    as _i17;
-import 'package:codebase/features/profile/domain/usecases/update_company_profile_usecase.dart'
-    as _i15;
-import 'package:codebase/features/profile/domain/usecases/update_company_user_profile_usecase.dart'
     as _i13;
-import 'package:codebase/features/profile/domain/usecases/update_student_profile_usecase.dart'
-    as _i16;
-import 'package:either/either.dart' as _i18;
+import 'package:either/either.dart' as _i14;
 import 'package:mockito/mockito.dart' as _i1;
-import 'package:mockito/src/dummies.dart' as _i22;
+import 'package:mockito/src/dummies.dart' as _i17;
 
 // ignore_for_file: type=lint
 // ignore_for_file: avoid_redundant_argument_values
@@ -120,7 +110,7 @@ class MockProfileRemoteDataSource extends _i1.Mock
 
   @override
   _i11.Future<_i2.ChangeCompanyPasswordModel> changeCompanyPassword({
-    required _i12.ChangeCompanyPasswordParams? params,
+    required _i12.Params? params,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#changeCompanyPassword, [], {#params: params}),
@@ -137,7 +127,7 @@ class MockProfileRemoteDataSource extends _i1.Mock
 
   @override
   _i11.Future<_i3.UpdateCompanyUserProfileModel> updateCompanyUserProfile({
-    required _i13.UpdateCompanyUserProfileParams? params,
+    required _i12.Params? params,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#updateCompanyUserProfile, [], {#params: params}),
@@ -154,7 +144,7 @@ class MockProfileRemoteDataSource extends _i1.Mock
 
   @override
   _i11.Future<_i4.ChangeStudentPasswordModel> changeStudentPassword({
-    required _i14.ChangeStudentPasswordParams? params,
+    required _i12.Params? params,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#changeStudentPassword, [], {#params: params}),
@@ -171,18 +161,14 @@ class MockProfileRemoteDataSource extends _i1.Mock
 
   @override
   _i11.Future<_i5.GetCompanyProfileModel> getCompanyProfile({
-    Object? cancellation,
+    required _i12.Params? params,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#getCompanyProfile, [], {
-              #cancellation: cancellation,
-            }),
+            Invocation.method(#getCompanyProfile, [], {#params: params}),
             returnValue: _i11.Future<_i5.GetCompanyProfileModel>.value(
               _FakeGetCompanyProfileModel_3(
                 this,
-                Invocation.method(#getCompanyProfile, [], {
-                  #cancellation: cancellation,
-                }),
+                Invocation.method(#getCompanyProfile, [], {#params: params}),
               ),
             ),
           )
@@ -190,18 +176,14 @@ class MockProfileRemoteDataSource extends _i1.Mock
 
   @override
   _i11.Future<_i6.GetStudentProfileModel> getStudentProfile({
-    Object? cancellation,
+    required _i12.Params? params,
   }) =>
       (super.noSuchMethod(
-            Invocation.method(#getStudentProfile, [], {
-              #cancellation: cancellation,
-            }),
+            Invocation.method(#getStudentProfile, [], {#params: params}),
             returnValue: _i11.Future<_i6.GetStudentProfileModel>.value(
               _FakeGetStudentProfileModel_4(
                 this,
-                Invocation.method(#getStudentProfile, [], {
-                  #cancellation: cancellation,
-                }),
+                Invocation.method(#getStudentProfile, [], {#params: params}),
               ),
             ),
           )
@@ -209,7 +191,7 @@ class MockProfileRemoteDataSource extends _i1.Mock
 
   @override
   _i11.Future<_i7.UpdateCompanyProfileModel> updateCompanyProfile({
-    required _i15.UpdateCompanyProfileParams? params,
+    required _i12.Params? params,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#updateCompanyProfile, [], {#params: params}),
@@ -224,7 +206,7 @@ class MockProfileRemoteDataSource extends _i1.Mock
 
   @override
   _i11.Future<_i8.UpdateStudentProfileModel> updateStudentProfile({
-    required _i16.UpdateStudentProfileParams? params,
+    required _i12.Params? params,
   }) =>
       (super.noSuchMethod(
             Invocation.method(#updateStudentProfile, [], {#params: params}),
@@ -242,7 +224,7 @@ class MockProfileRemoteDataSource extends _i1.Mock
 ///
 /// See the documentation for Mockito's code generation for more information.
 class MockGetStudentProfileUseCase extends _i1.Mock
-    implements _i17.GetStudentProfileUseCase {
+    implements _i13.GetStudentProfileUseCase {
   MockGetStudentProfileUseCase() {
     _i1.throwOnMissingStub(this);
   }
@@ -259,21 +241,21 @@ class MockGetStudentProfileUseCase extends _i1.Mock
           as _i9.ProfileRepository);
 
   @override
-  _i11.Future<_i18.Either<_i19.Failure, _i20.GetStudentProfileResponse>> call(
-    _i21.CancellableParams? params,
+  _i11.Future<_i14.Either<_i15.Failure, _i16.GetStudentProfileResponse>> call(
+    _i12.Params? params,
   ) =>
       (super.noSuchMethod(
             Invocation.method(#call, [params]),
             returnValue:
                 _i11.Future<
-                  _i18.Either<_i19.Failure, _i20.GetStudentProfileResponse>
+                  _i14.Either<_i15.Failure, _i16.GetStudentProfileResponse>
                 >.value(
-                  _i22.dummyValue<
-                    _i18.Either<_i19.Failure, _i20.GetStudentProfileResponse>
+                  _i17.dummyValue<
+                    _i14.Either<_i15.Failure, _i16.GetStudentProfileResponse>
                   >(this, Invocation.method(#call, [params])),
                 ),
           )
           as _i11.Future<
-            _i18.Either<_i19.Failure, _i20.GetStudentProfileResponse>
+            _i14.Either<_i15.Failure, _i16.GetStudentProfileResponse>
           >);
 }
