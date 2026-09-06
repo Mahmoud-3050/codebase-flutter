@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 import 'dart:io';
 
+import '../../features/models/names.dart';
 import '../../utils/constants.dart';
 import '../../utils/names_helper.dart';
 import '../../utils/functions.dart';
@@ -13,8 +14,9 @@ class FeatureRouterHandler {
     String screenSnake,
     String screenCamel,
     String routeClass,
-    Map<String, dynamic> args,
-  ) async {
+    Map<String, dynamic> args, {
+    List<String> scopes = const [],
+  }) async {
     final String navPath = 'lib/features/$feature/presentation/navigation';
     final String routerFilePath = '$navPath/router.dart';
     final File routerFile = File(routerFilePath);
@@ -28,70 +30,85 @@ class FeatureRouterHandler {
       content = await routerFile.readAsString();
     } else {
       content =
-          "import 'package:flutter/material.dart';\nimport 'package:go_router/go_router.dart';\nimport '../../../../config/routes/app_routes.dart';\n\npart 'router.g.dart';\n\n";
+          "import 'package:flutter/material.dart';\n"
+          "import 'package:go_router/go_router.dart';\n"
+          "import '../../../../config/routes/app_routes.dart';\n"
+          '\n'
+          "part 'router.g.dart';\n"
+          '\n';
     }
 
+    final List<String> registers = registrationNames(feature, scopes);
     if (content.contains('class $routeClass') &&
         content.contains('name: AppRoutes.$screenCamel') &&
-        RouterUtils.argsMatch(content, routeClass, args)) {
+        RouterUtils.argsMatch(content, routeClass, args) &&
+        RouterUtils.scopesMatch(content, routeClass, registers)) {
       return false;
     }
 
+    final String screenBase = screenBaseName(screenClass);
+
     if (content.contains('class $routeClass')) {
       content = RouterUtils.removeBlock(content, 'class $routeClass');
-      final String screenBase = screenClass
-          .replaceAll('Screen', '')
-          .replaceAll('Page', '');
-
-      // Remove old navigation methods (to, go, push)
-      content = content.replaceAll(
-        RegExp(
-          'void (to|go|push)$screenBase\\s*\\(.*?\\)\\s*(=>|{).*?;',
-          dotAll: true,
-        ),
-        '',
-      );
     }
+    content = RouterUtils.removeBlock(
+      content,
+      'extension ${screenBase}Navigation',
+    );
+    content = RouterUtils.removeScopeConstant(content, screenBase);
+    content = RouterUtils.stripNavigationMethods(content, screenBase);
 
-    final String screenImport = "import '../pages/$screenSnake.dart';";
-    if (!content.contains(screenImport)) {
-      int lastImport = content.lastIndexOf('import ');
-      if (lastImport != -1) {
-        int endOfLine = content.indexOf('\n', lastImport);
-        content =
-            '${content.substring(0, endOfLine + 1)}$screenImport\n${content.substring(endOfLine + 1)}';
-      } else {
-        content = '$screenImport\n\n$content';
+    content = RouterUtils.ensureImport(
+      content,
+      "import '../pages/$screenSnake.dart';",
+    );
+    if (scopes.isNotEmpty) {
+      content = RouterUtils.ensureImport(
+        content,
+        "import 'package:flutter_bloc/flutter_bloc.dart';",
+      );
+      content = RouterUtils.ensureImport(
+        content,
+        "import '../../../../core/di/feature_scope.dart';",
+      );
+      content = RouterUtils.ensureImport(
+        content,
+        "import '../../../../injection_container.dart';",
+      );
+      content = RouterUtils.ensureImport(
+        content,
+        "import '../../${feature}_injection.dart';",
+      );
+      for (final String scope in scopes) {
+        final String snake = Names.fromString(scope).snakeCase;
+        content = RouterUtils.ensureImport(
+          content,
+          "import '../controller/$snake/${snake}_cubit.dart';",
+        );
       }
     }
 
-    final String routeData = buildRouteClass(
-      routeClass,
-      screenClass,
-      screenCamel,
-      args,
-    );
-    final String navMethod = buildNavigationMethod(
-      routeClass,
-      screenClass,
-      args,
-    );
-
-    final String extName =
-        '${feature.substring(0, 1).toUpperCase()}${feature.substring(1)}Navigation';
-    final String extHeader = 'extension $extName on BuildContext {';
-
-    if (!content.contains(extHeader)) {
-      content += routeData;
-      content += '\n\n$extHeader$navMethod}\n';
-    } else {
-      int extIndex = content.indexOf(extHeader);
-      String head = content.substring(0, extIndex);
-      String tail = content.substring(extIndex);
-      int lastBrace = tail.lastIndexOf('}');
-      content =
-          '$head$routeData\n${tail.substring(0, lastBrace)}$navMethod${tail.substring(lastBrace)}';
+    final StringBuffer section = StringBuffer();
+    if (scopes.isNotEmpty) {
+      section.writeln(scopeConstantDeclaration(screenClass));
+      section.writeln();
     }
+    section.write(
+      buildRouteClass(
+        routeClass,
+        screenClass,
+        screenCamel,
+        args,
+        feature: feature,
+        scopes: scopes,
+      ),
+    );
+    section.writeln();
+    section.write(buildNavigationExtension(routeClass, screenClass, args));
+
+    content = '${content.trimRight()}\n\n${section.toString()}';
+    content = RouterUtils.pruneRouterImports(content, feature);
+    content = content.replaceAll(RegExp(r'\n{3,}'), '\n\n');
 
     await routerFile.writeAsString(content);
     print(
@@ -100,16 +117,43 @@ class FeatureRouterHandler {
     return true;
   }
 
+  static String screenBaseName(String screenClass) {
+    return screenClass.replaceAll('Screen', '').replaceAll('Page', '');
+  }
+
+  static String scopeConstantDeclaration(String screenClass) {
+    final Names names = Names.fromString(screenBaseName(screenClass));
+    return "const String _${names.camelCase}ScopeName = '${names.classCase}Scope';";
+  }
+
+  static String scopeConstantName(String screenClass) {
+    final Names names = Names.fromString(screenBaseName(screenClass));
+    return '_${names.camelCase}ScopeName';
+  }
+
+  static List<String> registrationNames(String feature, List<String> scopes) {
+    if (scopes.isEmpty) return const [];
+    return <String>[
+      'register${Names.fromString(feature).classCase}DataLayer',
+      ...scopes.map(
+        (String scope) => 'register${Names.fromString(scope).classCase}',
+      ),
+    ];
+  }
+
   static String buildRouteClass(
     String routeClass,
     String screenClass,
     String screenCamel,
-    Map<String, dynamic> args,
-  ) {
+    Map<String, dynamic> args, {
+    String feature = '',
+    List<String> scopes = const [],
+  }) {
     final StringBuffer classBuffer = StringBuffer();
-    classBuffer.writeln(
-      '\n@TypedGoRoute<$routeClass>(path: AppRoutes.$screenCamel, name: AppRoutes.$screenCamel)',
-    );
+    classBuffer.writeln('@TypedGoRoute<$routeClass>(');
+    classBuffer.writeln('  path: AppRoutes.$screenCamel,');
+    classBuffer.writeln('  name: AppRoutes.$screenCamel,');
+    classBuffer.writeln(')');
     classBuffer.writeln(
       'class $routeClass extends GoRouteData with \$$routeClass {',
     );
@@ -134,28 +178,87 @@ class FeatureRouterHandler {
     }
     classBuffer.writeln();
     classBuffer.writeln('  @override');
-    if (args.isEmpty) {
+    if (scopes.isEmpty) {
       classBuffer.writeln(
-        '  Widget build(BuildContext context, GoRouterState state) => const $screenClass();',
+        '  Widget build(BuildContext context, GoRouterState state) =>',
+      );
+      classBuffer.writeln(
+        '      ${_screenWidgetExpression(screenClass, args)};',
       );
     } else {
-      classBuffer.write(
-        '  Widget build(BuildContext context, GoRouterState state) => $screenClass(',
+      classBuffer.writeln(
+        '  Widget build(BuildContext context, GoRouterState state) {',
       );
       classBuffer.write(
-        args.keys
-            .map((k) {
-              final String argName = NamesHelper.snakeToCamelCase(
-                NamesHelper.toSnakeCase(k),
-              );
-              return '$argName: $argName';
-            })
-            .join(', '),
+        _buildFeatureScopeBody(screenClass, feature, scopes, args),
       );
-      classBuffer.writeln(');');
+      classBuffer.writeln('  }');
     }
     classBuffer.writeln('}');
     return classBuffer.toString();
+  }
+
+  static String _buildFeatureScopeBody(
+    String screenClass,
+    String feature,
+    List<String> scopes,
+    Map<String, dynamic> args,
+  ) {
+    final List<String> registers = registrationNames(feature, scopes);
+    final StringBuffer buffer = StringBuffer();
+    buffer.writeln('    return FeatureScope(');
+    buffer.writeln('      scopeName: ${scopeConstantName(screenClass)},');
+    buffer.writeln('      registrations: const [');
+    for (final String register in registers) {
+      buffer.writeln('        $register,');
+    }
+    buffer.writeln('      ],');
+    buffer.writeln('      child: MultiBlocProvider(');
+    buffer.writeln('        providers: [');
+    for (final String scope in scopes) {
+      final String cubit = '${Names.fromString(scope).classCase}Cubit';
+      buffer.writeln('          BlocProvider(');
+      buffer.writeln(
+        '            create: (_) => ServiceLocator.instance<$cubit>(),',
+      );
+      buffer.writeln('          ),');
+    }
+    buffer.writeln('        ],');
+    buffer.writeln(
+      '        child: ${_screenWidgetExpression(screenClass, args)},',
+    );
+    buffer.writeln('      ),');
+    buffer.writeln('    );');
+    return buffer.toString();
+  }
+
+  static String _screenWidgetExpression(
+    String screenClass,
+    Map<String, dynamic> args,
+  ) {
+    if (args.isEmpty) return 'const $screenClass()';
+    final String params = args.keys
+        .map((String key) {
+          final String argName = NamesHelper.snakeToCamelCase(
+            NamesHelper.toSnakeCase(key),
+          );
+          return '$argName: $argName';
+        })
+        .join(', ');
+    return '$screenClass($params)';
+  }
+
+  static String buildNavigationExtension(
+    String routeClass,
+    String screenClass,
+    Map<String, dynamic> args,
+  ) {
+    final String screenBase = screenBaseName(screenClass);
+    final StringBuffer buffer = StringBuffer();
+    buffer.writeln('extension ${screenBase}Navigation on BuildContext {');
+    buffer.write(buildNavigationMethod(routeClass, screenClass, args));
+    buffer.writeln('}');
+    return buffer.toString();
   }
 
   static String buildNavigationMethod(
@@ -163,42 +266,70 @@ class FeatureRouterHandler {
     String screenClass,
     Map<String, dynamic> args,
   ) {
-    final String screenBase = screenClass
-        .replaceAll('Screen', '')
-        .replaceAll('Page', '');
+    final String screenBase = screenBaseName(screenClass);
     final StringBuffer methodBuffer = StringBuffer();
 
-    // Generate .go() and .push() variants
-    for (var verb in ['go', 'push']) {
-      final String methodName = '$verb$screenBase';
-      if (args.isEmpty) {
-        methodBuffer.writeln(
-          '  void $methodName() => const $routeClass().$verb(this);',
-        );
-      } else {
-        methodBuffer.writeln('  void $methodName({');
-        for (var entry in args.entries) {
-          final String argName = NamesHelper.snakeToCamelCase(
-            NamesHelper.toSnakeCase(entry.key),
-          );
-          methodBuffer.writeln(
-            '    required ${getDartType(entry.value)} $argName,',
-          );
-        }
-        methodBuffer.writeln('  }) => $routeClass(');
-        methodBuffer.writeln(
-          args.keys
-              .map((k) {
-                final String argName = NamesHelper.snakeToCamelCase(
-                  NamesHelper.toSnakeCase(k),
-                );
-                return '    $argName: $argName,';
-              })
-              .join('\n'),
-        );
-        methodBuffer.writeln('  ).$verb(this);');
-      }
+    if (args.isEmpty) {
+      methodBuffer.writeln(
+        '  void go$screenBase() => const $routeClass().go(this);',
+      );
+      methodBuffer.writeln();
+      methodBuffer.writeln(
+        '  Future<T?> push$screenBase<T>() => const $routeClass().push<T>(this);',
+      );
+    } else {
+      methodBuffer.write(
+        _buildArgNavigationMethod(
+          verb: 'go',
+          returnType: 'void',
+          methodName: 'go$screenBase',
+          routeClass: routeClass,
+          args: args,
+        ),
+      );
+      methodBuffer.writeln();
+      methodBuffer.write(
+        _buildArgNavigationMethod(
+          verb: 'push<T>',
+          returnType: 'Future<T?>',
+          methodName: 'push$screenBase<T>',
+          routeClass: routeClass,
+          args: args,
+        ),
+      );
     }
+    return methodBuffer.toString();
+  }
+
+  static String _buildArgNavigationMethod({
+    required String verb,
+    required String returnType,
+    required String methodName,
+    required String routeClass,
+    required Map<String, dynamic> args,
+  }) {
+    final StringBuffer methodBuffer = StringBuffer();
+    methodBuffer.writeln('  $returnType $methodName({');
+    for (var entry in args.entries) {
+      final String argName = NamesHelper.snakeToCamelCase(
+        NamesHelper.toSnakeCase(entry.key),
+      );
+      methodBuffer.writeln(
+        '    required ${getDartType(entry.value)} $argName,',
+      );
+    }
+    methodBuffer.writeln('  }) => $routeClass(');
+    methodBuffer.writeln(
+      args.keys
+          .map((String key) {
+            final String argName = NamesHelper.snakeToCamelCase(
+              NamesHelper.toSnakeCase(key),
+            );
+            return '    $argName: $argName,';
+          })
+          .join('\n'),
+    );
+    methodBuffer.writeln('  ).$verb(this);');
     return methodBuffer.toString();
   }
 }

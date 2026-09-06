@@ -35,6 +35,11 @@ class CleanupHandler {
       );
       content = RouterUtils.removeBlock(content, 'class ${screenClass}Route');
       content = RouterUtils.removeBlock(content, 'class ${screenBase}Route');
+      content = RouterUtils.removeBlock(
+        content,
+        'extension ${screenBase}Navigation',
+      );
+      content = RouterUtils.removeScopeConstant(content, screenBase);
 
       // Remove Import
       content = content.replaceFirst(
@@ -50,14 +55,8 @@ class CleanupHandler {
         '',
       );
 
-      // Remove old navigation methods (to, go, push)
-      content = content.replaceAll(
-        RegExp(
-          'void (to|go|push)$screenBase\\s*\\(.*?\\)\\s*(=>|{).*?;',
-          dotAll: true,
-        ),
-        '',
-      );
+      content = RouterUtils.stripNavigationMethods(content, screenBase);
+      content = RouterUtils.pruneRouterImports(content, feature);
 
       content = content.replaceAll(RegExp(r'\n{3,}'), '\n\n');
 

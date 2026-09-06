@@ -34,7 +34,16 @@ class RouteProcessor {
 
     Map<String, dynamic> argsMap = {};
     if (data['args'] != null && data['args'] is Map) {
-      argsMap = .from(data['args']);
+      argsMap = Map<String, dynamic>.from(data['args'] as Map);
+    }
+
+    final List<String> scopes = <String>[];
+    if (data['scopes'] is List) {
+      scopes.addAll(
+        (data['scopes'] as List)
+            .map((dynamic e) => e.toString().trim())
+            .where((String e) => e.isNotEmpty),
+      );
     }
 
     final String featureName = featureNames.snakeCase;
@@ -123,6 +132,7 @@ class RouteProcessor {
       uniqueAppRouteConstant,
       uniqueRouteClass,
       argsMap,
+      scopes: scopes,
     )) {
       changed = true;
     }

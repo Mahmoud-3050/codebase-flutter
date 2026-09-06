@@ -490,7 +490,8 @@ dart run generate/fix/unused_assets_finder.dart --delete --folders=images,svg,lo
 Automatically adds new type-safe routes to a feature's navigation system. This script:
 - Adds a new route constant to `lib/config/routes/app_routes.dart`.
 - Appends a `@TypedGoRoute` and `GoRouteData` class to the feature's `router.dart`.
-- Adds a navigation extension method to the feature's `BuildContext` extension.
+- Adds a **per-screen** `BuildContext` navigation extension (`go` / `push`).
+- When `"scopes"` is set, wraps the screen in `FeatureScope` + `MultiBlocProvider` for that flow.
 - Runs `build_runner` to generate the matching code.
 
 ### How to Run
@@ -503,16 +504,30 @@ dart generate/router/main.dart
 
 ### JSON Config Format (`router.json`)
 
+Unscoped route (splash-style — no GetIt scope):
+
+```json
+{
+  "feature": "splash",
+  "screen": "SplashScreen",
+  "route": "splash"
+}
+```
+
+Scoped navigation flow (profile-style — registers only what that screen needs):
+
 ```json
 {
   "feature": "profile",
-  "screen": "ProfileInfoScreen",
-  "args": {
-    "type": "String",
-    "isEdit": true
-  }
+  "screen": "StudentProfileScreen",
+  "route": "studentProfile",
+  "scopes": ["getStudentProfile", "updateStudentProfile"]
 }
 ```
+
+`"scopes"` is optional. Each entry is a request name. The generator always prepends `register{Feature}DataLayer`, then `register{Request}` + a `BlocProvider` for `{Request}Cubit`. Omit `"scopes"` (or use `[]`) for screens that should not push a GetIt scope.
+
+Optional `"args"` still become route/screen constructor fields.
 
 ---
 

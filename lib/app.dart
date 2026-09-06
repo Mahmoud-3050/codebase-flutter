@@ -5,6 +5,7 @@ import 'package:themes/themes.dart';
 
 import 'config/routes/app_router.dart';
 import 'config/themes/app_theme.dart';
+import 'core/utils/values/design_sizes.dart';
 
 class App extends StatelessWidget {
   const App({super.key});
@@ -15,23 +16,31 @@ class App extends StatelessWidget {
       builder: (context, themes) {
         return LanguageBuilder(
           builder: (context, language, locale) {
-            return ScreenUtilInit(
-              designSize: const Size(393, 852),
-              minTextAdapt: true,
-              builder: (context, child) {
-                return MaterialApp.router(
-                  title: 'Base Project',
-                  theme: appTheme(themes.lightColors, .light),
-                  darkTheme: appTheme(themes.darkColors, .dark),
-                  themeMode: themes.mode,
-                  locale: locale,
-                  supportedLocales: LanguageLocalizationsSetup.supportedLocales,
-                  localeResolutionCallback:
-                      LanguageLocalizationsSetup.localeResolutionCallback,
-                  localizationsDelegates:
-                      LanguageLocalizationsSetup.localizationsDelegates,
-                  routerConfig: AppRouter.router,
-                  debugShowCheckedModeBanner: false,
+            return LayoutBuilder(
+              builder: (context, constraints) {
+                final designSize = AppDesignSize.resolve(constraints);
+                return ScreenUtilInit(
+                  key: ValueKey(designSize),
+                  designSize: designSize,
+                  minTextAdapt: true,
+                  rebuildFactor: AppDesignSize.rebuildFactor,
+                  builder: (context, child) {
+                    return MaterialApp.router(
+                      title: 'Base Project',
+                      theme: appTheme(themes.lightColors, .light),
+                      darkTheme: appTheme(themes.darkColors, .dark),
+                      themeMode: themes.mode,
+                      locale: locale,
+                      supportedLocales:
+                          LanguageLocalizationsSetup.supportedLocales,
+                      localeResolutionCallback:
+                          LanguageLocalizationsSetup.localeResolutionCallback,
+                      localizationsDelegates:
+                          LanguageLocalizationsSetup.localizationsDelegates,
+                      routerConfig: AppRouter.router,
+                      debugShowCheckedModeBanner: false,
+                    );
+                  },
                 );
               },
             );

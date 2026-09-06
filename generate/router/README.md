@@ -26,7 +26,15 @@ The Router Generator is a high-performance tool designed to automate the creatio
 The tool supports both a single object and a list of objects for batch processing.
 
 ### 1. Basic Add/Update
-Creates a new route or updates an existing one if the feature/screen already exists.
+Creates a new route or updates an existing one if the feature/screen already exists. Omit `"scopes"` for screens that only need a widget (splash-style).
+
+```json
+{
+  "feature": "splash",
+  "screen": "SplashScreen",
+  "route": "splash"
+}
+```
 
 ```json
 {
@@ -38,6 +46,24 @@ Creates a new route or updates an existing one if the feature/screen already exi
   }
 }
 ```
+
+### 1b. Navigation-flow scopes
+When a screen needs GetIt registrations, list the request names for **that flow only**. The generator wraps `build()` in `FeatureScope` + `MultiBlocProvider`:
+
+- private `const String _{screen}ScopeName`
+- `register{Feature}DataLayer` (always first)
+- `register{Request}` + `BlocProvider<{Request}Cubit>` per entry
+
+```json
+{
+  "feature": "profile",
+  "screen": "StudentProfileScreen",
+  "route": "studentProfile",
+  "scopes": ["getStudentProfile", "updateStudentProfile"]
+}
+```
+
+A company-profile screen would be a **separate** route with its own `"scopes"` list. Unused requests stay unregistered until that flow opens.
 
 ### 2. Custom Route Name (Dashed-Case)
 By default, the URL path is derived from the screen name. Use `"route"` to customize the constant name and URL.
@@ -109,15 +135,15 @@ When you generate a route for a new feature, the tool automatically registers th
 - **Part Directives**: Removes `part 'router.g.dart';` from feature routers when they no longer have routes to prevent build errors.
 
 ### ⚓ Navigation Extensions (`go` vs `push`)
-The tool generates two `BuildContext` extension methods for every route:
+Each screen gets its own `BuildContext` extension (e.g. `StudentProfileNavigation`, not one extension per feature):
 
-- **`go[Screen]`**: Uses `go_router`'s `.go()`. It replaces the current stack based on the route hierarchy. Ideal for jumping to a main state (e.g., `goHome()`).
-- **`push[Screen]`**: Uses `go_router`'s `.push()`. It pushes the screen onto the **existing** navigation stack, regardless of hierarchy. Use this when you want a "Back" button to work (e.g., `pushDetails()`).
+- **`go[Screen]`**: Uses `go_router`'s `.go()`. It replaces the current stack based on the route hierarchy. Ideal for jumping to a main state (e.g., `goSplash()`).
+- **`push[Screen]`**: Uses `go_router`'s `.push<T>()`. It pushes the screen onto the **existing** navigation stack, regardless of hierarchy. Returns `Future<T?>` so the caller can await a result (e.g., `pushStudentProfile()`).
 
 **Example:**
 ```dart
 context.goLogin(isGuest: true, attempts: 0); // "Jump" to login
-context.pushLogin(isGuest: true, attempts: 0); // "Push" login on top
+await context.pushLogin<void>(isGuest: true, attempts: 0); // "Push" login on top
 ```
 
 ### 🏗️ Scaffold Generation

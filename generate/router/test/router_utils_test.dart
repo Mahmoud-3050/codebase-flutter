@@ -46,6 +46,84 @@ class NewRoute {}
       final result = RouterUtils.removeBlock(content, 'class NonExistent');
       expect(result, content);
     });
+
+    test(
+      'should remove a scoped route without touching the next extension',
+      () {
+        const content = '''
+part 'router.g.dart';
+
+const String _studentProfileScopeName = 'StudentProfileScope';
+
+@TypedGoRoute<StudentProfileRoute>(
+  path: AppRoutes.studentProfile,
+  name: AppRoutes.studentProfile,
+)
+class StudentProfileRoute extends GoRouteData {
+  Widget build() {
+    return FeatureScope(
+      child: MultiBlocProvider(
+        providers: [],
+        child: const StudentProfileScreen(),
+      ),
+    );
+  }
+}
+
+extension StudentProfileNavigation on BuildContext {
+  void goStudentProfile() => const StudentProfileRoute().go(this);
+}
+''';
+        final result = RouterUtils.removeBlock(
+          content,
+          'class StudentProfileRoute',
+        );
+        expect(result.contains('class StudentProfileRoute'), isFalse);
+        expect(result.contains('@TypedGoRoute<StudentProfileRoute>'), isFalse);
+        expect(result.contains('_studentProfileScopeName'), isFalse);
+        expect(result.contains('extension StudentProfileNavigation'), isTrue);
+      },
+    );
+  });
+
+  group('RouterUtils.scopesMatch', () {
+    test('should match when FeatureScope registrations are exact', () {
+      const content = '''
+class StudentProfileRoute extends GoRouteData {
+  Widget build() {
+    return FeatureScope(
+      registrations: const [
+        registerProfileDataLayer,
+        registerGetStudentProfile,
+      ],
+      child: const StudentProfileScreen(),
+    );
+  }
+}
+''';
+      expect(
+        RouterUtils.scopesMatch(content, 'StudentProfileRoute', [
+          'registerProfileDataLayer',
+          'registerGetStudentProfile',
+        ]),
+        isTrue,
+      );
+    });
+
+    test('should reject unscoped routes when scopes are expected', () {
+      const content = '''
+class SplashRoute extends GoRouteData {
+  Widget build() => const SplashScreen();
+}
+''';
+      expect(
+        RouterUtils.scopesMatch(content, 'SplashRoute', [
+          'registerSplashDataLayer',
+        ]),
+        isFalse,
+      );
+      expect(RouterUtils.scopesMatch(content, 'SplashRoute', []), isTrue);
+    });
   });
 
   group('RouterUtils.argsMatch', () {

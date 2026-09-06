@@ -6,13 +6,15 @@ class GlobalChecker {
   ) async {
     final Directory dir = Directory('lib/features');
     if (!dir.existsSync()) return null;
-    final String pattern = '=> ${screenClass.toLowerCase()}(';
-    final String constPattern = '=> const ${screenClass.toLowerCase()}(';
+    final String lowerClass = screenClass.toLowerCase();
+    final String widgetPattern = '$lowerClass(';
+    final String routeClassPattern = 'class ${lowerClass}route';
 
     await for (var entity in dir.list(recursive: true)) {
       if (entity is File && entity.path.endsWith('router.dart')) {
         final String content = (await entity.readAsString()).toLowerCase();
-        if (content.contains(pattern) || content.contains(constPattern)) {
+        if (content.contains(widgetPattern) ||
+            content.contains(routeClassPattern)) {
           final parts = entity.path.split('/');
           final feature = parts[parts.indexOf('features') + 1];
           return {'feature': feature, 'path': entity.path};
