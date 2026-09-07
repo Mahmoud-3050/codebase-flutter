@@ -44,8 +44,12 @@ RUN_ANALYZE="true"
 RUN_TESTS="true"
 COMMIT_VERSION_BUMP="false"
 CREATE_GIT_TAG="false"
+# google | ios | both — CLI `bash release/scripts/deploy.sh google` overrides this.
+DEPLOY_TARGET="both"
 SKIP_ANDROID="false"
 SKIP_IOS="false"
+# true = upload an existing AAB/IPA instead of running flutter build.
+SKIP_BUILD_IF_EXISTS="false"
 # SKIP_IOS_BUILD is set automatically on non-macOS hosts. Do not set it here
 # unless you want to skip the IPA even on a Mac.
 # true = validate config only; no version bump, build, or store upload.

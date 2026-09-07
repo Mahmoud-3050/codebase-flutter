@@ -1,8 +1,15 @@
 # frozen_string_literal: true
 
+# Fastlane exposes UI in Fastfile eval, not as a top-level constant. Shared
+# modules (PrepareVersion, FlutterVersion, …) look up UI lexically, so bind it
+# here. Tests define ::UI first in test_helper.rb.
+UI = FastlaneCore::UI if !defined?(UI) && defined?(FastlaneCore::UI)
+
 # Loads `release/deploy.config` into ENV for Fastlane lanes.
 # ROOT is the Flutter project (pubspec.yaml). RELEASE_DIR is this automation folder.
 module DeployConfig
+  UI = defined?(FastlaneCore::UI) ? FastlaneCore::UI : ::UI
+
   RELEASE_DIR = File.expand_path('../..', __dir__)
   ROOT = File.expand_path('..', RELEASE_DIR)
 
@@ -15,6 +22,21 @@ module DeployConfig
       )
     end
     Dotenv.overload(path)
+    apply_cli_overrides!
+  end
+
+  # deploy.sh exports CLI_* so flags like `--skip-build` survive Dotenv.overload.
+  CLI_OVERRIDE_KEYS = %w[
+    SKIP_ANDROID SKIP_IOS SKIP_IOS_BUILD SKIP_BUILD_IF_EXISTS DEPLOY_TARGET
+  ].freeze
+
+  def self.apply_cli_overrides!
+    CLI_OVERRIDE_KEYS.each do |key|
+      value = ENV["CLI_#{key}"]
+      next if value.nil? || value.empty?
+
+      ENV[key] = value
+    end
   end
 
   def self.secret_path(relative)

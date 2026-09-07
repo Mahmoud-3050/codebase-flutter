@@ -2,8 +2,12 @@
 set -euo pipefail
 
 # Build and upload using keys in release/deploy.config.
-# Set GOOGLE_PLAY_TRACK to internal or production.
-# Usage: bash release/scripts/deploy.sh
+# Usage:
+#   bash release/scripts/deploy.sh [google|ios|both] [--skip-build]
+# Examples:
+#   bash release/scripts/deploy.sh
+#   bash release/scripts/deploy.sh google
+#   bash release/scripts/deploy.sh ios --skip-build
 
 source "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/lib/common.sh"
-deploy
+deploy "$@"

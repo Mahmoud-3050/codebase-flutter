@@ -6,6 +6,8 @@ require 'shellwords'
 # PRE_BUILD_SCRIPT runs for every platform. ANDROID_PRE_BUILD_SCRIPT /
 # IOS_PRE_BUILD_SCRIPT run only for that platform. Empty values are skipped.
 module PreBuild
+  UI = defined?(FastlaneCore::UI) ? FastlaneCore::UI : ::UI
+
   def self.run!(lane, platform:)
     track = ENV.fetch('GOOGLE_PLAY_TRACK')
     ENV['DEPLOY_TRACK'] = track

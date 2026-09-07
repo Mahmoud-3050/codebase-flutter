@@ -66,6 +66,7 @@ path.write_text(text)
 
 make_fixture() {
   local dir="$1"
+  rm -rf "${dir}/../build"
   mkdir -p "${dir}/secrets" "${dir}/../android"
   cat >"${dir}/deploy.config" <<'EOF'
 USES_FLAVORS="true"
@@ -91,6 +92,8 @@ RUN_ANALYZE="false"
 RUN_TESTS="false"
 SKIP_ANDROID="false"
 SKIP_IOS="false"
+DEPLOY_TARGET="both"
+SKIP_BUILD_IF_EXISTS="false"
 PRE_BUILD_SCRIPT=""
 ANDROID_PRE_BUILD_SCRIPT=""
 IOS_PRE_BUILD_SCRIPT=""
@@ -156,6 +159,47 @@ printf '#!/bin/bash\n' >"${fixture}/hooks/ok.sh"
 set_config_key "${fixture}/deploy.config" PRE_BUILD_SCRIPT "hooks/ok.sh"
 expect_ok "existing pre-build script passes" \
   run_in_fixture "${fixture}" validate_config
+make_fixture "${fixture}"
+
+set_config_key "${fixture}/deploy.config" DEPLOY_TARGET ios
+set_config_key "${fixture}/deploy.config" ANDROID_KEYSTORE_PASSWORD ""
+expect_ok "ios target does not require Android keys" \
+  run_in_fixture "${fixture}" 'apply_deploy_target; validate_config'
+make_fixture "${fixture}"
+
+set_config_key "${fixture}/deploy.config" DEPLOY_TARGET google
+set_config_key "${fixture}/deploy.config" IOS_TEAM_ID ""
+set_config_key "${fixture}/deploy.config" ASC_KEY_ID ""
+expect_ok "google target does not require App Store keys" \
+  run_in_fixture "${fixture}" 'apply_deploy_target; validate_config'
+make_fixture "${fixture}"
+
+set_config_key "${fixture}/deploy.config" DEPLOY_TARGET windows
+expect_error "rejects invalid DEPLOY_TARGET" "must be google, ios, or both" \
+  run_in_fixture "${fixture}" apply_deploy_target
+make_fixture "${fixture}"
+
+mkdir -p "${fixture}/../build/app/outputs/bundle/liveRelease"
+printf 'aab' >"${fixture}/../build/app/outputs/bundle/liveRelease/app-live-release.aab"
+expect_ok "skip-build reuses existing flavored AAB" \
+  run_in_fixture "${fixture}" '
+    SKIP_BUILD_IF_EXISTS=true
+    SKIP_ANDROID=false
+    SKIP_IOS=true
+    if will_build_android; then
+      exit 1
+    fi
+    existing_android_aab
+  '
+make_fixture "${fixture}"
+
+expect_ok "skip-build still builds when AAB is missing" \
+  run_in_fixture "${fixture}" '
+    SKIP_BUILD_IF_EXISTS=true
+    SKIP_ANDROID=false
+    will_build_android
+  '
+make_fixture "${fixture}"
 
 expect_error "missing deploy.config" "Missing" \
   env RELEASE_DIR="${workdir}/empty" ROOT_DIR="${workdir}" \

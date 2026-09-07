@@ -5,7 +5,6 @@ require_relative '../shared/flutter_build'
 require_relative '../shared/flutter_version'
 require_relative '../shared/prepare_version'
 require_relative '../shared/pre_build'
-require 'shellwords'
 
 DeployConfig.load!
 
@@ -27,11 +26,26 @@ platform :ios do
       UI.important('DRY_RUN: skipping iOS archive and TestFlight upload')
       next
     end
-    PreBuild.run!(self, platform: 'ios')
+    ipa = FlutterBuild.existing_ipa_path
+    if ipa && FlutterBuild.skip_compile?(ipa)
+      UI.important("SKIP_BUILD_IF_EXISTS: using existing IPA #{ipa}")
+    else
+      PreBuild.run!(self, platform: 'ios')
+      FlutterBuild.clean_darwin_ephemeral!
 
-    Dir.chdir(DeployConfig::ROOT) do
-      sh(Shellwords.join(['flutter', 'build', 'ios', '--release', '--config-only', *FlutterBuild.build_arg_list]))
+      # Signing uses the Apple ID already logged into Xcode — no Match.
+      # flutter build ipa passes -allowProvisioningUpdates to xcodebuild.
+      automatic_code_signing(
+        path: DeployConfig.project_path('ios', 'Runner.xcodeproj'),
+        use_automatic_signing: true,
+        team_id: ENV.fetch('IOS_TEAM_ID')
+      )
+
+      FlutterBuild.run_flutter!(self, *FlutterBuild.ios_flutter_args)
+      ipa = FlutterBuild.existing_ipa_path
     end
+
+    UI.user_error!("IPA not found under #{FlutterBuild.ipa_dir} (or release/Runner.ipa)") if ipa.nil? || !File.file?(ipa)
 
     app_store_connect_api_key(
       key_id: ENV.fetch('ASC_KEY_ID'),
@@ -40,31 +54,11 @@ platform :ios do
       in_house: false
     )
 
-    # Signing uses the Apple ID already logged into Xcode — no Match, no
-    # extra certs repo. -allowProvisioningUpdates lets xcodebuild refresh
-    # the App Store distribution profile from the developer portal.
-    automatic_code_signing(
-      path: 'Runner.xcodeproj',
-      use_automatic_signing: true,
-      team_id: ENV.fetch('IOS_TEAM_ID')
-    )
-
-    build_app(
-      workspace: 'Runner.xcworkspace',
-      scheme: FlutterBuild.ios_scheme,
-      configuration: FlutterBuild.ios_configuration,
-      export_method: 'app-store',
-      export_team_id: ENV.fetch('IOS_TEAM_ID'),
-      xcargs: "-allowProvisioningUpdates DEVELOPMENT_TEAM=#{ENV.fetch('IOS_TEAM_ID')}",
-      export_options: {
-        method: 'app-store',
-        signingStyle: 'automatic',
-        teamID: ENV.fetch('IOS_TEAM_ID')
-      }
-    )
-
     groups = ENV.fetch('TESTFLIGHT_GROUPS', '').split(',').map(&:strip).reject(&:empty?)
-    testflight_args = { skip_waiting_for_build_processing: groups.empty? }
+    testflight_args = {
+      ipa: ipa,
+      skip_waiting_for_build_processing: groups.empty?
+    }
     if groups.any?
       testflight_args[:distribute_external] = true
       testflight_args[:groups] = groups

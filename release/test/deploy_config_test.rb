@@ -45,4 +45,17 @@ class DeployConfigTest < Minitest::Test
       DeployConfig.project_path('android', 'key.properties')
     )
   end
+
+  def test_apply_cli_overrides_win_over_env
+    with_env(
+      'SKIP_BUILD_IF_EXISTS' => 'false',
+      'CLI_SKIP_BUILD_IF_EXISTS' => 'true',
+      'DEPLOY_TARGET' => 'both',
+      'CLI_DEPLOY_TARGET' => 'ios'
+    ) do
+      DeployConfig.apply_cli_overrides!
+      assert DeployConfig.truthy?('SKIP_BUILD_IF_EXISTS')
+      assert_equal 'ios', ENV['DEPLOY_TARGET']
+    end
+  end
 end

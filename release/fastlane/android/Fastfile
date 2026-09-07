@@ -6,7 +6,6 @@ require_relative '../shared/flutter_version'
 require_relative '../shared/prepare_version'
 require_relative '../shared/android_signing'
 require_relative '../shared/pre_build'
-require 'shellwords'
 
 DeployConfig.load!
 
@@ -28,15 +27,17 @@ platform :android do
       UI.important('DRY_RUN: skipping Android build and Play upload')
       next
     end
-    AndroidSigning.write_key_properties!
-    PreBuild.run!(self, platform: 'android')
-
-    Dir.chdir(DeployConfig::ROOT) do
-      sh(Shellwords.join(['flutter', 'build', 'appbundle', '--release', *FlutterBuild.build_arg_list]))
+    aab = FlutterBuild.aab_abs_path
+    if FlutterBuild.skip_compile?(aab)
+      UI.important("SKIP_BUILD_IF_EXISTS: using existing AAB #{aab}")
+    else
+      AndroidSigning.write_key_properties!
+      PreBuild.run!(self, platform: 'android')
+      FlutterBuild.clean_darwin_ephemeral!
+      FlutterBuild.run_flutter!(self, *FlutterBuild.android_flutter_args)
     end
 
-    aab = DeployConfig.project_path(FlutterBuild.aab_path)
-    UI.user_error!("AAB not found at #{aab}") unless File.exist?(aab)
+    UI.user_error!("AAB not found at #{aab}") unless File.file?(aab)
 
     upload_to_play_store(
       package_name: ENV.fetch('GOOGLE_PLAY_PACKAGE_NAME'),

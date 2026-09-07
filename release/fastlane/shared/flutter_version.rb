@@ -2,6 +2,8 @@
 
 # Reads and writes the Flutter `version: x.y.z+build` line in pubspec.yaml.
 module FlutterVersion
+  UI = defined?(FastlaneCore::UI) ? FastlaneCore::UI : ::UI
+
   def self.pubspec_override=(path)
     @pubspec_override = path
   end

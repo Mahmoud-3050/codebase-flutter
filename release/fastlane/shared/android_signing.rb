@@ -3,6 +3,8 @@
 # Writes android/key.properties from deploy.config so Gradle signing and
 # the deploy file stay a single source of truth.
 module AndroidSigning
+  UI = defined?(FastlaneCore::UI) ? FastlaneCore::UI : ::UI
+
   def self.write_key_properties!
     keystore = DeployConfig.secret_path(ENV.fetch('ANDROID_KEYSTORE_PATH'))
     UI.user_error!("Keystore not found: #{keystore}") unless File.exist?(keystore)
@@ -21,7 +23,7 @@ module AndroidSigning
   end
 
   def self.escape(value)
-    value.to_s.gsub('\\', '\\\\').gsub(/[=:]/) { |char| "\\#{char}" }
+    value.to_s.gsub('\\') { '\\\\' }.gsub(/[=:]/) { |char| "\\#{char}" }
   end
   private_class_method :escape
 end

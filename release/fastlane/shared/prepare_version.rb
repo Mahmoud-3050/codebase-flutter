@@ -4,6 +4,8 @@
 # Android versionCode must increase globally, so the build number is always max+1
 # even when the iOS marketing version is bumped because it was locked.
 module PrepareVersion
+  UI = defined?(FastlaneCore::UI) ? FastlaneCore::UI : ::UI
+
   def self.run(lane)
     current = FlutterVersion.current
     name = current[:name]
@@ -43,24 +45,42 @@ module PrepareVersion
   private_class_method :play_codes
 
   def self.ios_codes(lane, version_name)
-    configure_asc!(lane)
-    bundle = ENV.fetch('IOS_BUNDLE_IDENTIFIER')
-    testflight = lane.latest_testflight_build_number(
-      app_identifier: bundle,
-      initial_build_number: 0
-    )
-    store = lane.app_store_build_number(
-      app_identifier: bundle,
-      live: false,
-      version: version_name,
-      initial_build_number: 0
-    )
-    [testflight, store]
+    with_ios_platform do
+      configure_asc!(lane)
+      bundle = ENV.fetch('IOS_BUNDLE_IDENTIFIER')
+      testflight = lane.latest_testflight_build_number(
+        app_identifier: bundle,
+        initial_build_number: 0
+      )
+      store = lane.app_store_build_number(
+        app_identifier: bundle,
+        live: false,
+        version: version_name,
+        initial_build_number: 0
+      )
+      [testflight, store]
+    end
   rescue StandardError => e
     UI.important("Could not read App Store build numbers: #{e.message}")
     []
   end
   private_class_method :ios_codes
+
+  # App Store actions are iOS-only; prepare_version also runs from the Android
+  # lane so the shared build number can see TestFlight / App Store versions.
+  def self.with_ios_platform
+    context = nil
+    previous = nil
+    key = nil
+    context = Fastlane::Actions.lane_context
+    key = Fastlane::Actions::SharedValues::PLATFORM_NAME
+    previous = context[key]
+    context[key] = :ios
+    yield
+  ensure
+    context[key] = previous if context && key
+  end
+  private_class_method :with_ios_platform
 
   def self.configure_asc!(lane)
     lane.app_store_connect_api_key(

@@ -23,7 +23,10 @@ release/
 ```bash
 cp release/deploy.config.example release/deploy.config
 # Set GOOGLE_PLAY_TRACK to internal or production, then:
-bash release/scripts/deploy.sh
+bash release/scripts/deploy.sh              # both stores
+bash release/scripts/deploy.sh google       # Play Store only
+bash release/scripts/deploy.sh ios          # TestFlight only
+bash release/scripts/deploy.sh ios --skip-build   # upload existing IPA if present
 ```
 
 `release/deploy.config` is gitignored. Never commit it.
@@ -42,11 +45,19 @@ bash release/scripts/deploy.sh
 6. Run optional pre-build hooks (`PRE_BUILD_SCRIPT`, then the platform-specific
    script) immediately before each AAB / IPA build.
 7. Build and upload Android (AAB) to `GOOGLE_PLAY_TRACK` and, on macOS, iOS (IPA).
+   Builds are obfuscated:
+   `flutter build appbundle --release --obfuscate --split-debug-info=build/app/symbols`
+   `flutter build ipa --release --obfuscate --split-debug-info=build/ios/symbols`
+   Keep those symbol folders to de-obfuscate Dart stack traces (`flutter symbolize`).
+
+Pass `google`, `ios`, or `both` to choose stores. `--skip-build` (or
+`SKIP_BUILD_IF_EXISTS="true"`) uploads an existing AAB/IPA without rebuilding;
+if the file is missing, Flutter still builds.
 
 On Linux the scripts set `SKIP_IOS_BUILD` and skip the IPA with a warning.
 App Store Connect API calls for version lookup still run from Linux; only
-archiving and codesign need a Mac. Set `SKIP_IOS="true"` to skip iOS
-completely, including store version queries.
+archiving and codesign need a Mac. Set `DEPLOY_TARGET="google"` (or
+`SKIP_IOS="true"`) to skip iOS completely, including store version queries.
 
 ## Flavored vs non-flavored apps
 
@@ -76,7 +87,8 @@ It also picks the correct AAB path:
 ## Pre-build scripts
 
 Set these in `deploy.config` to run a script immediately before `flutter build`
-(AAB) or `build_app` (IPA). Leave them empty to skip.
+(AAB / IPA). Leave them empty to skip. They do not run when `--skip-build`
+reuses an existing artifact.
 
 | Key | When it runs |
 | --- | --- |
@@ -112,6 +124,8 @@ are relative to `release/`.
 | `ANDROID_KEYSTORE_PATH` / `_PASSWORD` / `ANDROID_KEY_ALIAS` / `ANDROID_KEY_PASSWORD` | Upload keystore. `android/key.properties` is generated at build time — do not maintain it by hand |
 | `IOS_TEAM_ID` / `IOS_BUNDLE_IDENTIFIER` | Apple team and bundle id. Signing uses the Apple ID logged into Xcode (`Automatically manage signing`) |
 | `ASC_KEY_ID` / `ASC_ISSUER_ID` / `ASC_KEY_PATH` | App Store Connect API key (`.p8`) — TestFlight **upload** and store version lookup only, not signing |
+| `DEPLOY_TARGET` | `google`, `ios`, or `both` (CLI arg overrides) |
+| `SKIP_BUILD_IF_EXISTS` | `true` skips Flutter when the AAB/IPA is already on disk |
 | `DRY_RUN` | `true` validates config only; skips version bump, build, and upload |
 | `TESTFLIGHT_GROUPS` | Optional comma-separated TestFlight group names |
 
@@ -126,7 +140,9 @@ and version lookup.
 
 ## Ruby / Fastlane
 
-The scripts run Fastlane through Bundler (`release/Gemfile`).
+The scripts run Fastlane through Bundler (`release/Gemfile`). Flutter iOS
+builds still use Homebrew CocoaPods, so those `flutter` invocations run
+without Bundler's `RUBYOPT` / `GEM_HOME` (otherwise `pod` looks broken).
 
 ```bash
 # Debian/Ubuntu

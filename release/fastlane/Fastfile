@@ -1,0 +1,6 @@
+# frozen_string_literal: true
+
+# Fastlane 2.239 dropped --fastfile. Running from release/ so this folder is
+# discovered as ./fastlane/Fastfile. Platform Fastfiles keep require_relative.
+import File.expand_path('android/Fastfile', __dir__)
+import File.expand_path('ios/Fastfile', __dir__)
