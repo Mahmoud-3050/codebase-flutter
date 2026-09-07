@@ -5,12 +5,14 @@ import 'package:themes/themes.dart';
 
 import '../../../../config/language/strings.dart';
 import '../../../../config/themes/extra_colors.dart';
+import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/values/assets.dart';
 import '../../../../core/utils/values/text_styles.dart';
-import '../../../../core/widgets/app_elevated_button.dart';
-import '../../../../core/widgets/app_shimmer.dart';
-import '../../../../core/widgets/app_snack_bar.dart';
-import '../../../../core/widgets/empty_widget.dart';
+import '../../../../shared/widgets/app_elevated_button.dart';
+import '../../../../shared/widgets/app_shimmer.dart';
+import '../../../../shared/widgets/app_snack_bar.dart';
+import '../../../../shared/widgets/empty_widget.dart';
+import '../../../../core/presentation/api_call_state.dart';
 import '../controller/get_student_profile/get_student_profile_cubit.dart';
 import '../controller/update_student_profile/update_student_profile_cubit.dart';
 import '../widgets/student_profile_body.dart';
@@ -49,7 +51,7 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
       ),
       body: BlocListener<UpdateStudentProfileCubit, UpdateStudentProfileState>(
         listener: (context, state) {
-          if (state is UpdateStudentProfileSuccessState) {
+          if (state.isSuccess) {
             showAppSnackBar(
               context: context,
               message: Strings.yourAccountHasBeenSuccessfullyUpdated,
@@ -57,32 +59,32 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
             );
             context.read<GetStudentProfileCubit>().fGetStudentProfile();
           }
-          if (state is UpdateStudentProfileErrorState) {
-            showAppSnackBar(
-              context: context,
-              message: state.message,
-              type: .error,
-            );
+          if (state case ApiCallError(:final message, :final hasFieldErrors)) {
+            if (!hasFieldErrors) {
+              showAppSnackBar(context: context, message: message, type: .error);
+            }
           }
         },
         child: BlocBuilder<GetStudentProfileCubit, GetStudentProfileState>(
           builder: (context, state) => switch (state) {
-            GetStudentProfileInitialState() ||
-            GetStudentProfileLoadingState() => const _StudentProfileLoading(),
-            GetStudentProfileErrorState(:final message) => _StudentProfileError(
+            ApiCallHolding() ||
+            ApiCallLoading() => const _StudentProfileLoading(),
+            ApiCallError(:final message) => _StudentProfileError(
               message: message,
               onRetry: () =>
                   context.read<GetStudentProfileCubit>().fGetStudentProfile(),
             ),
-            GetStudentProfileSuccessState(:final data) =>
+            ApiCallEmpty() => _StudentProfileError(
+              message: Strings.pleaseTryAgainLater,
+              onRetry: () =>
+                  context.read<GetStudentProfileCubit>().fGetStudentProfile(),
+            ),
+            ApiCallSuccess(:final data) => StudentProfileBody(student: data),
+            ApiCallRefresh(:final data) =>
               data == null
-                  ? _StudentProfileError(
-                      message: Strings.pleaseTryAgainLater,
-                      onRetry: () => context
-                          .read<GetStudentProfileCubit>()
-                          .fGetStudentProfile(),
-                    )
+                  ? const _StudentProfileLoading()
                   : StudentProfileBody(student: data),
+            ApiCallPagination(:final data) => StudentProfileBody(student: data),
           },
         ),
       ),
@@ -147,11 +149,11 @@ class _StudentProfileError extends StatelessWidget {
         mainAxisAlignment: .center,
         children: [
           EmptyWidget(
-            iconSvg: Assets.iconsUserEdit,
+            iconSvgPath: Assets.iconsUserEdit,
             title: Strings.studentProfile,
             message: message,
           ),
-          SizedBox(height: 24.h),
+          24.hGap,
           AppElevatedButton(text: Strings.confirm, onPressed: onRetry),
         ],
       ),

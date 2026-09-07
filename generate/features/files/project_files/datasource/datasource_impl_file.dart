@@ -17,7 +17,6 @@ class DatasourceImplFile extends ProjectFile {
 
     buffer.writeln("import '../../../../core/api/api_response.dart';");
     buffer.writeln("import '../../../../core/api/request_cancel_token.dart';");
-    buffer.writeln("import '../../../../core/error/exceptions.dart';");
     buffer.writeln("import '../../../../core/usecases/usecase.dart';");
     buffer.writeln("import '../../../../injection_container.dart';");
     buffer.writeln(

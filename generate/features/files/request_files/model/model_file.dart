@@ -21,6 +21,11 @@ class ModelFile extends RequestFile {
           .generateImports(requestNameSnakeCase: request.names.snakeCase)
           .toString(),
     );
+    if (request.hasPagination) {
+      buffer.writeln(
+        "import '../../../../shared/pagination/pagination_model.dart';",
+      );
+    }
     if (request.usesSharedEntity) {
       buffer.writeln("import '${request.sharedEntityImport}';");
     }

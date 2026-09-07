@@ -68,3 +68,10 @@ class ValidationFailure extends Failure {
   @override
   List<Object?> get props => <Object?>[message, fieldErrors];
 }
+
+extension FailureFieldErrors on Failure {
+  Map<String, List<String>> get fieldErrors => switch (this) {
+    ValidationFailure(:final fieldErrors) => fieldErrors,
+    _ => const <String, List<String>>{},
+  };
+}

@@ -20,7 +20,7 @@ class DatasourceRequestBuffers extends BaseRequestBuffers {
     required Names featureNames,
     required Request request,
   }) {
-    final bool hasParams = request.params != null;
+    final bool hasParams = request.hasRequestParams;
     final StringBuffer buffer = StringBuffer();
 
     /// Func
@@ -66,7 +66,7 @@ class DatasourceRequestBuffers extends BaseRequestBuffers {
         buffer.writeln('        body: params.toJson(),');
       }
     }
-    if (hasParams && request.type == .get && request.endpoint.hasQueryParams) {
+    if (hasParams && request.type == .get) {
       buffer.writeln('        queryParameters: params.toJson(),');
     }
     buffer.writeln(
@@ -79,9 +79,7 @@ class DatasourceRequestBuffers extends BaseRequestBuffers {
       '        return ${request.names.classCase}Model.fromJson(response);',
     );
     buffer.writeln('      }');
-    buffer.writeln(
-      '      throw ServerException(message: ApiResponse.messageOf(response));',
-    );
+    buffer.writeln('      throw ApiResponse.exceptionOf(response);');
     buffer.writeln('    } catch (error) {');
     buffer.writeln('      rethrow;');
     buffer.writeln('    }');

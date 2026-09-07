@@ -11,7 +11,34 @@ class PhoneValidationService {
 
   PhoneValidationService._internal();
 
-  PhoneValidationResult validatePhoneNumber({required String phoneNumber, required String phoneCode}) {
+  /// Maps an API dialing code (`+966` or `966`) to an ISO country.
+  IsoCode isoCodeFromDialingCode(
+    String dialingCode, {
+    IsoCode fallback = .SA,
+  }) {
+    final String trimmed = dialingCode.trim();
+    if (trimmed.isEmpty) {
+      return fallback;
+    }
+    try {
+      final String international = trimmed.startsWith('+')
+          ? trimmed
+          : '+$trimmed';
+      return PhoneNumber.parse(international).isoCode;
+    } catch (_) {
+      return fallback;
+    }
+  }
+
+  /// API `dialing_code` form, e.g. `+966`.
+  String formatDialingCode(IsoCode isoCode) {
+    return '+${PhoneNumber(isoCode: isoCode, nsn: '').countryCode}';
+  }
+
+  PhoneValidationResult validatePhoneNumber({
+    required String phoneNumber,
+    required String phoneCode,
+  }) {
     try {
       PhoneNumber parsedNumber = .parse('$phoneCode$phoneNumber');
       bool isValid = parsedNumber.isValid(type: .mobile);

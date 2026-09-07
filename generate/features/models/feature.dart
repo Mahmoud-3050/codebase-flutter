@@ -12,6 +12,8 @@ class Feature {
   final Names names;
   final List<Request> requests;
   final Settings settings;
+
+  /// Feature-level mode from `settings.json`, not from request JSON files.
   final ModeType modeType;
   final List<File> jsonFiles;
   final List<Map<String, dynamic>> jsonMaps;
@@ -56,14 +58,34 @@ class Feature {
     return copyWith(settings: updatedSettings, modeType: .protected);
   }
 
+  /// Requests that belong in aggregate files (datasource / repo / injection).
+  /// Excludes tombstones (`mode: 3`).
   List<Request> get activeRequests =>
       requests.where((Request request) => request.mode != .delete).toList();
 
-  List<Request> get pendingRequests =>
+  /// New requests to add (`mode: 1`).
+  List<Request> get generateRequests =>
       requests.where((Request request) => request.mode == .generate).toList();
+
+  /// Existing requests whose per-request files should be overwritten (`mode: 2`).
+  List<Request> get modifyRequests =>
+      requests.where((Request request) => request.mode == .modify).toList();
+
+  /// Per-request files to create or overwrite during feature modify.
+  /// Protected requests (`mode: 0`) are left untouched.
+  List<Request> get writableRequests => requests
+      .where(
+        (Request request) =>
+            request.mode == .generate || request.mode == .modify,
+      )
+      .toList();
 
   List<Request> get deleteRequests =>
       requests.where((Request request) => request.mode == .delete).toList();
+
+  /// Feature modify has work when any request is generate, modify, or delete.
+  bool get hasModifyWork =>
+      writableRequests.isNotEmpty || deleteRequests.isNotEmpty;
 
   Feature copyWith({
     Names? names,

@@ -8,7 +8,6 @@ import '../files/project_files/injection/injection_file.dart';
 import '../files/project_files/repository/repository_file.dart';
 import '../files/project_files/repository_impl/repository_impl_file.dart';
 import '../files/request_files/cubit/cubit_file.dart';
-import '../files/request_files/cubit_states/cubit_states_file.dart';
 import '../files/request_files/cubit_test/cubit_test_file.dart';
 import '../files/request_files/datasource_test/datasource_test_file.dart';
 import '../files/request_files/entity/entity_file.dart';
@@ -95,10 +94,6 @@ abstract class GenerateFeature {
     createDirectory(request.files.cubit.path.parentDirectoryPath);
     CubitFile(
       file: request.files.cubit,
-    ).generate(featureNames: feature.names, request: request);
-
-    CubitStatesFile(
-      file: request.files.cubitStates,
     ).generate(featureNames: feature.names, request: request);
 
     if (generateTest) {

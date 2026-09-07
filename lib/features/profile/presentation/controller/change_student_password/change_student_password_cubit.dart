@@ -1,9 +1,9 @@
 import 'package:either/either.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../../../../config/language/strings.dart';
+import '../../../../../core/presentation/api_call_state.dart';
 import '../../../../../core/presentation/cubit_request_canceller.dart';
 import '../../../domain/usecases/change_student_password_usecase.dart';
 import '../../../domain/entities/change_student_password_response.dart';
@@ -15,14 +15,14 @@ class ChangeStudentPasswordCubit extends Cubit<ChangeStudentPasswordState>
   final ChangeStudentPasswordUseCase changeStudentPasswordUseCase;
 
   ChangeStudentPasswordCubit(this.changeStudentPasswordUseCase)
-    : super(const ChangeStudentPasswordInitialState());
+    : super(const ApiCallHolding<Null>());
 
   Future<void> fChangeStudentPassword({
     required String oldPassword,
     required String newPassword,
     required String newPasswordConfirmation,
   }) async {
-    emit(const ChangeStudentPasswordLoadingState());
+    emit(const ApiCallLoading<Null>());
     final Either<Failure, ChangeStudentPasswordResponse> eitherResult =
         await changeStudentPasswordUseCase(
           ChangeStudentPasswordParams(
@@ -38,8 +38,9 @@ class ChangeStudentPasswordCubit extends Cubit<ChangeStudentPasswordState>
           return;
         }
         emit(
-          ChangeStudentPasswordErrorState(
-            message: failure.message ?? Strings.pleaseTryAgainLater,
+          ApiCallError<Null>.fromFailure(
+            failure,
+            fallbackMessage: Strings.pleaseTryAgainLater,
           ),
         );
       },
@@ -47,7 +48,7 @@ class ChangeStudentPasswordCubit extends Cubit<ChangeStudentPasswordState>
         if (isClosed) {
           return;
         }
-        emit(const ChangeStudentPasswordSuccessState());
+        emit(const ApiCallSuccess<Null>(data: null));
       },
     );
   }

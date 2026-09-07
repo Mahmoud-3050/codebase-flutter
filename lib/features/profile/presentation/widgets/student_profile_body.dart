@@ -6,11 +6,13 @@ import 'package:themes/themes.dart';
 
 import '../../../../config/language/strings.dart';
 import '../../../../config/themes/extra_colors.dart';
+import '../../../../core/presentation/api_call_state.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/values/text_styles.dart';
-import '../../../../core/widgets/app_elevated_button.dart';
-import '../../../../core/widgets/app_text_form_field.dart';
-import '../../../../core/widgets/profile_picture.dart';
+import '../../../../shared/widgets/app_elevated_button.dart';
+import '../../../../shared/widgets/app_text_form_field.dart';
+import '../../../../shared/widgets/field_errors_scope.dart';
+import '../../../../shared/widgets/profile_picture.dart';
 import '../../domain/entities/get_student_profile_response.dart';
 import '../controller/update_student_profile/update_student_profile_cubit.dart';
 
@@ -32,6 +34,7 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
   late final TextEditingController _emailController;
   late final TextEditingController _phoneController;
   late final TextEditingController _instituteController;
+  late String _dialingCode;
 
   @override
   void initState() {
@@ -48,6 +51,7 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
     _instituteController = TextEditingController(
       text: widget.student.institute,
     );
+    _dialingCode = widget.student.dialingCode;
   }
 
   @override
@@ -60,6 +64,7 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
     _emailController.text = widget.student.email;
     _phoneController.text = widget.student.phone;
     _instituteController.text = widget.student.institute;
+    _dialingCode = widget.student.dialingCode;
   }
 
   @override
@@ -75,86 +80,106 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-      key: _formKey,
-      child: ListView(
-        padding: .all(16.w),
-        children: [
-          _StudentProfileHeader(student: widget.student),
-          24.hGap,
-          Text(
-            Strings.personalData,
-            style: TextStyles.of(size: 16, weight: .w600),
-          ),
-          12.hGap,
-          AppTextFormField.nameTextField(
-            controller: _firstNameController,
-            hintText: Strings.firstName,
-            labelText: Strings.firstName,
-            validatorType: FieldValidator.combine(const [
-              EmptyValidator(),
-              TextOnlyValidator(),
-            ]),
-          ),
-          SizedBox(height: 16.h),
-          AppTextFormField.nameTextField(
-            controller: _middleNameController,
-            hintText: Strings.middleName,
-            labelText: Strings.middleName,
-            validatorType: const TextOnlyValidator(required: false),
-          ),
-          SizedBox(height: 16.h),
-          AppTextFormField.nameTextField(
-            controller: _lastNameController,
-            hintText: Strings.lastName,
-            labelText: Strings.lastName,
-            validatorType: FieldValidator.combine(const [
-              EmptyValidator(),
-              TextOnlyValidator(),
-            ]),
-          ),
-          SizedBox(height: 16.h),
-          AppTextFormField.emailTextField(
-            controller: _emailController,
-            hintText: Strings.email,
-            labelText: Strings.email,
-            readOnly: true,
-            validatorType: FieldValidator.email(),
-          ),
-          SizedBox(height: 16.h),
-          AppTextFormField.phoneTextField(
-            controller: _phoneController,
-            hintText: Strings.phoneNumber,
-            labelText: Strings.phoneNumber,
-            validatorType: FieldValidator.phone(),
-          ),
-          SizedBox(height: 16.h),
-          AppTextFormField(
-            controller: _instituteController,
-            hintText: Strings.educationalInstitute,
-            labelText: Strings.educationalInstitute,
-            prefixIcon: Icons.school_rounded,
-            validatorType: FieldValidator.required(
-              customError: Strings.errorFieldRequired,
+    return BlocSelector<
+      UpdateStudentProfileCubit,
+      UpdateStudentProfileState,
+      Map<String, List<String>>
+    >(
+      selector: (UpdateStudentProfileState state) => switch (state) {
+        ApiCallError(:final fieldErrors) => fieldErrors,
+        _ => const <String, List<String>>{},
+      },
+      builder: (BuildContext context, Map<String, List<String>> fieldErrors) {
+        return FieldErrorsScope(
+          fieldErrors: fieldErrors,
+          child: Form(
+            key: _formKey,
+            child: ListView(
+              padding: .all(16.w),
+              children: [
+                _StudentProfileHeader(student: widget.student),
+                24.hGap,
+                Text(
+                  Strings.personalData,
+                  style: TextStyles.of(size: 16, weight: .w600),
+                ),
+                12.hGap,
+                AppTextFormField.nameTextField(
+                  controller: _firstNameController,
+                  fieldName: 'first_name',
+                  hintText: Strings.firstName,
+                  labelText: Strings.firstName,
+                  validatorType: FieldValidator.combine(const [
+                    EmptyValidator(),
+                    TextOnlyValidator(),
+                  ]),
+                ),
+                16.hGap,
+                AppTextFormField.nameTextField(
+                  controller: _middleNameController,
+                  fieldName: 'second_name',
+                  hintText: Strings.middleName,
+                  labelText: Strings.middleName,
+                  validatorType: const TextOnlyValidator(required: false),
+                ),
+                16.hGap,
+                AppTextFormField.nameTextField(
+                  controller: _lastNameController,
+                  fieldName: 'last_name',
+                  hintText: Strings.lastName,
+                  labelText: Strings.lastName,
+                  validatorType: FieldValidator.combine(const [
+                    EmptyValidator(),
+                    TextOnlyValidator(),
+                  ]),
+                ),
+                16.hGap,
+                AppTextFormField.emailTextField(
+                  controller: _emailController,
+                  hintText: Strings.email,
+                  labelText: Strings.email,
+                  readOnly: true,
+                  validatorType: FieldValidator.email(),
+                ),
+                16.hGap,
+                AppTextFormField.phoneWithCountryCode(
+                  controller: _phoneController,
+                  dialingCode: _dialingCode,
+                  onDialingCodeChanged: (String code) {
+                    setState(() => _dialingCode = code);
+                  },
+                  hintText: Strings.phoneNumber,
+                  labelText: Strings.phoneNumber,
+                ),
+                16.hGap,
+                AppTextFormField(
+                  controller: _instituteController,
+                  fieldName: 'institute',
+                  hintText: Strings.educationalInstitute,
+                  labelText: Strings.educationalInstitute,
+                  prefixIcon: Icons.school_rounded,
+                  validatorType: FieldValidator.required(
+                    customError: Strings.errorFieldRequired,
+                  ),
+                ),
+                32.hGap,
+                BlocBuilder<
+                  UpdateStudentProfileCubit,
+                  UpdateStudentProfileState
+                >(
+                  builder: (context, state) {
+                    return AppElevatedButton(
+                      text: Strings.save,
+                      isLoading: state.isLoading,
+                      onPressed: _onSave,
+                    );
+                  },
+                ),
+              ],
             ),
           ),
-          SizedBox(height: 32.h),
-          BlocBuilder<UpdateStudentProfileCubit, UpdateStudentProfileState>(
-            builder: (context, state) {
-              final isSaving = state is UpdateStudentProfileLoadingState;
-              if (isSaving) {
-                return SizedBox(
-                  height: 48.h,
-                  child: Center(
-                    child: const CircularProgressIndicator().appLoading,
-                  ),
-                );
-              }
-              return AppElevatedButton(text: Strings.save, onPressed: _onSave);
-            },
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -167,7 +192,7 @@ class _StudentProfileBodyState extends State<StudentProfileBody> {
       firstName: _firstNameController.text.trim(),
       secondName: _middleNameController.text.trim(),
       lastName: _lastNameController.text.trim(),
-      dialingCode: student.dialingCode,
+      dialingCode: _dialingCode,
       phone: _phoneController.text.trim(),
       cityId: student.cityId,
       birthdate: student.birthdate,

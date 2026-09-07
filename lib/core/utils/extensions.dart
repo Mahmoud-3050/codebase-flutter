@@ -192,10 +192,12 @@ extension ObjectParsingX on Object? {
   }
 
   // ---- int ----
+  int toIntOrValue(int value) => _asNum()?.toInt() ?? value;
   int toIntOrZero() => _asNum()?.toInt() ?? 0;
   int? toIntOrNull() => _asNum()?.toInt();
 
   // ---- double ----
+  double toDoubleOrValue(double value) => _asNum()?.toDouble() ?? value;
   double toDoubleOrZero() => _asNum()?.toDouble() ?? 0.0;
   double? toDoubleOrNull() => _asNum()?.toDouble();
 

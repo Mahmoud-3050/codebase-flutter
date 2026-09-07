@@ -16,16 +16,34 @@ class BlocConsumerFile extends RequestFile {
     final StringBuffer buffer = StringBuffer();
 
     ///-> File imports
-    buffer.writeln(
-      request.buffers.blocConsumer
-          ?.generateImports(
-            requestNameSnakeCase: request.names.snakeCase,
-            isDataModel:
-                request.response['data'] != null &&
-                request.response['data'] is List<dynamic>,
-          )
-          .toString(),
-    );
+    if (request.isPaginatedList) {
+      buffer.writeln("import 'package:flutter/material.dart';");
+      buffer.writeln("import 'package:flutter_bloc/flutter_bloc.dart';");
+      buffer.writeln();
+      buffer.writeln(
+        "import '../../../../shared/pagination/pagination_widget.dart';",
+      );
+      buffer.writeln(
+        "import '../../domain/entities/${request.names.snakeCase}_response.dart';",
+      );
+      buffer.writeln(
+        "import '../controller/${request.names.snakeCase}/${request.names.snakeCase}_cubit.dart';",
+      );
+      if (request.usesSharedEntity) {
+        buffer.writeln("import '${request.sharedEntityImport}';");
+      }
+    } else {
+      buffer.writeln(
+        request.buffers.blocConsumer
+            ?.generateImports(
+              requestNameSnakeCase: request.names.snakeCase,
+              isDataModel:
+                  request.response['data'] != null &&
+                  request.response['data'] is List<dynamic>,
+            )
+            .toString(),
+      );
+    }
 
     buffer.writeln();
 

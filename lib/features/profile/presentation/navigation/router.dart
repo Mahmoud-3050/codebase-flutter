@@ -32,7 +32,9 @@ class StudentProfileRoute extends GoRouteData with $StudentProfileRoute {
       ],
       child: MultiBlocProvider(
         providers: [
-          BlocProvider(create: (_) => ServiceLocator.instance<GetStudentProfileCubit>()),
+          BlocProvider(
+            create: (_) => ServiceLocator.instance<GetStudentProfileCubit>(),
+          ),
           BlocProvider(
             create: (_) => ServiceLocator.instance<UpdateStudentProfileCubit>(),
           ),
@@ -46,5 +48,6 @@ class StudentProfileRoute extends GoRouteData with $StudentProfileRoute {
 extension StudentProfileNavigation on BuildContext {
   void goStudentProfile() => const StudentProfileRoute().go(this);
 
-  Future<T?> pushStudentProfile<T>() => const StudentProfileRoute().push<T>(this);
+  Future<T?> pushStudentProfile<T>() =>
+      const StudentProfileRoute().push<T>(this);
 }

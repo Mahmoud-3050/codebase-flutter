@@ -1,9 +1,9 @@
 import 'package:either/either.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../../../../config/language/strings.dart';
+import '../../../../../core/presentation/api_call_state.dart';
 import '../../../../../core/presentation/cubit_request_canceller.dart';
 import '../../../../../core/usecases/usecase.dart';
 import '../../../domain/usecases/get_company_profile_usecase.dart';
@@ -16,10 +16,10 @@ class GetCompanyProfileCubit extends Cubit<GetCompanyProfileState>
   final GetCompanyProfileUseCase getCompanyProfileUseCase;
 
   GetCompanyProfileCubit(this.getCompanyProfileUseCase)
-    : super(const GetCompanyProfileInitialState());
+    : super(const ApiCallHolding<Company>());
 
   Future<void> fGetCompanyProfile() async {
-    emit(const GetCompanyProfileLoadingState());
+    emit(const ApiCallLoading<Company>());
     final Either<Failure, GetCompanyProfileResponse> eitherResult =
         await getCompanyProfileUseCase(
           NoParams(cancellation: nextRequestCancelToken()),
@@ -30,8 +30,9 @@ class GetCompanyProfileCubit extends Cubit<GetCompanyProfileState>
           return;
         }
         emit(
-          GetCompanyProfileErrorState(
-            message: failure.message ?? Strings.pleaseTryAgainLater,
+          ApiCallError<Company>.fromFailure(
+            failure,
+            fallbackMessage: Strings.pleaseTryAgainLater,
           ),
         );
       },
@@ -39,7 +40,7 @@ class GetCompanyProfileCubit extends Cubit<GetCompanyProfileState>
         if (isClosed) {
           return;
         }
-        emit(GetCompanyProfileSuccessState(data: response.data));
+        emit(ApiCallSuccess<Company>(data: response.data));
       },
     );
   }

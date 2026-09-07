@@ -1,9 +1,9 @@
 import 'package:either/either.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../../../../config/language/strings.dart';
+import '../../../../../core/presentation/api_call_state.dart';
 import '../../../../../core/presentation/cubit_request_canceller.dart';
 import '../../../../../core/usecases/usecase.dart';
 import '../../../domain/usecases/get_student_profile_usecase.dart';
@@ -16,10 +16,10 @@ class GetStudentProfileCubit extends Cubit<GetStudentProfileState>
   final GetStudentProfileUseCase getStudentProfileUseCase;
 
   GetStudentProfileCubit(this.getStudentProfileUseCase)
-    : super(const GetStudentProfileInitialState());
+    : super(const ApiCallHolding<Student>());
 
   Future<void> fGetStudentProfile() async {
-    emit(const GetStudentProfileLoadingState());
+    emit(const ApiCallLoading<Student>());
     final Either<Failure, GetStudentProfileResponse> eitherResult =
         await getStudentProfileUseCase(
           NoParams(cancellation: nextRequestCancelToken()),
@@ -30,8 +30,9 @@ class GetStudentProfileCubit extends Cubit<GetStudentProfileState>
           return;
         }
         emit(
-          GetStudentProfileErrorState(
-            message: failure.message ?? Strings.pleaseTryAgainLater,
+          ApiCallError<Student>.fromFailure(
+            failure,
+            fallbackMessage: Strings.pleaseTryAgainLater,
           ),
         );
       },
@@ -39,7 +40,7 @@ class GetStudentProfileCubit extends Cubit<GetStudentProfileState>
         if (isClosed) {
           return;
         }
-        emit(GetStudentProfileSuccessState(data: response.data));
+        emit(ApiCallSuccess<Student>(data: response.data));
       },
     );
   }

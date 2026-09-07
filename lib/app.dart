@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart' hide RouteFactory;
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:language/language.dart';
+import 'package:phone_form_field/phone_form_field.dart';
 import 'package:themes/themes.dart';
 
 import 'config/routes/app_router.dart';
@@ -35,8 +36,10 @@ class App extends StatelessWidget {
                           LanguageLocalizationsSetup.supportedLocales,
                       localeResolutionCallback:
                           LanguageLocalizationsSetup.localeResolutionCallback,
-                      localizationsDelegates:
-                          LanguageLocalizationsSetup.localizationsDelegates,
+                      localizationsDelegates: const [
+                        ...LanguageLocalizationsSetup.localizationsDelegates,
+                        ...PhoneFieldLocalization.delegates,
+                      ],
                       routerConfig: AppRouter.router,
                       debugShowCheckedModeBanner: false,
                     );

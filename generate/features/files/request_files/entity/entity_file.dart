@@ -21,6 +21,11 @@ class EntityFile extends RequestFile {
           .generateImports(isDataModel: request.response['data'] != null)
           .toString(),
     );
+    if (request.hasPagination) {
+      buffer.writeln(
+        "import '../../../../shared/pagination/pagination_entity.dart';",
+      );
+    }
     if (request.usesSharedEntity) {
       buffer.writeln("import '${request.sharedEntityImport}';");
     }

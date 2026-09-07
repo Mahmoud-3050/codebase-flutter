@@ -78,7 +78,7 @@ class ModelRequestBuffers extends BaseRequestBuffers {
     for (final MapEntry<String, dynamic> entry in JsonMeta.strip(
       response,
     ).entries) {
-      if (entry.key == 'data') {
+      if (Request.isEnvelopeKey(entry.key)) {
         continue;
       }
       final Names keyNames = Names.fromString(entry.key);
@@ -89,6 +89,10 @@ class ModelRequestBuffers extends BaseRequestBuffers {
 
     if (dataType != null) {
       buffer.writeln('    required super.data,');
+    }
+    final bool hasPagination = response[Request.paginationKey] is Map;
+    if (hasPagination) {
+      buffer.writeln('    required super.pagination,');
     }
     buffer.writeln('  });');
     buffer.writeln();
@@ -113,6 +117,11 @@ class ModelRequestBuffers extends BaseRequestBuffers {
       buffer.writeln("        data: ${modelName}Model.fromJson(json['data']),");
     } else if (dataType != null) {
       buffer.writeln("        data: json['data'] as ${dataType.typeName()},");
+    }
+    if (hasPagination) {
+      buffer.writeln(
+        "        pagination: PaginationMetaModel.fromJson(json['pagination'] is Map ? Map<String, dynamic>.from(json['pagination'] as Map) : const <String, dynamic>{}),",
+      );
     }
 
     buffer.writeln('      );');

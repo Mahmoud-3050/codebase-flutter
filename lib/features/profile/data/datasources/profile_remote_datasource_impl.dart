@@ -1,6 +1,5 @@
 import '../../../../core/api/api_response.dart';
 import '../../../../core/api/request_cancel_token.dart';
-import '../../../../core/error/exceptions.dart';
 import '../../../../core/usecases/usecase.dart';
 import '../../../../injection_container.dart';
 import '../models/change_company_password_model.dart';
@@ -29,7 +28,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (ApiResponse.isSuccess(response)) {
         return ChangeCompanyPasswordModel.fromJson(response);
       }
-      throw ServerException(message: ApiResponse.messageOf(response));
+      throw ApiResponse.exceptionOf(response);
     } catch (error) {
       rethrow;
     }
@@ -50,7 +49,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (ApiResponse.isSuccess(response)) {
         return UpdateCompanyUserProfileModel.fromJson(response);
       }
-      throw ServerException(message: ApiResponse.messageOf(response));
+      throw ApiResponse.exceptionOf(response);
     } catch (error) {
       rethrow;
     }
@@ -72,7 +71,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (ApiResponse.isSuccess(response)) {
         return ChangeStudentPasswordModel.fromJson(response);
       }
-      throw ServerException(message: ApiResponse.messageOf(response));
+      throw ApiResponse.exceptionOf(response);
     } catch (error) {
       rethrow;
     }
@@ -92,7 +91,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (ApiResponse.isSuccess(response)) {
         return GetCompanyProfileModel.fromJson(response);
       }
-      throw ServerException(message: ApiResponse.messageOf(response));
+      throw ApiResponse.exceptionOf(response);
     } catch (error) {
       rethrow;
     }
@@ -112,7 +111,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (ApiResponse.isSuccess(response)) {
         return GetStudentProfileModel.fromJson(response);
       }
-      throw ServerException(message: ApiResponse.messageOf(response));
+      throw ApiResponse.exceptionOf(response);
     } catch (error) {
       rethrow;
     }
@@ -134,7 +133,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (ApiResponse.isSuccess(response)) {
         return UpdateCompanyProfileModel.fromJson(response);
       }
-      throw ServerException(message: ApiResponse.messageOf(response));
+      throw ApiResponse.exceptionOf(response);
     } catch (error) {
       rethrow;
     }
@@ -155,7 +154,7 @@ class ProfileRemoteDataSourceImpl implements ProfileRemoteDataSource {
       if (ApiResponse.isSuccess(response)) {
         return UpdateStudentProfileModel.fromJson(response);
       }
-      throw ServerException(message: ApiResponse.messageOf(response));
+      throw ApiResponse.exceptionOf(response);
     } catch (error) {
       rethrow;
     }

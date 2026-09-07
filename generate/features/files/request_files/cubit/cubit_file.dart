@@ -4,6 +4,7 @@ import '../../../../utils/functions.dart';
 import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_file.dart';
+import 'cubit_buffers.dart';
 
 class CubitFile extends RequestFile {
   CubitFile({required super.file});
@@ -20,25 +21,51 @@ class CubitFile extends RequestFile {
       buffer.writeln("import 'dart:io';");
       buffer.writeln();
     }
-    buffer.writeln(
-      request.buffers.cubit
-          .generateImports(
-            requestNameSnakeCase: request.names.snakeCase,
-            hasParams: request.params != null,
-          )
-          .toString(),
-    );
+    if (request.isPaginatedList) {
+      buffer.writeln(
+        (request.buffers.cubit as CubitRequestBuffers)
+            .generatePaginationImports(
+              requestNameSnakeCase: request.names.snakeCase,
+            )
+            .toString(),
+      );
+      if (request.usesSharedEntity) {
+        buffer.writeln("import '${request.sharedEntityImport}';");
+      }
+    } else {
+      buffer.writeln(
+        request.buffers.cubit
+            .generateImports(
+              requestNameSnakeCase: request.names.snakeCase,
+              hasParams: request.hasRequestParams,
+            )
+            .toString(),
+      );
+    }
 
-    ///-> Class UseCase
+    ///-> Class Cubit
     buffer.writeln(
       request.buffers.cubit
           .generateBody(featureNames: featureNames, request: request)
           .toString(),
     );
 
+    if (!request.isPaginatedList) {
+      buffer.writeln(
+        request.buffers.cubitStates
+            .generateBody(featureNames: featureNames, request: request)
+            .toString(),
+      );
+    }
+
     ///-> Write file
     final File targetFile = createFile(file.path);
     await targetFile.writeAsString(buffer.toString());
+
+    final File leftoverStatesFile = request.files.cubitStates;
+    if (leftoverStatesFile.existsSync()) {
+      leftoverStatesFile.deleteSync();
+    }
   }
 
   @override

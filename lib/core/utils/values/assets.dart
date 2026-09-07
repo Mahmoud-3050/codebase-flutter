@@ -17,6 +17,7 @@ class Assets {
   static const String iconsClosed = 'assets/icons/closed.svg';
   static const String iconsDots = 'assets/icons/dots.svg';
   static const String iconsDownload = 'assets/icons/download.svg';
+  static const String emptyWhiteBox = 'assets/icons/empty-white-box.svg';
   static const String iconsFingerprint = 'assets/icons/fingerprint.svg';
   static const String iconsGraduationCap = 'assets/icons/graduation-cap.svg';
   static const String iconsHome = 'assets/icons/home.svg';

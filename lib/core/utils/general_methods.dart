@@ -9,8 +9,8 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 import '../../injection_container.dart';
-import '../widgets/dialogs/loading_dialog.dart';
-import '../widgets/dialogs/show_dialog.dart';
+import '../../shared/widgets/dialogs/loading_dialog.dart';
+import '../../shared/widgets/dialogs/show_dialog.dart';
 
 Future<DateTime?> selectDate({
   required BuildContext context,

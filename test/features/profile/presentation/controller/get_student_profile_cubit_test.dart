@@ -7,6 +7,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
 import 'package:codebase/core/error/failures.dart';
+import 'package:codebase/core/presentation/api_call_state.dart';
 import 'package:codebase/core/usecases/usecase.dart';
 import 'package:codebase/config/language/strings.dart';
 import 'package:codebase/features/profile/domain/entities/get_student_profile_response.dart';
@@ -54,11 +55,11 @@ void main() {
     data: tStudent,
   );
 
-  test('initial state is GetStudentProfileInitialState', () {
+  test('initial state is ApiCallHolding', () {
     final MockGetStudentProfileUseCase useCase = MockGetStudentProfileUseCase();
     final GetStudentProfileCubit cubit = GetStudentProfileCubit(useCase);
 
-    expect(cubit.state, const GetStudentProfileInitialState());
+    expect(cubit.state, const ApiCallHolding<Student>());
 
     cubit.close();
   });
@@ -75,8 +76,8 @@ void main() {
     },
     act: (GetStudentProfileCubit cubit) => cubit.fGetStudentProfile(),
     expect: () => <GetStudentProfileState>[
-      const GetStudentProfileLoadingState(),
-      const GetStudentProfileSuccessState(data: tStudent),
+      const ApiCallLoading<Student>(),
+      const ApiCallSuccess<Student>(data: tStudent),
     ],
   );
 
@@ -94,8 +95,8 @@ void main() {
     },
     act: (GetStudentProfileCubit cubit) => cubit.fGetStudentProfile(),
     expect: () => <GetStudentProfileState>[
-      const GetStudentProfileLoadingState(),
-      const GetStudentProfileErrorState(message: 'Server error'),
+      const ApiCallLoading<Student>(),
+      const ApiCallError<Student>(message: 'Server error'),
     ],
   );
 
@@ -112,8 +113,37 @@ void main() {
     },
     act: (GetStudentProfileCubit cubit) => cubit.fGetStudentProfile(),
     expect: () => <GetStudentProfileState>[
-      const GetStudentProfileLoadingState(),
-      GetStudentProfileErrorState(message: Strings.pleaseTryAgainLater),
+      const ApiCallLoading<Student>(),
+      ApiCallError<Student>(message: Strings.pleaseTryAgainLater),
+    ],
+  );
+
+  blocTest<GetStudentProfileCubit, GetStudentProfileState>(
+    'emits field errors from ValidationFailure',
+    build: () {
+      final MockGetStudentProfileUseCase useCase =
+          MockGetStudentProfileUseCase();
+      when(useCase.call(any)).thenAnswer(
+        (_) async => const Left<Failure, GetStudentProfileResponse>(
+          ValidationFailure(
+            message: 'invalid',
+            fieldErrors: <String, List<String>>{
+              'email': <String>['taken'],
+            },
+          ),
+        ),
+      );
+      return GetStudentProfileCubit(useCase);
+    },
+    act: (GetStudentProfileCubit cubit) => cubit.fGetStudentProfile(),
+    expect: () => <GetStudentProfileState>[
+      const ApiCallLoading<Student>(),
+      const ApiCallError<Student>(
+        message: 'invalid',
+        fieldErrors: <String, List<String>>{
+          'email': <String>['taken'],
+        },
+      ),
     ],
   );
 
@@ -129,9 +159,7 @@ void main() {
       return GetStudentProfileCubit(useCase);
     },
     act: (GetStudentProfileCubit cubit) => cubit.fGetStudentProfile(),
-    expect: () => <GetStudentProfileState>[
-      const GetStudentProfileLoadingState(),
-    ],
+    expect: () => <GetStudentProfileState>[const ApiCallLoading<Student>()],
   );
 
   test('cancels the in-flight token when the cubit is closed', () async {

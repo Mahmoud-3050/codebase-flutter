@@ -1,5 +1,4 @@
 import '../../../../utils/enums.dart';
-import '../../../../utils/functions.dart';
 import '../../../models/names.dart';
 import '../../../models/request.dart';
 import '../../request_buffers.dart';
@@ -47,7 +46,7 @@ class DatasourceTestRequestBuffers extends BaseRequestBuffers {
     final StringBuffer buffer = StringBuffer();
     String responseClassName = request.names.classCase;
     String featureClassName = featureNames.classCase;
-    bool hasParams = request.params != null;
+    bool hasParams = request.hasRequestParams;
     String httpMethod = request.type.name.toLowerCase();
     DartType? dataType = request.dartType;
 
@@ -72,12 +71,7 @@ class DatasourceTestRequestBuffers extends BaseRequestBuffers {
 
     if (hasParams) {
       buffer.writeln('  final tParams = ${responseClassName}Params(');
-      request.params?.forEach((String key, dynamic value) {
-        final Names keyNames = Names.fromString(key);
-        String dartType = request.dartTypeForParam(key, value);
-        String defaultValue = defaultValueForDartType(dartType);
-        buffer.writeln('    ${keyNames.camelCase}: $defaultValue,');
-      });
+      request.writeParamsConstructorArgs(buffer: buffer, indent: '    ');
       buffer.writeln('  );');
       buffer.writeln();
     }
@@ -95,6 +89,7 @@ class DatasourceTestRequestBuffers extends BaseRequestBuffers {
     if (dataType != null) {
       buffer.writeln("    'data': $dataJson,");
     }
+    request.writePaginationTestJson(buffer: buffer, indent: '    ');
     buffer.writeln('  };');
     buffer.writeln();
 
@@ -136,25 +131,50 @@ class DatasourceTestRequestBuffers extends BaseRequestBuffers {
       "          .thenAnswer((_) async => {'status': 'error', 'message': 'Failed'});",
     );
     buffer.writeln();
-    if (hasParams) {
-      buffer.writeln(
-        '      final call = dataSource.${request.names.camelCase};',
-      );
-      buffer.writeln(
-        '      expect(() => call(params: tParams), throwsA(isA<ServerException>()));',
-      );
-    } else {
-      buffer.writeln(
-        '      final call = dataSource.${request.names.camelCase};',
-      );
-      buffer.writeln(
-        '      expect(() => call(params: const NoParams()), throwsA(isA<ServerException>()));',
-      );
-    }
+    _writeDatasourceCallExpect(
+      buffer: buffer,
+      request: request,
+      hasParams: hasParams,
+      exceptionType: 'ServerException',
+    );
+    buffer.writeln('    });');
+    buffer.writeln();
+    buffer.writeln(
+      "    test('should throw ValidationException when response has form errors', () async {",
+    );
+    buffer.writeln('      $stubCall');
+    buffer.writeln(
+      "          .thenAnswer((_) async => {'status': 'error', 'message': 'Invalid', 'errors': <String, dynamic>{'email': <String>['taken']}});",
+    );
+    buffer.writeln();
+    _writeDatasourceCallExpect(
+      buffer: buffer,
+      request: request,
+      hasParams: hasParams,
+      exceptionType: 'ValidationException',
+    );
     buffer.writeln('    });');
     buffer.writeln('  });');
     buffer.writeln('}');
 
     return buffer;
+  }
+
+  void _writeDatasourceCallExpect({
+    required StringBuffer buffer,
+    required Request request,
+    required bool hasParams,
+    required String exceptionType,
+  }) {
+    buffer.writeln('      final call = dataSource.${request.names.camelCase};');
+    if (hasParams) {
+      buffer.writeln(
+        '      expect(() => call(params: tParams), throwsA(isA<$exceptionType>()));',
+      );
+    } else {
+      buffer.writeln(
+        '      expect(() => call(params: const NoParams()), throwsA(isA<$exceptionType>()));',
+      );
+    }
   }
 }

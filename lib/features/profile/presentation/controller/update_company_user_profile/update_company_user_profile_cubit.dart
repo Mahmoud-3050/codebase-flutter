@@ -1,9 +1,9 @@
 import 'package:either/either.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../../../../config/language/strings.dart';
+import '../../../../../core/presentation/api_call_state.dart';
 import '../../../../../core/presentation/cubit_request_canceller.dart';
 import '../../../domain/usecases/update_company_user_profile_usecase.dart';
 import '../../../domain/entities/update_company_user_profile_response.dart';
@@ -15,7 +15,7 @@ class UpdateCompanyUserProfileCubit extends Cubit<UpdateCompanyUserProfileState>
   final UpdateCompanyUserProfileUseCase updateCompanyUserProfileUseCase;
 
   UpdateCompanyUserProfileCubit(this.updateCompanyUserProfileUseCase)
-    : super(const UpdateCompanyUserProfileInitialState());
+    : super(const ApiCallHolding<Company>());
 
   Future<void> fUpdateCompanyUserProfile({
     required String firstName,
@@ -28,7 +28,7 @@ class UpdateCompanyUserProfileCubit extends Cubit<UpdateCompanyUserProfileState>
     required int cityId,
     required String image,
   }) async {
-    emit(const UpdateCompanyUserProfileLoadingState());
+    emit(const ApiCallLoading<Company>());
     final Either<Failure, UpdateCompanyUserProfileResponse> eitherResult =
         await updateCompanyUserProfileUseCase(
           UpdateCompanyUserProfileParams(
@@ -50,8 +50,9 @@ class UpdateCompanyUserProfileCubit extends Cubit<UpdateCompanyUserProfileState>
           return;
         }
         emit(
-          UpdateCompanyUserProfileErrorState(
-            message: failure.message ?? Strings.pleaseTryAgainLater,
+          ApiCallError<Company>.fromFailure(
+            failure,
+            fallbackMessage: Strings.pleaseTryAgainLater,
           ),
         );
       },
@@ -59,7 +60,7 @@ class UpdateCompanyUserProfileCubit extends Cubit<UpdateCompanyUserProfileState>
         if (isClosed) {
           return;
         }
-        emit(UpdateCompanyUserProfileSuccessState(data: response.data));
+        emit(ApiCallSuccess<Company>(data: response.data));
       },
     );
   }

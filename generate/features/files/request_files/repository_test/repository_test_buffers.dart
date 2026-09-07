@@ -50,7 +50,7 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
     final StringBuffer buffer = StringBuffer();
     String responseClassName = request.names.classCase;
     String featureClassName = featureNames.classCase;
-    bool hasParams = request.params != null;
+    bool hasParams = request.hasRequestParams;
     DartType? dataType = request.dartType;
 
     buffer.writeln('@GenerateMocks([${featureClassName}RemoteDataSource])');
@@ -72,12 +72,7 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
 
     if (hasParams) {
       buffer.writeln('  final tParams = ${responseClassName}Params(');
-      request.params?.forEach((String key, dynamic value) {
-        final Names keyNames = Names.fromString(key);
-        String dartType = request.dartTypeForParam(key, value);
-        String defaultValue = defaultValueForDartType(dartType);
-        buffer.writeln('    ${keyNames.camelCase}: $defaultValue,');
-      });
+      request.writeParamsConstructorArgs(buffer: buffer, indent: '    ');
       buffer.writeln('  );');
       buffer.writeln();
     }
@@ -97,6 +92,7 @@ class RepositoryTestRequestBuffers extends BaseRequestBuffers {
     if (dataType != null) {
       buffer.writeln("    'data': $dataJson,");
     }
+    request.writePaginationTestJson(buffer: buffer, indent: '    ');
     buffer.writeln('  });');
     buffer.writeln();
 

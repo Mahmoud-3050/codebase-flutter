@@ -41,6 +41,10 @@ class BlocConsumerRequestBuffers extends BaseRequestBuffers {
     required Names featureNames,
     required Request request,
   }) {
+    if (request.isPaginatedList) {
+      return _generatePaginationBody(request: request);
+    }
+
     final StringBuffer buffer = StringBuffer();
     String responseClassName = request.names.classCase;
     String modelClassName = request.modelClassNames.classCase;
@@ -70,11 +74,13 @@ class BlocConsumerRequestBuffers extends BaseRequestBuffers {
       '      listener: (BuildContext context, ${responseClassName}State state) {',
     );
     buffer.writeln('        if (state is ${responseClassName}ErrorState) {');
-    buffer.writeln('          showAppSnackBar(');
-    buffer.writeln('            context: context,');
-    buffer.writeln('            type: .error,');
-    buffer.writeln('            message: state.message,');
-    buffer.writeln('          );');
+    buffer.writeln('          if (state.fieldErrors.isEmpty) {');
+    buffer.writeln('            showAppSnackBar(');
+    buffer.writeln('              context: context,');
+    buffer.writeln('              type: .error,');
+    buffer.writeln('              message: state.message,');
+    buffer.writeln('            );');
+    buffer.writeln('          }');
     buffer.writeln('        }');
     buffer.writeln('      },');
     if (isDataModel) {
@@ -92,18 +98,18 @@ class BlocConsumerRequestBuffers extends BaseRequestBuffers {
         '        if (state is ${responseClassName}SuccessState) {',
       );
       if (isDataList) {
-        buffer.writeln('          if (state.value.isEmpty) {');
+        buffer.writeln('          if (state.data.isEmpty) {');
         buffer.writeln('            return const NoResultsWidget();');
         buffer.writeln('          }');
         buffer.writeln('          return ListView.separated(');
         buffer.writeln('            physics: const BouncingScrollPhysics(),');
         buffer.writeln('            padding: .symmetric(vertical: 16.h),');
-        buffer.writeln('            itemCount: state.value.length,');
+        buffer.writeln('            itemCount: state.data.length,');
         buffer.writeln(
           '            itemBuilder: (BuildContext context, int index) {',
         );
         buffer.writeln(
-          '              return ${modelClassName}Item(item: state.value[index], index: index);',
+          '              return ${modelClassName}Item(item: state.data[index], index: index);',
         );
         buffer.writeln('            },');
         buffer.writeln(
@@ -179,6 +185,78 @@ class BlocConsumerRequestBuffers extends BaseRequestBuffers {
       buffer.writeln('  }');
       buffer.writeln('}');
     }
+    return buffer;
+  }
+
+  StringBuffer _generatePaginationBody({required Request request}) {
+    final StringBuffer buffer = StringBuffer();
+    final String responseClassName = request.names.classCase;
+    final String modelClassName = request.modelClassNames.classCase;
+    final String itemType = request.paginationItemTypeName;
+
+    buffer.writeln(
+      'class ${responseClassName}Consumer extends StatefulWidget {',
+    );
+    buffer.writeln('  const ${responseClassName}Consumer({super.key});');
+    buffer.writeln();
+    buffer.writeln('  @override');
+    buffer.writeln(
+      '  State<${responseClassName}Consumer> createState() => _${responseClassName}ConsumerState();',
+    );
+    buffer.writeln('}');
+    buffer.writeln();
+    buffer.writeln(
+      'class _${responseClassName}ConsumerState extends State<${responseClassName}Consumer> {',
+    );
+    buffer.writeln('  @override');
+    buffer.writeln('  void initState() {');
+    buffer.writeln('    super.initState();');
+    buffer.writeln('    WidgetsBinding.instance.addPostFrameCallback((_) {');
+    buffer.writeln('      if (!mounted) {');
+    buffer.writeln('        return;');
+    buffer.writeln('      }');
+    buffer.writeln(
+      '      context.read<${responseClassName}Cubit>().fLoadFirstPage();',
+    );
+    buffer.writeln('    });');
+    buffer.writeln('  }');
+    buffer.writeln();
+    buffer.writeln('  @override');
+    buffer.writeln('  Widget build(BuildContext context) {');
+    buffer.writeln(
+      '    return PaginationWidget<${responseClassName}Cubit, $itemType>(',
+    );
+    buffer.writeln(
+      '      itemBuilder: (BuildContext context, int index, $itemType item) {',
+    );
+    buffer.writeln(
+      '        return ${modelClassName}Item(item: item, index: index);',
+    );
+    buffer.writeln('      },');
+    buffer.writeln('    );');
+    buffer.writeln('  }');
+    buffer.writeln('}');
+    buffer.writeln();
+    buffer.writeln('class ${modelClassName}Item extends StatelessWidget {');
+    buffer.writeln('  final $modelClassName item;');
+    buffer.writeln('  final int index;');
+    buffer.writeln();
+    buffer.writeln('  const ${modelClassName}Item({');
+    buffer.writeln('    required this.item,');
+    buffer.writeln('    required this.index,');
+    buffer.writeln('    super.key,');
+    buffer.writeln('  });');
+    buffer.writeln();
+    buffer.writeln('  @override');
+    buffer.writeln('  Widget build(BuildContext context) {');
+    buffer.writeln('    return GestureDetector(');
+    buffer.writeln('      onTap: () {');
+    buffer.writeln('        //TODO: Write your code here');
+    buffer.writeln('      },');
+    buffer.writeln('      child: const SizedBox.shrink(),');
+    buffer.writeln('    );');
+    buffer.writeln('  }');
+    buffer.writeln('}');
     return buffer;
   }
 }

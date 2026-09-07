@@ -1,7 +1,7 @@
 {
-  "choose_future_date_and_time": {
-    "en": "Please choose a future date and time",
-    "ar": "الرجاء اختيار تاريخ ووقت في المستقبل"
+  "no_data_found": {
+    "en": "No data found",
+    "ar": "لا توجد بيانات"
   },
   "welcome": {
     "en": "welcome {username}",

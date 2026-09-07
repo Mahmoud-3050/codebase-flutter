@@ -11,9 +11,7 @@ class CubitStatesRequestBuffers extends BaseRequestBuffers {
     String requestNameSnakeCase = '',
     bool isDataModel = false,
   }) {
-    final StringBuffer buffer = StringBuffer();
-    buffer.writeln("part of '${requestNameSnakeCase}_cubit.dart';");
-    return buffer;
+    return StringBuffer();
   }
 
   @override
@@ -22,9 +20,9 @@ class CubitStatesRequestBuffers extends BaseRequestBuffers {
     required Request request,
   }) {
     final StringBuffer buffer = StringBuffer();
-    String responseClassName = request.names.classCase;
-    DartType? dataType = request.dartType;
-    String modelClassName = request.modelClassNames.classCase;
+    final String responseClassName = request.names.classCase;
+    final DartType? dataType = request.dartType;
+    final String modelClassName = request.modelClassNames.classCase;
 
     buffer.writeln(
       'sealed class ${responseClassName}State extends Equatable {',
@@ -70,13 +68,17 @@ class CubitStatesRequestBuffers extends BaseRequestBuffers {
       'final class ${responseClassName}ErrorState extends ${responseClassName}State {',
     );
     buffer.writeln('  final String message;');
+    buffer.writeln('  final Map<String, List<String>> fieldErrors;');
     buffer.writeln();
-    buffer.writeln(
-      '  const ${responseClassName}ErrorState({required this.message});',
-    );
+    buffer.writeln('  const ${responseClassName}ErrorState({');
+    buffer.writeln('    required this.message,');
+    buffer.writeln('    this.fieldErrors = const <String, List<String>>{},');
+    buffer.writeln('  });');
     buffer.writeln();
     buffer.writeln('  @override');
-    buffer.writeln('  List<Object?> get props => <Object?>[message];');
+    buffer.writeln(
+      '  List<Object?> get props => <Object?>[message, fieldErrors];',
+    );
     buffer.writeln('}');
 
     return buffer;

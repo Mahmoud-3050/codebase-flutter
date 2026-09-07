@@ -36,6 +36,8 @@ class Request {
   final Map<String, dynamic> response;
   final RequestBuffers buffers;
   final RequestFiles files;
+
+  /// Request-level mode from this JSON file. Independent of `settings.json`.
   final ModeType mode;
   final bool hasExplicitModelClass;
   final File? sharedEntityFile;
@@ -60,6 +62,61 @@ class Request {
 
   bool get usesSharedEntity => sharedEntityFile != null;
 
+  static const String paginationKey = 'pagination';
+  static const String errorsKey = 'errors';
+  static const String pageParamKey = 'page';
+  static const String perPageParamKey = 'per_page';
+
+  static bool isEnvelopeKey(String key) =>
+      key == 'data' || key == paginationKey || key == errorsKey;
+
+  bool get hasPagination {
+    final dynamic pagination = response[paginationKey];
+    return pagination is Map;
+  }
+
+  bool get isPaginatedList => hasPagination && (dartType?.isList ?? false);
+
+  bool get hasRequestParams => params != null || hasPagination;
+
+  bool isPagingParam(String key) =>
+      key == pageParamKey || key == perPageParamKey || key == 'perPage';
+
+  /// JSON params plus `page` / `per_page` when [hasPagination].
+  Map<String, dynamic> get effectiveParams {
+    final Map<String, dynamic> merged = <String, dynamic>{...?params};
+    if (hasPagination) {
+      merged.putIfAbsent(pageParamKey, () => 1);
+      merged.putIfAbsent(perPageParamKey, () => 10);
+    }
+    return merged;
+  }
+
+  Map<String, dynamic> get extraFilterParams {
+    return Map<String, dynamic>.fromEntries(
+      effectiveParams.entries.where(
+        (MapEntry<String, dynamic> entry) => !isPagingParam(entry.key),
+      ),
+    );
+  }
+
+  String get paginationItemTypeName {
+    final DartType? dataType = dartType;
+    if (dataType == null) {
+      return 'Object';
+    }
+    if (dataType == DartType.listModel) {
+      return modelClassNames.classCase;
+    }
+    final String listType = dataType.typeName(
+      modelClass: modelClassNames.classCase,
+    );
+    if (listType.startsWith('List<') && listType.endsWith('>')) {
+      return listType.substring(5, listType.length - 1);
+    }
+    return modelClassNames.classCase;
+  }
+
   String? get sharedEntityImport => sharedEntityFile == null
       ? null
       : SharedEntityLookup.packageImport(sharedEntityFile!);
@@ -81,6 +138,39 @@ class Request {
     return getDartType(value);
   }
 
+  void writeParamsConstructorArgs({
+    required StringBuffer buffer,
+    required String indent,
+  }) {
+    effectiveParams.forEach((String key, dynamic value) {
+      final Names keyNames = Names.fromString(key);
+      if (isPagingParam(key)) {
+        buffer.writeln('$indent${keyNames.camelCase}: $value,');
+        return;
+      }
+      final String dartType = dartTypeForParam(key, value);
+      buffer.writeln(
+        '$indent${keyNames.camelCase}: ${defaultValueForDartType(dartType)},',
+      );
+    });
+  }
+
+  void writePaginationTestJson({
+    required StringBuffer buffer,
+    required String indent,
+  }) {
+    if (!hasPagination) {
+      return;
+    }
+    buffer.writeln("$indent'pagination': <String, dynamic>{");
+    buffer.writeln("$indent  'total': 0,");
+    buffer.writeln("$indent  'count': 0,");
+    buffer.writeln("$indent  'per_page': 10,");
+    buffer.writeln("$indent  'current_page': 1,");
+    buffer.writeln("$indent  'total_pages': 1,");
+    buffer.writeln('$indent},');
+  }
+
   factory Request.init({
     required File file,
     required String featureProjectPath,
@@ -95,16 +185,25 @@ class Request {
         ? SharedEntityLookup.find(modelClassNames.classCase)
         : null;
 
+    final Map<String, dynamic> response =
+        (json['response'] as Map<String, dynamic>?) ??
+        <String, dynamic>{'status': true, 'message': '', 'data': null};
+
     DartType? dartType;
-    if (json['response'] != null && json['response']['data'] != null) {
-      dartType = DartTypeExtension.fromType(value: json['response']['data']);
+    if (response['data'] != null) {
+      dartType = DartTypeExtension.fromType(value: response['data']);
     }
+
+    final bool hasParamsJson = json['params'] != null;
+    final RequestType requestType =
+        RequestTypeExtension.fromString(json['type']?.toString() ?? '') ?? .get;
+    final bool hasPagination = response[paginationKey] is Map;
 
     final String originalEndpoint = json['endpoint']?.toString() ?? '';
     final Endpoint endpointModel = Endpoint(
       endpoint: originalEndpoint,
-      hasParams: json['params'] != null,
-      hasQueryParams: false,
+      hasParams: hasParamsJson,
+      hasQueryParams: requestType == .get && (hasParamsJson || hasPagination),
       terms: const [],
     );
 
@@ -129,15 +228,11 @@ class Request {
       modelClassNames: modelClassNames,
       dartType: dartType,
       endpoint: endpointModel,
-      type:
-          RequestTypeExtension.fromString(json['type']?.toString() ?? '') ??
-          .get,
+      type: requestType,
       hasToken: (json['token'] as bool?) ?? false,
       params: json['params'] as Map<String, dynamic>?,
       paramTypes: _parseParamTypes(json['param_types']),
-      response:
-          (json['response'] as Map<String, dynamic>?) ??
-          <String, dynamic>{'status': true, 'message': '', 'data': null},
+      response: response,
       buffers: buffers,
       files: files,
       mode: modeType,

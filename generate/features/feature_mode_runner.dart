@@ -60,6 +60,14 @@ class FeatureModeRunner {
   }
 
   Future<void> _runModifyMode() async {
+    if (!feature.hasModifyWork) {
+      ConsoleLogger.warning(
+        'Feature modify: no request is marked generate (1), '
+        'modify (2), or delete (3). Protected requests (0) were left untouched.',
+      );
+      return;
+    }
+
     if (feature.deleteRequests.isNotEmpty) {
       await DeleteFeature.deleteRequests(
         feature: feature,
@@ -69,7 +77,7 @@ class FeatureModeRunner {
 
     await ModifyFeature.modifyFeature(
       feature: feature,
-      pendingRequests: feature.pendingRequests,
+      writableRequests: feature.writableRequests,
       generateTest: generateTest,
     );
 

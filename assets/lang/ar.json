@@ -314,6 +314,9 @@
   "we_are_flexible": "نحن مرنون",
   "flexible": "مرنة",
   "view_details": "عرض التفاصيل",
-  "details": "التفاصيل"
+  "details": "التفاصيل",
+  "no_data_found": "لا توجد بيانات",
+  "welcome": "مرحبا {username}",
+  "counts_from": "{current} عدد من {total}"
 
 }

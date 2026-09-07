@@ -313,6 +313,9 @@
   "we_are_flexible": "We are flexible",
   "flexible": "Flexible",
   "view_details": "View Details",
-  "details": "Details"
+  "details": "Details",
+  "no_data_found": "No data found",
+  "welcome": "welcome {username}",
+  "counts_from": "{current} counts from {total}"
 
 }

@@ -66,18 +66,19 @@ class GetStudentProfileCubit extends Cubit<GetStudentProfileState> {
 // ✅ GOOD: cubit depends only on a domain use case
 class GetStudentProfileCubit extends Cubit<GetStudentProfileState> {
   GetStudentProfileCubit(this.getStudentProfileUseCase)
-      : super(const GetStudentProfileInitialState());
+      : super(const ApiCallHolding<Student>());
 
   final GetStudentProfileUseCase getStudentProfileUseCase;
 
   Future<void> fGetStudentProfile() async {
-    emit(const GetStudentProfileLoadingState());
+    emit(const ApiCallLoading<Student>());
     final result = await getStudentProfileUseCase(NoParams());
     result.fold(
-      (failure) => emit(GetStudentProfileErrorState(
-        message: failure.message ?? Strings.pleaseTryAgainLater,
+      (failure) => emit(ApiCallError<Student>.fromFailure(
+        failure,
+        fallbackMessage: Strings.pleaseTryAgainLater,
       )),
-      (response) => emit(GetStudentProfileSuccessState(data: response.data)),
+      (response) => emit(ApiCallSuccess<Student>(data: response.data)),
     );
   }
 }
@@ -141,20 +142,22 @@ class StudentProfileScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocConsumer<GetStudentProfileCubit, GetStudentProfileState>(
       listener: (context, state) {
-        if (state is GetStudentProfileErrorState) {
-          showAppSnackBar(
-            context: context,
-            message: state.message,
-            type: ToastType.error,
-          );
+        if (state case ApiCallError(:final message, :final hasFieldErrors)) {
+          if (!hasFieldErrors) {
+            showAppSnackBar(
+              context: context,
+              message: message,
+              type: ToastType.error,
+            );
+          }
         }
       },
       builder: (context, state) => switch (state) {
-        GetStudentProfileLoadingState() => const Center(
+        ApiCallLoading() => const Center(
           child: CircularProgressIndicator(),
         ),
-        GetStudentProfileSuccessState(:final data) => StudentProfileBody(
-          student: data!,
+        ApiCallSuccess(:final data) => StudentProfileBody(
+          student: data,
         ),
         _ => const SizedBox.shrink(),
       },
@@ -180,24 +183,22 @@ Match the profile controller pattern exactly:
 part 'get_student_profile_states.dart';
 
 class GetStudentProfileCubit extends Cubit<GetStudentProfileState> {
-  // ...
+  GetStudentProfileCubit(...) : super(const ApiCallHolding<Student>());
   Future<void> fGetStudentProfile() async { /* f-prefix for all public actions */ }
 }
 
 // get_student_profile_states.dart
 part of 'get_student_profile_cubit.dart';
 
-sealed class GetStudentProfileState extends Equatable { /* ... */ }
-final class GetStudentProfileInitialState extends GetStudentProfileState { /* ... */ }
-final class GetStudentProfileLoadingState extends GetStudentProfileState { /* ... */ }
-final class GetStudentProfileSuccessState extends GetStudentProfileState { /* ... */ }
-final class GetStudentProfileErrorState extends GetStudentProfileState { /* ... */ }
+typedef GetStudentProfileState = ApiCallState<Student>;
 ```
 
 - **`f` prefix** on cubit action methods: `fGetStudentProfile`, `fUpdateStudentProfile`.
-- **Sealed states** with `Initial → Loading → Success | Error` — use exhaustive
-  `switch` in builders.
-- States live in a **`part` file** — import only the cubit, not the states file.
+- **Shared sealed `ApiCallState<T>`** — every cubit state is a typedef of
+  `ApiCallState` (`holding`, `loading`, `success`, `error`, `empty`, `refresh`,
+  `pagination`). Use exhaustive `switch` in builders.
+- States live in a **`part` file** as `typedef {Operation}State = ApiCallState<T>` —
+  import only the cubit, plus `api_call_state.dart` when matching variants.
 - Cubit holds **no mutable side-channel fields** — all UI-relevant data flows through
   `emit` and sealed states so `BlocBuilder` stays reliable.
 - Register cubits as **`registerFactory`** (new instance per provider scope).

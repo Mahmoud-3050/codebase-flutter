@@ -15,10 +15,25 @@ abstract class Strings {
 
   static String get errorValidPassword => 'error_valid_password'.tr;
 
-  static String get errorValidPasswordConfirm =>
-      'error_valid_password_confirm'.tr;
+  static String get errorValidPasswordConfirm => 'error_valid_password_confirm'.tr;
 
   static String get errorValidNumbers => 'error_valid_numbers'.tr;
+
+  static String get passwordUppercaseRequirement => 'password_uppercase_requirement'.tr;
+
+  static String get passwordLowercaseRequirement => 'password_lowercase_requirement'.tr;
+
+  static String get passwordNumberRequirement => 'password_number_requirement'.tr;
+
+  static String get passwordSpecialCharacterRequirement => 'password_special_character_requirement'.tr;
+
+  static String get zeroNotAllowed => 'zero_not_allowed'.tr;
+
+  static String get maximumDecimalPlacesAllowed => 'maximum_decimal_places_allowed'.tr;
+
+  static String get mustBeDigitsCount => 'must_be_digits_count'.tr;
+
+  static String get maximumDigitsAllowed => 'maximum_digits_allowed'.tr;
 
   static String get pleaseTryAgainLater => 'please_try_again_later'.tr;
 
@@ -56,8 +71,7 @@ abstract class Strings {
 
   static String get phoneNumber => 'phone_number'.tr;
 
-  static String get enterEmailOrPhoneNumberToRestore =>
-      'enter_email_or_phone_number_to_restore'.tr;
+  static String get enterEmailOrPhoneNumberToRestore => 'enter_email_or_phone_number_to_restore'.tr;
 
   static String get emailOrPhoneNumber => 'email_or_phone_number'.tr;
 
@@ -89,8 +103,7 @@ abstract class Strings {
 
   static String get send => 'send'.tr;
 
-  static String get pleaseEnterValidateOtpCode =>
-      'please_enter_validate_otp_code'.tr;
+  static String get pleaseEnterValidateOtpCode => 'please_enter_validate_otp_code'.tr;
 
   static String get emailActivation => 'email_activation'.tr;
 
@@ -158,13 +171,11 @@ abstract class Strings {
 
   static String get areYouSureDeleteAccount => 'are_you_sure_delete_account'.tr;
 
-  static String get doYouWantToDeleteAccount =>
-      'do_you_want_to_delete_account'.tr;
+  static String get doYouWantToDeleteAccount => 'do_you_want_to_delete_account'.tr;
 
   static String get delete => 'delete'.tr;
 
-  static String get deleteAccountSuccessfully =>
-      'delete_account_successfully'.tr;
+  static String get deleteAccountSuccessfully => 'delete_account_successfully'.tr;
 
   static String get contactUs => 'contact_us'.tr;
 
@@ -206,8 +217,7 @@ abstract class Strings {
 
   static String get uploadGpa => 'upload_gpa'.tr;
 
-  static String get expectedDateOfGraduation =>
-      'expected_date_of_graduation'.tr;
+  static String get expectedDateOfGraduation => 'expected_date_of_graduation'.tr;
 
   static String get upload => 'upload'.tr;
 
@@ -239,15 +249,13 @@ abstract class Strings {
 
   static String get currentGpa => 'current_gpa'.tr;
 
-  static String get pleaseUploadYourCompanyPhoto =>
-      'please_upload_your_company_photo'.tr;
+  static String get pleaseUploadYourCompanyPhoto => 'please_upload_your_company_photo'.tr;
 
   static String get description => 'description'.tr;
 
   static String get otpSentToYourInbox => 'otp_sent_to_your_inbox'.tr;
 
-  static String get passwordResetSuccessfully =>
-      'password_reset_successfully'.tr;
+  static String get passwordResetSuccessfully => 'password_reset_successfully'.tr;
 
   static String get verifyYourAccount => 'verify_your_account'.tr;
 
@@ -259,14 +267,11 @@ abstract class Strings {
 
   static String get verify => 'verify'.tr;
 
-  static String get yourAccountHasBeenSuccessfullyVerified =>
-      'your_account_has_been_successfully_verified'.tr;
+  static String get yourAccountHasBeenSuccessfullyVerified => 'your_account_has_been_successfully_verified'.tr;
 
-  static String get yourAccountHasBeenSuccessfullyCreated =>
-      'your_account_has_been_successfully_created'.tr;
+  static String get yourAccountHasBeenSuccessfullyCreated => 'your_account_has_been_successfully_created'.tr;
 
-  static String get yourAccountHasBeenSuccessfullyUpdated =>
-      'your_account_has_been_successfully_updated'.tr;
+  static String get yourAccountHasBeenSuccessfullyUpdated => 'your_account_has_been_successfully_updated'.tr;
 
   static String get latestIssued => 'latest_issued'.tr;
 
@@ -304,8 +309,7 @@ abstract class Strings {
 
   static String get applyJob => 'apply_job'.tr;
 
-  static String get yourApplicationWasSentTo =>
-      'your_application_was_sent_to'.tr;
+  static String get yourApplicationWasSentTo => 'your_application_was_sent_to'.tr;
 
   static String get returnHome => 'return_home'.tr;
 
@@ -333,8 +337,7 @@ abstract class Strings {
 
   static String get post => 'post'.tr;
 
-  static String get yourJobWasPostedSuccessfully =>
-      'your_job_was_posted_successfully'.tr;
+  static String get yourJobWasPostedSuccessfully => 'your_job_was_posted_successfully'.tr;
 
   static String get showApplicants => 'show_applicants'.tr;
 
@@ -364,8 +367,7 @@ abstract class Strings {
 
   static String get institute => 'institute'.tr;
 
-  static String get pleaseChooseYourEducationalInstitute =>
-      'please_choose_your_educational_institute'.tr;
+  static String get pleaseChooseYourEducationalInstitute => 'please_choose_your_educational_institute'.tr;
 
   static String get professionalData => 'professional_data'.tr;
 
@@ -377,15 +379,13 @@ abstract class Strings {
 
   static String get welcomeBack => 'welcome_back'.tr;
 
-  static String get readyToExploreNewOpportunitiesToday =>
-      'ready_to_explore_new_opportunities_today'.tr;
+  static String get readyToExploreNewOpportunitiesToday => 'ready_to_explore_new_opportunities_today'.tr;
 
   static String get buildYourBrand => 'build_your_brand'.tr;
 
   static String get quoteOfTheDay => 'quote_of_the_day'.tr;
 
-  static String get readyToElevateYourCareerWithOurTeam =>
-      'ready_to_elevate_your_career_with_our_team'.tr;
+  static String get readyToElevateYourCareerWithOurTeam => 'ready_to_elevate_your_career_with_our_team'.tr;
 
   static String get postedJobs => 'posted_jobs'.tr;
 
@@ -395,8 +395,7 @@ abstract class Strings {
 
   static String get final0 => 'final0'.tr;
 
-  static String get pleaseChooseEmploymentType =>
-      'please_choose_employment_type'.tr;
+  static String get pleaseChooseEmploymentType => 'please_choose_employment_type'.tr;
 
   static String get majors => 'majors'.tr;
 
@@ -430,13 +429,11 @@ abstract class Strings {
 
   static String get noSavedJobsMessage => 'no_saved_jobs_message'.tr;
 
-  static String get youHaveAlreadyAppliedForThisJob =>
-      'you_have_already_applied_for_this_job'.tr;
+  static String get youHaveAlreadyAppliedForThisJob => 'you_have_already_applied_for_this_job'.tr;
 
   static String get changePassword => 'change_password'.tr;
 
-  static String get passwordChangedSuccessfully =>
-      'password_changed_successfully'.tr;
+  static String get passwordChangedSuccessfully => 'password_changed_successfully'.tr;
 
   static String get currentPassword => 'current_password'.tr;
 
@@ -444,14 +441,11 @@ abstract class Strings {
 
   static String get deleteJob => 'delete_job'.tr;
 
-  static String get jobWasDeletedSuccessfully =>
-      'job_was_deleted_successfully'.tr;
+  static String get jobWasDeletedSuccessfully => 'job_was_deleted_successfully'.tr;
 
-  static String get jobWasUpdatedSuccessfully =>
-      'job_was_updated_successfully'.tr;
+  static String get jobWasUpdatedSuccessfully => 'job_was_updated_successfully'.tr;
 
-  static String get areYouSureYouWantToDeleteThisJob =>
-      'are_you_sure_you_want_to_delete_this_job'.tr;
+  static String get areYouSureYouWantToDeleteThisJob => 'are_you_sure_you_want_to_delete_this_job'.tr;
 
   static String get showAnswers => 'show_answers'.tr;
 
@@ -487,8 +481,7 @@ abstract class Strings {
 
   static String get years => 'years'.tr;
 
-  static String get pleaseChooseTheDurationOfJob =>
-      'please_choose_the_duration_of_job'.tr;
+  static String get pleaseChooseTheDurationOfJob => 'please_choose_the_duration_of_job'.tr;
 
   static String get requireVideo => 'require_video'.tr;
 
@@ -502,14 +495,11 @@ abstract class Strings {
 
   static String get notPaid => 'not_paid'.tr;
 
-  static String get answerTheseQuestionsInTheVideo =>
-      'answer_these_questions_in_the_video'.tr;
+  static String get answerTheseQuestionsInTheVideo => 'answer_these_questions_in_the_video'.tr;
 
-  static String get pleaseUploadTheRequiredVideo =>
-      'please_upload_the_required_video'.tr;
+  static String get pleaseUploadTheRequiredVideo => 'please_upload_the_required_video'.tr;
 
-  static String get theVideoDurationIsLongerThanTheRequiredDuration =>
-      'the_video_duration_is_longer_than_the_required_duration'.tr;
+  static String get theVideoDurationIsLongerThanTheRequiredDuration => 'the_video_duration_is_longer_than_the_required_duration'.tr;
 
   static String get playVideo => 'play_video'.tr;
 
@@ -555,8 +545,7 @@ abstract class Strings {
 
   static String get applidateProfile => 'applidate_profile'.tr;
 
-  static String get addYourSkillsToBoostVisibility =>
-      'add_your_skills_to_boost_visibility'.tr;
+  static String get addYourSkillsToBoostVisibility => 'add_your_skills_to_boost_visibility'.tr;
 
   static String get completed => 'completed'.tr;
 
@@ -574,8 +563,7 @@ abstract class Strings {
 
   static String get youCompletedYourProfile => 'you_completed_your_profile'.tr;
 
-  static String get youNowReadyToApplyWithConfidence =>
-      'you_now_ready_to_apply_with_confidence'.tr;
+  static String get youNowReadyToApplyWithConfidence => 'you_now_ready_to_apply_with_confidence'.tr;
 
   static String get share => 'share'.tr;
 
@@ -623,8 +611,7 @@ abstract class Strings {
 
   static String get reject => 'reject'.tr;
 
-  static String get youHaveAlreadyRefusedThisJob =>
-      'you_have_already_refused_this_job'.tr;
+  static String get youHaveAlreadyRefusedThisJob => 'you_have_already_refused_this_job'.tr;
 
   static String get accepted => 'accepted'.tr;
 
@@ -634,8 +621,7 @@ abstract class Strings {
 
   static String get officiallyShortlisted => 'officially_shortlisted'.tr;
 
-  static String get noWorriesMoreOpportunities =>
-      'no_worries_more_opportunities'.tr;
+  static String get noWorriesMoreOpportunities => 'no_worries_more_opportunities'.tr;
 
   static String get weAreFlexible => 'we_are_flexible'.tr;
 
@@ -644,4 +630,11 @@ abstract class Strings {
   static String get viewDetails => 'view_details'.tr;
 
   static String get details => 'details'.tr;
+
+  static String get noDataFound => 'no_data_found'.tr;
+
+  static String welcome({required String username}) => 'welcome'.trParams({'username': username});
+
+  static String countsFrom({required String current, required String total}) => 'counts_from'.trParams({'current': current, 'total': total});
+
 }

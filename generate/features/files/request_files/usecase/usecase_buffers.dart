@@ -31,7 +31,7 @@ class UseCaseRequestBuffers extends BaseRequestBuffers {
   }) {
     final StringBuffer buffer = StringBuffer();
     String responseClassName = request.names.classCase;
-    bool hasParams = request.params != null;
+    bool hasParams = request.hasRequestParams;
 
     ///-> UseCase Model
     buffer.writeln(
@@ -48,7 +48,7 @@ class UseCaseRequestBuffers extends BaseRequestBuffers {
       buffer.writeln(
         _generateParamsModel(
           responseClassName: responseClassName,
-          params: request.params ?? <String, dynamic>{},
+          params: request.effectiveParams,
           paramsTerms: request.endpoint.terms,
           request: request,
         ).toString(),
@@ -112,6 +112,11 @@ class UseCaseRequestBuffers extends BaseRequestBuffers {
     final Map<String, String> attributes = <String, String>{};
     params.forEach((String key, dynamic value) {
       final Names keyNames = Names.fromString(key);
+      if (request.isPagingParam(key)) {
+        buffer.writeln('  final int ${keyNames.camelCase};');
+        attributes.putIfAbsent(keyNames.camelCase, () => 'int');
+        return;
+      }
       final String valueInStr = request.dartTypeForParam(key, value);
       buffer.writeln('  final $valueInStr? ${keyNames.camelCase};');
       attributes.putIfAbsent(keyNames.camelCase, () => valueInStr);
@@ -131,6 +136,13 @@ class UseCaseRequestBuffers extends BaseRequestBuffers {
     buffer.writeln('  Map<String, dynamic> toJson() {');
     buffer.writeln('    final Map<String, dynamic> map = {};');
     params.forEach((String key, dynamic value) {
+      if (request.isPagingParam(key)) {
+        final Names keyNames = Names.fromString(key);
+        buffer.writeln(
+          "      map['${keyNames.snakeCase}'] = ${keyNames.camelCase};",
+        );
+        return;
+      }
       if (request.isFileParam(key)) {
         return;
       }

@@ -20,12 +20,15 @@ class CubitTestFile extends RequestFile {
       buffer.writeln("import 'dart:io';");
       buffer.writeln();
     }
+    if (request.isPaginatedList) {
+      buffer.writeln("import 'package:dio/dio.dart';");
+    }
     buffer.writeln(
       request.buffers.cubitTest
           .generateImports(
             featureNameSnakeCase: featureNames.snakeCase,
             requestNameSnakeCase: request.names.snakeCase,
-            hasParams: request.params != null,
+            hasParams: request.hasRequestParams,
           )
           .toString(),
     );

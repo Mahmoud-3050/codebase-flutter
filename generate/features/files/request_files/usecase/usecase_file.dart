@@ -26,7 +26,7 @@ class UseCaseFile extends RequestFile {
           .generateImports(
             featureNameSnakeCase: featureNames.snakeCase,
             requestNameSnakeCase: request.names.snakeCase,
-            hasParams: request.params != null,
+            hasParams: request.hasRequestParams,
           )
           .toString(),
     );

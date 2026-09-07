@@ -76,7 +76,7 @@ class EntityRequestBuffers extends BaseRequestBuffers {
     for (final MapEntry<String, dynamic> entry in JsonMeta.strip(
       response,
     ).entries) {
-      if (entry.key == 'data') {
+      if (Request.isEnvelopeKey(entry.key)) {
         continue;
       }
       final Names keyNames = Names.fromString(entry.key);
@@ -91,6 +91,10 @@ class EntityRequestBuffers extends BaseRequestBuffers {
         '  final ${dataType.typeName(modelClass: modelName)} data;',
       );
     }
+    final bool hasPagination = response[Request.paginationKey] is Map;
+    if (hasPagination) {
+      buffer.writeln('  final PaginationMeta pagination;');
+    }
 
     buffer.writeln();
     buffer.writeln('  const ${responseClassName}Response({');
@@ -99,6 +103,9 @@ class EntityRequestBuffers extends BaseRequestBuffers {
     }
     if (dataType != null) {
       buffer.writeln('    required this.data,');
+    }
+    if (hasPagination) {
+      buffer.writeln('    required this.pagination,');
     }
     buffer.writeln('  });\n');
 
@@ -109,6 +116,9 @@ class EntityRequestBuffers extends BaseRequestBuffers {
     }
     if (dataType != null) {
       buffer.writeln('    data,');
+    }
+    if (hasPagination) {
+      buffer.writeln('    pagination,');
     }
     buffer.writeln('  ];');
     buffer.writeln('}\n');

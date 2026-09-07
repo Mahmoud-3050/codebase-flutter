@@ -3,6 +3,8 @@ import 'dart:io';
 
 class Settings {
   final File? file;
+
+  /// Feature-level mode from `settings.json`. Independent of each request's `mode`.
   final int mode;
 
   const Settings({required this.mode, this.file});

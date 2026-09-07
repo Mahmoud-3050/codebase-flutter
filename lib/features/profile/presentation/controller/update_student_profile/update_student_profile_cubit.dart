@@ -1,9 +1,9 @@
 import 'package:either/either.dart';
-import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../../core/error/failures.dart';
 import '../../../../../config/language/strings.dart';
+import '../../../../../core/presentation/api_call_state.dart';
 import '../../../../../core/presentation/cubit_request_canceller.dart';
 import '../../../domain/usecases/update_student_profile_usecase.dart';
 import '../../../domain/entities/update_student_profile_response.dart';
@@ -15,7 +15,7 @@ class UpdateStudentProfileCubit extends Cubit<UpdateStudentProfileState>
   final UpdateStudentProfileUseCase updateStudentProfileUseCase;
 
   UpdateStudentProfileCubit(this.updateStudentProfileUseCase)
-    : super(const UpdateStudentProfileInitialState());
+    : super(const ApiCallHolding<Student>());
 
   Future<void> fUpdateStudentProfile({
     required String firstName,
@@ -33,7 +33,7 @@ class UpdateStudentProfileCubit extends Cubit<UpdateStudentProfileState>
     required String gpaFile,
     required String cvFile,
   }) async {
-    emit(const UpdateStudentProfileLoadingState());
+    emit(const ApiCallLoading<Student>());
     final Either<Failure, UpdateStudentProfileResponse> eitherResult =
         await updateStudentProfileUseCase(
           UpdateStudentProfileParams(
@@ -60,8 +60,9 @@ class UpdateStudentProfileCubit extends Cubit<UpdateStudentProfileState>
           return;
         }
         emit(
-          UpdateStudentProfileErrorState(
-            message: failure.message ?? Strings.pleaseTryAgainLater,
+          ApiCallError<Student>.fromFailure(
+            failure,
+            fallbackMessage: Strings.pleaseTryAgainLater,
           ),
         );
       },
@@ -69,7 +70,7 @@ class UpdateStudentProfileCubit extends Cubit<UpdateStudentProfileState>
         if (isClosed) {
           return;
         }
-        emit(UpdateStudentProfileSuccessState(data: response.data));
+        emit(ApiCallSuccess<Student>(data: response.data));
       },
     );
   }

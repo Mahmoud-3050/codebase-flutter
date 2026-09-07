@@ -160,6 +160,42 @@ void main() {
       ]);
     });
 
+    test('maps 400 with form errors to ValidationException', () {
+      final AppException exception = mapper.map(
+        dioError(
+          type: .badResponse,
+          statusCode: StatusCode.badRequest,
+          data: <String, dynamic>{
+            'errors': <String, dynamic>{
+              'password': <String>['too short'],
+            },
+          },
+        ),
+      );
+      expect(exception, isA<ValidationException>());
+      expect(
+        (exception as ValidationException).fieldErrors['password'],
+        <String>['too short'],
+      );
+    });
+
+    test('maps 400 without form errors to ServerException', () {
+      expect(
+        mapper.map(
+          dioError(
+            type: .badResponse,
+            statusCode: StatusCode.badRequest,
+            data: <String, dynamic>{'message': 'bad request'},
+          ),
+        ),
+        isA<ServerException>().having(
+          (ServerException e) => e.message,
+          'message',
+          'bad request',
+        ),
+      );
+    });
+
     test('maps 301 using a non-string data field', () {
       final AppException exception = mapper.map(
         dioError(
@@ -296,6 +332,37 @@ void main() {
           'email': <String>['invalid'],
           'name': <String>['required'],
         },
+      );
+    });
+
+    test('collects a list of field-error objects', () {
+      expect(
+        extractFieldErrors(<String, dynamic>{
+          'errors': <Map<String, dynamic>>[
+            <String, dynamic>{'field': 'email', 'message': 'taken'},
+            <String, dynamic>{
+              'email': <String>['invalid'],
+            },
+          ],
+        }),
+        <String, List<String>>{
+          'email': <String>['taken', 'invalid'],
+        },
+      );
+    });
+
+    test('ignores a list of plain error strings for field binding', () {
+      expect(
+        extractFieldErrors(<String, dynamic>{
+          'errors': <String>['bad'],
+        }),
+        isEmpty,
+      );
+      expect(
+        hasFormErrors(<String, dynamic>{
+          'errors': <String>['bad'],
+        }),
+        isTrue,
       );
     });
   });
