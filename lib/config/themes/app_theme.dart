@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:themes/themes.dart';
 
 import '../../core/utils/values/fonts.dart';
@@ -55,6 +56,13 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
         weight: .w600,
         fontFamily: Fonts.current,
       ),
+    ),
+    actionIconTheme: ActionIconThemeData(
+      backButtonIconBuilder: (context) => Icon(
+          Icons.arrow_back_ios_new_rounded,
+          size: 16.r,
+          color: colors.textPrimary,
+        ),
     ),
   );
 }
