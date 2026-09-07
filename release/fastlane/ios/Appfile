@@ -1,0 +1,8 @@
+# frozen_string_literal: true
+
+require_relative '../shared/load_deploy_config'
+
+DeployConfig.load!
+
+app_identifier(ENV['IOS_BUNDLE_IDENTIFIER'])
+team_id(ENV['IOS_TEAM_ID'])

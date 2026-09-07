@@ -1,0 +1,59 @@
+# Copy this file to release/deploy.config (gitignored) and fill in real values.
+# Quoted KEY="value" form so bash can `source` it and Fastlane's Dotenv can
+# load the same file. Quote any value that contains spaces.
+# Relative secret paths are resolved from the release/ directory.
+
+# ── Project ───────────────────────────────────────────────────────────────
+# false for projects with a single lib/main.dart and no product flavors.
+USES_FLAVORS="true"
+FLAVOR="live"
+ENTRYPOINT="lib/main_live.dart"
+# With USES_FLAVORS="false": leave FLAVOR empty, ENTRYPOINT=lib/main.dart,
+# IOS_SCHEME=Runner, IOS_CONFIGURATION=Release.
+IOS_SCHEME="live"
+IOS_CONFIGURATION="Release-live"
+
+# ── Google Play ───────────────────────────────────────────────────────────
+# internal | production
+GOOGLE_PLAY_TRACK="internal"
+GOOGLE_PLAY_PACKAGE_NAME="com.base.app"
+GOOGLE_PLAY_JSON_KEY="secrets/play-store-service-account.json"
+# draft | completed — draft lets you review in the Play Console before rollout.
+GOOGLE_PLAY_RELEASE_STATUS="draft"
+
+# ── Android signing ───────────────────────────────────────────────────────
+ANDROID_KEYSTORE_PATH="secrets/upload-keystore.jks"
+ANDROID_KEYSTORE_PASSWORD=""
+ANDROID_KEY_ALIAS="upload"
+ANDROID_KEY_PASSWORD=""
+
+# ── iOS / App Store Connect ───────────────────────────────────────────────
+# Archive signing uses the Apple ID logged into Xcode on this Mac.
+# Set the Runner target to "Automatically manage signing" for the live/dev
+# Release configurations. IOS_TEAM_ID is the 10-character Team ID.
+IOS_BUNDLE_IDENTIFIER="com.base.app"
+IOS_TEAM_ID=""
+# API key is only for TestFlight upload + version lookup, not for signing.
+ASC_KEY_ID=""
+ASC_ISSUER_ID=""
+ASC_KEY_PATH="secrets/AuthKey_XXXXXXXX.p8"
+TESTFLIGHT_GROUPS=""
+
+# ── Behaviour ─────────────────────────────────────────────────────────────
+RUN_ANALYZE="true"
+RUN_TESTS="true"
+COMMIT_VERSION_BUMP="false"
+CREATE_GIT_TAG="false"
+SKIP_ANDROID="false"
+SKIP_IOS="false"
+# SKIP_IOS_BUILD is set automatically on non-macOS hosts. Do not set it here
+# unless you want to skip the IPA even on a Mac.
+# true = validate config only; no version bump, build, or store upload.
+DRY_RUN="false"
+
+# Optional hooks, run from the Flutter project root immediately before each
+# artifact build. Relative paths are resolved under release/ first, then the
+# project root. Empty means skip. Arguments: GOOGLE_PLAY_TRACK  android|ios
+PRE_BUILD_SCRIPT=""
+ANDROID_PRE_BUILD_SCRIPT=""
+IOS_PRE_BUILD_SCRIPT=""

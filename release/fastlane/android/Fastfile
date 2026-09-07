@@ -1,0 +1,53 @@
+# frozen_string_literal: true
+
+require_relative '../shared/load_deploy_config'
+require_relative '../shared/flutter_build'
+require_relative '../shared/flutter_version'
+require_relative '../shared/prepare_version'
+require_relative '../shared/android_signing'
+require_relative '../shared/pre_build'
+require 'shellwords'
+
+DeployConfig.load!
+
+default_platform(:android)
+
+platform :android do
+  desc 'Read store versions and write the next version into pubspec.yaml'
+  lane :prepare_version do
+    if DeployConfig.truthy?('DRY_RUN')
+      UI.important('DRY_RUN: skipping store version lookup')
+      next
+    end
+    PrepareVersion.run(self)
+  end
+
+  desc 'Build a release AAB and upload it to GOOGLE_PLAY_TRACK'
+  lane :deploy do
+    if DeployConfig.truthy?('DRY_RUN')
+      UI.important('DRY_RUN: skipping Android build and Play upload')
+      next
+    end
+    AndroidSigning.write_key_properties!
+    PreBuild.run!(self, platform: 'android')
+
+    Dir.chdir(DeployConfig::ROOT) do
+      sh(Shellwords.join(['flutter', 'build', 'appbundle', '--release', *FlutterBuild.build_arg_list]))
+    end
+
+    aab = DeployConfig.project_path(FlutterBuild.aab_path)
+    UI.user_error!("AAB not found at #{aab}") unless File.exist?(aab)
+
+    upload_to_play_store(
+      package_name: ENV.fetch('GOOGLE_PLAY_PACKAGE_NAME'),
+      json_key: DeployConfig.secret_path(ENV.fetch('GOOGLE_PLAY_JSON_KEY')),
+      track: ENV.fetch('GOOGLE_PLAY_TRACK'),
+      aab: aab,
+      release_status: ENV.fetch('GOOGLE_PLAY_RELEASE_STATUS', 'draft'),
+      skip_upload_metadata: true,
+      skip_upload_images: true,
+      skip_upload_screenshots: true,
+      skip_upload_changelogs: true
+    )
+  end
+end

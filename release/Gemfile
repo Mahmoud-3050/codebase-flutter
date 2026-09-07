@@ -1,0 +1,7 @@
+# frozen_string_literal: true
+
+source 'https://rubygems.org'
+
+# Fastlane 2.220+ supports the Play and App Store Connect APIs used by the
+# deploy lanes. Pin the major.minor series so `bundle install` stays reproducible.
+gem 'fastlane', '~> 2.228'
