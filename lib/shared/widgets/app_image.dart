@@ -5,11 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:themes/themes.dart';
 
-import '../../core/utils/values/assets.dart';
 import '../../config/themes/extra_colors.dart';
+import '../../core/utils/values/assets.dart';
 import 'app_shimmer.dart';
 
-class AppImage extends StatelessWidget {
+class AppImage extends StatefulWidget {
   final GlobalKey? imageKey;
   final String? imageUrl;
   final File? imageFile;
@@ -18,9 +18,13 @@ class AppImage extends StatelessWidget {
   final double? height;
   final BoxFit fit;
   final Color? color;
-  final bool? isCached;
-  final bool? isCircle;
+  final bool isCached;
+  final bool isCircle;
   final Duration? fadeDuration;
+  final double? borderRadius;
+  final Color? borderColor;
+  final double? borderWidth;
+  final Color? backgroundColor;
 
   const AppImage({
     this.imageKey,
@@ -34,6 +38,10 @@ class AppImage extends StatelessWidget {
     this.isCached = false,
     this.isCircle = false,
     this.fadeDuration,
+    this.borderRadius,
+    this.borderColor,
+    this.borderWidth,
+    this.backgroundColor,
     super.key,
   });
 
@@ -43,9 +51,13 @@ class AppImage extends StatelessWidget {
     double? height,
     BoxFit fit = .fill,
     Color? color,
-    bool? isCached,
-    bool? isCircle,
+    bool isCached = false,
+    bool isCircle = false,
     Duration? fadeDuration,
+    double? borderRadius,
+    Color? borderColor,
+    double? borderWidth,
+    Color? backgroundColor,
   }) {
     return AppImage(
       imageUrl: imageUrl,
@@ -53,9 +65,13 @@ class AppImage extends StatelessWidget {
       height: height,
       fit: fit,
       color: color,
-      isCached: isCached ?? false,
-      isCircle: isCircle ?? false,
+      isCached: isCached,
+      isCircle: isCircle,
       fadeDuration: fadeDuration,
+      borderRadius: borderRadius,
+      borderColor: borderColor,
+      borderWidth: borderWidth,
+      backgroundColor: backgroundColor,
     );
   }
 
@@ -66,16 +82,24 @@ class AppImage extends StatelessWidget {
     double? height,
     BoxFit fit = .fill,
     Color? color,
-    bool? isCircle,
+    bool isCircle = false,
+    double? borderRadius,
+    Color? borderColor,
+    double? borderWidth,
+    Color? backgroundColor,
   }) {
     return AppImage(
-      key: imageKey,
+      imageKey: imageKey,
       imageFile: imageFile,
       width: width,
       height: height,
       fit: fit,
       color: color,
-      isCircle: isCircle ?? false,
+      isCircle: isCircle,
+      borderRadius: borderRadius,
+      borderColor: borderColor,
+      borderWidth: borderWidth,
+      backgroundColor: backgroundColor,
     );
   }
 
@@ -85,7 +109,11 @@ class AppImage extends StatelessWidget {
     double? height,
     BoxFit fit = .fill,
     Color? color,
-    bool? isCircle,
+    bool isCircle = false,
+    double? borderRadius,
+    Color? borderColor,
+    double? borderWidth,
+    Color? backgroundColor,
   }) {
     return AppImage(
       imageAsset: imageAsset,
@@ -93,164 +121,183 @@ class AppImage extends StatelessWidget {
       height: height,
       fit: fit,
       color: color,
-      isCircle: isCircle ?? false,
+      isCircle: isCircle,
+      borderRadius: borderRadius,
+      borderColor: borderColor,
+      borderWidth: borderWidth,
+      backgroundColor: backgroundColor,
     );
   }
 
   @override
-  Widget build(BuildContext context) {
-    return Builder(
-      builder: (BuildContext context) {
-        if (imageUrl != null) {
-          return _imageNetwork;
-        }
-        if (imageFile != null) {
-          return _imageFile;
-        }
-        if (imageAsset != null) {
-          return _imageAsset;
-        }
-        return const SizedBox();
-      },
-    );
+  State<AppImage> createState() => _AppImageState();
+}
+
+class _AppImageState extends State<AppImage> with WidgetsBindingObserver {
+  int _textureGeneration = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
   }
 
-  Widget _buildBaseCircle(ImageProvider child) {
-    return Container(
-      width: width,
-      height: height,
-      decoration: BoxDecoration(
-        shape: .circle,
-        image: DecorationImage(image: child, fit: fit),
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state != .resumed || !mounted) return;
+    setState(() => _textureGeneration++);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return _framed(
+      KeyedSubtree(
+        key: ValueKey<int>(_textureGeneration),
+        child: _resolveChild(context),
       ),
     );
   }
 
-  Image get _imageAssetItem => .asset(
-    imageAsset!,
-    width: width,
-    height: height,
-    fit: fit,
-    errorBuilder: (BuildContext context, Object url, StackTrace? error) =>
-        _errorWidget(context),
-  );
+  Widget _resolveChild(BuildContext context) {
+    final url = widget.imageUrl;
+    if (url != null && url.isNotEmpty) return _networkImage(context, url);
 
-  Widget get _imageAsset {
-    if (isCircle == true) {
-      return _buildBaseCircle(_imageAssetItem.image);
-    }
-    return _imageAssetItem;
+    final file = widget.imageFile;
+    if (file != null) return _fileImage(file);
+
+    final asset = widget.imageAsset;
+    if (asset != null && asset.isNotEmpty) return _assetImage(asset);
+
+    return _fallbackImage(context);
   }
 
-  Image get _imageFileItem => .file(
-    key: imageKey,
-    imageFile!,
-    width: width,
-    height: height,
-    fit: fit,
-    errorBuilder: (BuildContext context, Object url, StackTrace? error) =>
-        _errorWidget(context),
-  );
-
-  Widget get _imageFile {
-    if (isCircle == true) {
-      return _buildBaseCircle(_imageFileItem.image);
-    }
-    return _imageFileItem;
+  Widget _framed(Widget child) {
+    final radius = widget.borderRadius ?? 0;
+    return Container(
+      width: widget.width,
+      height: widget.height,
+      clipBehavior: .hardEdge,
+      decoration: BoxDecoration(
+        color: widget.backgroundColor,
+        shape: widget.isCircle ? .circle : .rectangle,
+        borderRadius: widget.isCircle || radius == 0 ? null : .circular(radius),
+        border: widget.borderColor != null || widget.borderWidth != null
+            ? Border.all(
+                color: widget.borderColor ?? Colors.white,
+                width: widget.borderWidth ?? 2,
+              )
+            : null,
+      ),
+      child: child,
+    );
   }
 
-  Image get _imageNetworkItem => .network(
-    imageUrl!,
-    color: color,
-    width: width,
-    height: height,
-    fit: fit,
-    loadingBuilder:
-        (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) {
-          if (fadeDuration != null) {
-            return child.animate().fadeIn(
-              curve: Curves.easeInOut,
-              duration: fadeDuration,
-            );
-          } else {
-            return child;
-          }
-        },
-    errorBuilder: (BuildContext context, _, dynamic error) =>
-        _errorWidget(context),
-  );
-
-  Widget get _imageNetwork {
-    // Check if the imageUrl is null or empty
-    if (imageUrl == null || imageUrl?.isEmpty == true) {
-      if (isCircle == true) {
-        return _buildBaseCircle(_placeholderImage.image);
-      }
-      return _placeholderImage;
-    }
-    if (isCached == true) {
-      if (isCircle == true) {
-        return _buildBaseCircle(
-          CachedNetworkImageProvider(
-            imageUrl!,
-            maxWidth: width?.toInt(),
-            maxHeight: height?.toInt(),
-          ),
-        );
-      }
-      return CachedNetworkImage(
-        imageUrl: imageUrl!,
-        color: color,
-        width: width,
-        height: height,
-        fit: fit,
-        placeholderFadeInDuration: const Duration(milliseconds: 500),
-        placeholder: (BuildContext context, String url) =>
-            _loadingWidget(context),
-        errorWidget: (BuildContext context, String url, dynamic error) =>
-            _errorWidget(context),
-      );
-    }
-    if (isCircle == true) {
-      return _buildBaseCircle(_imageNetworkItem.image);
-    }
-    return _imageNetworkItem;
+  Widget _networkImage(BuildContext context, String url) {
+    if (widget.isCached) return _cachedNetworkImage(context, url);
+    return _rawNetworkImage(context, url);
   }
 
-  Widget _loadingWidget(BuildContext context) => Center(
-    child: AppShimmer(
+  Widget _cachedNetworkImage(BuildContext context, String url) {
+    final pixelRatio = MediaQuery.maybeDevicePixelRatioOf(context) ?? 1;
+    final cacheWidth = widget.width;
+    final cacheHeight = widget.height;
+    return CachedNetworkImage(
+      imageUrl: url,
+      color: widget.color,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      memCacheWidth: cacheWidth == null
+          ? null
+          : (cacheWidth * pixelRatio).round(),
+      memCacheHeight: cacheHeight == null
+          ? null
+          : (cacheHeight * pixelRatio).round(),
+      fadeInDuration: widget.fadeDuration ?? const Duration(milliseconds: 300),
+      placeholderFadeInDuration: const Duration(milliseconds: 500),
+      placeholder: (BuildContext context, String url) =>
+          _loadingWidget(context),
+      errorWidget: (BuildContext context, String url, Object error) =>
+          _fallbackImage(context),
+    );
+  }
+
+  Widget _rawNetworkImage(BuildContext context, String url) {
+    return Image.network(
+      url,
+      color: widget.color,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      loadingBuilder:
+          (BuildContext context, Widget child, ImageChunkEvent? progress) {
+            if (progress != null) return _loadingWidget(context);
+            return _fadeLoaded(child);
+          },
+      errorBuilder: (BuildContext context, Object error, StackTrace? stack) =>
+          _fallbackImage(context),
+    );
+  }
+
+  Widget _fileImage(File file) {
+    return Image.file(
+      key: widget.imageKey,
+      file,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      color: widget.color,
+      errorBuilder: (BuildContext context, Object error, StackTrace? stack) =>
+          _fallbackImage(context),
+    );
+  }
+
+  Widget _assetImage(String asset) {
+    return Image.asset(
+      asset,
+      width: widget.width,
+      height: widget.height,
+      fit: widget.fit,
+      color: widget.color,
+      errorBuilder: (BuildContext context, Object error, StackTrace? stack) =>
+          _fallbackImage(context),
+    );
+  }
+
+  Widget _fadeLoaded(Widget child) {
+    final duration = widget.fadeDuration;
+    if (duration == null) return child;
+    return child.animate().fadeIn(curve: Curves.easeInOut, duration: duration);
+  }
+
+  Widget _loadingWidget(BuildContext context) {
+    return AppShimmer(
       child: Container(
-        width: width,
-        height: height,
+        width: widget.width,
+        height: widget.height,
         color: context.colors.baseColorShimmer,
       ),
-    ),
-  );
+    );
+  }
 
-  // Widget _loadingProgressWidget(ImageChunkEvent loadingProgress) => Center(
-  //   child: CircularProgressIndicator(
-  //     value: loadingProgress.expectedTotalBytes != null
-  //         ? loadingProgress.cumulativeBytesLoaded /
-  //         loadingProgress.expectedTotalBytes!
-  //         : null,
-  //   ).appLoading,
-  // );
-
-  Widget _errorWidget(BuildContext context) => Center(
-    child: Container(
-      width: width,
-      height: height,
-      color: context.colors.baseColorShimmer,
-      child: const Icon(Icons.error, color: Colors.grey),
-    ),
-  );
-
-  Image get _placeholderImage {
+  Widget _fallbackImage(BuildContext context) {
     return Image.asset(
       Assets.imagesPlaceholder,
-      width: width,
-      height: height,
-      fit: fit,
+      width: widget.width,
+      height: widget.height,
+      fit: .cover,
+      errorBuilder: (BuildContext context, Object error, StackTrace? stack) {
+        return ColoredBox(
+          color: context.colors.baseColorShimmer,
+          child: Icon(Icons.image, color: context.colors.grey400),
+        );
+      },
     );
   }
 }
