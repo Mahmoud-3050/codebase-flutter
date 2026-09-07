@@ -1,21 +1,21 @@
 {
   "project_info": {
-    "project_number": "53524864257",
-    "project_id": "sahalat-f3761",
-    "storage_bucket": "sahalat-f3761.appspot.com"
+    "project_number": "847258040957",
+    "project_id": "baseapp-2026",
+    "storage_bucket": "baseapp-2026.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:53524864257:android:5786a9b354cd82b9578f00",
+        "mobilesdk_app_id": "1:847258040957:android:c49199ea333c55a09b8f14",
         "android_client_info": {
-          "package_name": "com.sahalat.android"
+          "package_name": "com.base.app"
         }
       },
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyBnj4lUHJFlcJOAU1Xdb-x-Uz-HNFQzQPY"
+          "current_key": "AIzaSyBa--FIpqUpkFnA33MbWad-5JSyxkDx1GE"
         }
       ],
       "services": {

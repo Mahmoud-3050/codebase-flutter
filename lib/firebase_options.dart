@@ -49,19 +49,18 @@ class DefaultFirebaseOptions {
   }
 
   static const FirebaseOptions android = FirebaseOptions(
-    apiKey: 'AIzaSyBnj4lUHJFlcJOAU1Xdb-x-Uz-HNFQzQPY',
-    appId: '1:53524864257:android:5786a9b354cd82b9578f00',
-    messagingSenderId: '53524864257',
-    projectId: 'sahalat-f3761',
-    storageBucket: 'sahalat-f3761.appspot.com',
+    apiKey: 'AIzaSyBa--FIpqUpkFnA33MbWad-5JSyxkDx1GE',
+    appId: '1:847258040957:android:c49199ea333c55a09b8f14',
+    messagingSenderId: '847258040957',
+    projectId: 'baseapp-2026',
+    storageBucket: 'baseapp-2026.firebasestorage.app',
   );
-
   static const FirebaseOptions ios = FirebaseOptions(
-    apiKey: 'AIzaSyBUstay8xyCUOenVNR6y_xAuL3aSg8aMrw',
-    appId: '1:53524864257:ios:76bc95c0ed209df3578f00',
-    messagingSenderId: '53524864257',
-    projectId: 'sahalat-f3761',
-    storageBucket: 'sahalat-f3761.appspot.com',
-    iosBundleId: 'com.sahalat.ios',
+    apiKey: 'AIzaSyDfYAXe4tC7zbyq482tdCzvSLS57Wvtc58',
+    appId: '1:847258040957:ios:b6613cf6dae6aeb59b8f14',
+    messagingSenderId: '847258040957',
+    projectId: 'baseapp-2026',
+    storageBucket: 'baseapp-2026.firebasestorage.app',
+    iosBundleId: 'com.base.app',
   );
 }
