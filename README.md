@@ -22,6 +22,7 @@ credentials, set `GOOGLE_PLAY_TRACK` to `internal` or `production`, then:
 
 ```bash
 bash release/scripts/deploy.sh
+bash release/scripts/deploy.sh --skip-deploy   # build AAB/IPA only
 ```
 
 See [release/README.md](release/README.md) for flavors vs no-flavors, secrets, and CI.

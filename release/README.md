@@ -27,6 +27,7 @@ bash release/scripts/deploy.sh              # both stores
 bash release/scripts/deploy.sh google       # Play Store only
 bash release/scripts/deploy.sh ios          # TestFlight only
 bash release/scripts/deploy.sh ios --skip-build   # upload existing IPA if present
+bash release/scripts/deploy.sh --skip-deploy      # build AAB/IPA, skip store upload
 ```
 
 `release/deploy.config` is gitignored. Never commit it.
@@ -45,14 +46,18 @@ bash release/scripts/deploy.sh ios --skip-build   # upload existing IPA if prese
 6. Run optional pre-build hooks (`PRE_BUILD_SCRIPT`, then the platform-specific
    script) immediately before each AAB / IPA build.
 7. Build and upload Android (AAB) to `GOOGLE_PLAY_TRACK` and, on macOS, iOS (IPA).
-   Builds are obfuscated:
+   `--skip-deploy` / `SKIP_DEPLOY="true"` stops after the build (no Play or
+   TestFlight upload). Builds are obfuscated:
    `flutter build appbundle --release --obfuscate --split-debug-info=build/app/symbols`
    `flutter build ipa --release --obfuscate --split-debug-info=build/ios/symbols`
    Keep those symbol folders to de-obfuscate Dart stack traces (`flutter symbolize`).
 
 Pass `google`, `ios`, or `both` to choose stores. `--skip-build` (or
 `SKIP_BUILD_IF_EXISTS="true"`) uploads an existing AAB/IPA without rebuilding;
-if the file is missing, Flutter still builds.
+if the file is missing, Flutter still builds. `--skip-deploy` (alias
+`--build-only`, or `SKIP_DEPLOY="true"`) still bumps the version and builds,
+but skips Play Store and TestFlight upload. Combine them to reuse an existing
+artifact without uploading it.
 
 On Linux the scripts set `SKIP_IOS_BUILD` and skip the IPA with a warning.
 App Store Connect API calls for version lookup still run from Linux; only
@@ -126,6 +131,7 @@ are relative to `release/`.
 | `ASC_KEY_ID` / `ASC_ISSUER_ID` / `ASC_KEY_PATH` | App Store Connect API key (`.p8`) — TestFlight **upload** and store version lookup only, not signing |
 | `DEPLOY_TARGET` | `google`, `ios`, or `both` (CLI arg overrides) |
 | `SKIP_BUILD_IF_EXISTS` | `true` skips Flutter when the AAB/IPA is already on disk |
+| `SKIP_DEPLOY` | `true` builds the AAB/IPA but does not upload to Play / TestFlight |
 | `DRY_RUN` | `true` validates config only; skips version bump, build, and upload |
 | `TESTFLIGHT_GROUPS` | Optional comma-separated TestFlight group names |
 

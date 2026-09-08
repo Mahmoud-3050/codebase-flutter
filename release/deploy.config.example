@@ -50,6 +50,9 @@ SKIP_ANDROID="false"
 SKIP_IOS="false"
 # true = upload an existing AAB/IPA instead of running flutter build.
 SKIP_BUILD_IF_EXISTS="false"
+# true = build the AAB/IPA but do not upload to Play / TestFlight.
+# CLI `bash release/scripts/deploy.sh --skip-deploy` (or `--build-only`) overrides this.
+SKIP_DEPLOY="false"
 # SKIP_IOS_BUILD is set automatically on non-macOS hosts. Do not set it here
 # unless you want to skip the IPA even on a Mac.
 # true = validate config only; no version bump, build, or store upload.

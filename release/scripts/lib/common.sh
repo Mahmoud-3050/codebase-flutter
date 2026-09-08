@@ -131,22 +131,27 @@ EOF
 
 usage() {
   cat <<'EOF'
-Usage: bash release/scripts/deploy.sh [google|ios|both] [--skip-build]
+Usage: bash release/scripts/deploy.sh [google|ios|both] [--skip-build] [--skip-deploy]
 
   google         Play Store only
   ios            TestFlight only
   both           Google Play and TestFlight (default)
   --skip-build   Skip flutter build when the AAB/IPA already exists
   --no-skip-build
+  --skip-deploy, --build-only
+                 Build the AAB/IPA but do not upload to Play / TestFlight
+  --no-skip-deploy
   -h, --help
 
-Config defaults: DEPLOY_TARGET and SKIP_BUILD_IF_EXISTS in release/deploy.config.
+Config defaults: DEPLOY_TARGET, SKIP_BUILD_IF_EXISTS, and SKIP_DEPLOY in
+release/deploy.config.
 EOF
 }
 
 parse_deploy_args() {
   CLI_DEPLOY_TARGET=""
   CLI_SKIP_BUILD=""
+  CLI_SKIP_DEPLOY=""
   while [[ $# -gt 0 ]]; do
     case "$1" in
       google | android | play)
@@ -163,6 +168,12 @@ parse_deploy_args() {
         ;;
       --no-skip-build)
         CLI_SKIP_BUILD="false"
+        ;;
+      --skip-deploy | --build-only)
+        CLI_SKIP_DEPLOY="true"
+        ;;
+      --no-skip-deploy)
+        CLI_SKIP_DEPLOY="false"
         ;;
       -h | --help)
         usage
@@ -224,8 +235,10 @@ export_cli_overrides() {
   export CLI_SKIP_IOS="${SKIP_IOS:-false}"
   export CLI_SKIP_IOS_BUILD="${SKIP_IOS_BUILD:-false}"
   export CLI_SKIP_BUILD_IF_EXISTS="${SKIP_BUILD_IF_EXISTS:-false}"
+  export CLI_SKIP_DEPLOY="${SKIP_DEPLOY:-false}"
   export CLI_DEPLOY_TARGET="${DEPLOY_TARGET:-both}"
   export SKIP_BUILD_IF_EXISTS="${SKIP_BUILD_IF_EXISTS:-false}"
+  export SKIP_DEPLOY="${SKIP_DEPLOY:-false}"
 }
 
 android_aab_path() {
@@ -240,14 +253,30 @@ existing_android_aab() {
   [[ -f "$(android_aab_path)" ]]
 }
 
-existing_ios_ipa() {
+ios_ipa_path() {
   shopt -s nullglob
   local files=("${ROOT_DIR}/build/ios/ipa/"*.ipa)
   shopt -u nullglob
-  if [[ ${#files[@]} -gt 0 ]]; then
+  local newest=""
+  local file
+  for file in "${files[@]}"; do
+    if [[ -z "${newest}" || "${file}" -nt "${newest}" ]]; then
+      newest="${file}"
+    fi
+  done
+  if [[ -n "${newest}" ]]; then
+    echo "${newest}"
     return 0
   fi
-  [[ -f "${RELEASE_DIR}/Runner.ipa" ]]
+  if [[ -f "${RELEASE_DIR}/Runner.ipa" ]]; then
+    echo "${RELEASE_DIR}/Runner.ipa"
+    return 0
+  fi
+  return 1
+}
+
+existing_ios_ipa() {
+  ios_ipa_path >/dev/null
 }
 
 will_build_android() {
@@ -388,6 +417,21 @@ maybe_tag_version() {
   )
 }
 
+print_artifact_paths() {
+  if ! is_true "${SKIP_ANDROID}"; then
+    echo "  AAB: $(android_aab_path)"
+  fi
+  if ios_build_skipped; then
+    return 0
+  fi
+  local ipa
+  if ipa="$(ios_ipa_path)"; then
+    echo "  IPA: ${ipa}"
+  else
+    echo "  IPA: ${ROOT_DIR}/build/ios/ipa/"
+  fi
+}
+
 deploy() {
   parse_deploy_args "$@"
   load_deploy_config
@@ -397,13 +441,17 @@ deploy() {
   if [[ -n "${CLI_SKIP_BUILD}" ]]; then
     SKIP_BUILD_IF_EXISTS="${CLI_SKIP_BUILD}"
   fi
+  if [[ -n "${CLI_SKIP_DEPLOY}" ]]; then
+    SKIP_DEPLOY="${CLI_SKIP_DEPLOY}"
+  fi
   SKIP_BUILD_IF_EXISTS="${SKIP_BUILD_IF_EXISTS:-false}"
+  SKIP_DEPLOY="${SKIP_DEPLOY:-false}"
   apply_deploy_target
   infer_deploy_target
   skip_ios_build_if_not_macos
   export_cli_overrides
   validate_config
-  echo "Deploy target: ${DEPLOY_TARGET} (skip-build-if-exists=${SKIP_BUILD_IF_EXISTS})"
+  echo "Deploy target: ${DEPLOY_TARGET} (skip-build-if-exists=${SKIP_BUILD_IF_EXISTS}, skip-deploy=${SKIP_DEPLOY})"
   if is_true "${DRY_RUN:-false}"; then
     echo "DRY_RUN: config is valid. Skipping preflight, version bump, build, and store upload."
     return 0
@@ -430,5 +478,10 @@ deploy() {
 
   maybe_commit_version
   maybe_tag_version
-  echo "Deploy finished (target=${DEPLOY_TARGET}, GOOGLE_PLAY_TRACK=${GOOGLE_PLAY_TRACK})."
+  if is_true "${SKIP_DEPLOY}"; then
+    echo "Build finished (skip-deploy; artifacts not uploaded). target=${DEPLOY_TARGET}"
+    print_artifact_paths
+  else
+    echo "Deploy finished (target=${DEPLOY_TARGET}, GOOGLE_PLAY_TRACK=${GOOGLE_PLAY_TRACK})."
+  fi
 }

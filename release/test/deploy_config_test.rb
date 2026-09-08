@@ -50,11 +50,14 @@ class DeployConfigTest < Minitest::Test
     with_env(
       'SKIP_BUILD_IF_EXISTS' => 'false',
       'CLI_SKIP_BUILD_IF_EXISTS' => 'true',
+      'SKIP_DEPLOY' => 'false',
+      'CLI_SKIP_DEPLOY' => 'true',
       'DEPLOY_TARGET' => 'both',
       'CLI_DEPLOY_TARGET' => 'ios'
     ) do
       DeployConfig.apply_cli_overrides!
       assert DeployConfig.truthy?('SKIP_BUILD_IF_EXISTS')
+      assert DeployConfig.truthy?('SKIP_DEPLOY')
       assert_equal 'ios', ENV['DEPLOY_TARGET']
     end
   end

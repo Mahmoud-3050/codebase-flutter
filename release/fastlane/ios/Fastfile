@@ -20,7 +20,7 @@ platform :ios do
     PrepareVersion.run(self)
   end
 
-  desc 'Build an IPA and upload it to TestFlight'
+  desc 'Build an IPA and upload it to TestFlight (upload skipped when SKIP_DEPLOY)'
   lane :deploy do
     if DeployConfig.truthy?('DRY_RUN')
       UI.important('DRY_RUN: skipping iOS archive and TestFlight upload')
@@ -46,6 +46,11 @@ platform :ios do
     end
 
     UI.user_error!("IPA not found under #{FlutterBuild.ipa_dir} (or release/Runner.ipa)") if ipa.nil? || !File.file?(ipa)
+
+    if DeployConfig.truthy?('SKIP_DEPLOY')
+      UI.success("SKIP_DEPLOY: IPA ready at #{ipa} (TestFlight upload skipped)")
+      next
+    end
 
     app_store_connect_api_key(
       key_id: ENV.fetch('ASC_KEY_ID'),

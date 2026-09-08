@@ -94,6 +94,7 @@ SKIP_ANDROID="false"
 SKIP_IOS="false"
 DEPLOY_TARGET="both"
 SKIP_BUILD_IF_EXISTS="false"
+SKIP_DEPLOY="false"
 PRE_BUILD_SCRIPT=""
 ANDROID_PRE_BUILD_SCRIPT=""
 IOS_PRE_BUILD_SCRIPT=""
@@ -198,6 +199,38 @@ expect_ok "skip-build still builds when AAB is missing" \
     SKIP_BUILD_IF_EXISTS=true
     SKIP_ANDROID=false
     will_build_android
+  '
+make_fixture "${fixture}"
+
+expect_ok "skip-deploy flag sets CLI_SKIP_DEPLOY" \
+  run_in_fixture "${fixture}" '
+    parse_deploy_args --skip-deploy
+    [[ "${CLI_SKIP_DEPLOY}" == "true" ]]
+  '
+make_fixture "${fixture}"
+
+expect_ok "build-only alias sets CLI_SKIP_DEPLOY" \
+  run_in_fixture "${fixture}" '
+    parse_deploy_args google --build-only
+    [[ "${CLI_DEPLOY_TARGET}" == "google" ]]
+    [[ "${CLI_SKIP_DEPLOY}" == "true" ]]
+  '
+make_fixture "${fixture}"
+
+expect_ok "no-skip-deploy clears the flag" \
+  run_in_fixture "${fixture}" '
+    parse_deploy_args --skip-deploy --no-skip-deploy
+    [[ "${CLI_SKIP_DEPLOY}" == "false" ]]
+  '
+make_fixture "${fixture}"
+
+mkdir -p "${fixture}/../build/ios/ipa"
+printf 'ipa' >"${fixture}/../build/ios/ipa/Runner.ipa"
+expect_ok "ios_ipa_path finds the built IPA" \
+  run_in_fixture "${fixture}" '
+    path="$(ios_ipa_path)"
+    [[ "${path}" == *"/build/ios/ipa/Runner.ipa" ]]
+    existing_ios_ipa
   '
 make_fixture "${fixture}"
 

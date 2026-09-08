@@ -21,7 +21,7 @@ platform :android do
     PrepareVersion.run(self)
   end
 
-  desc 'Build a release AAB and upload it to GOOGLE_PLAY_TRACK'
+  desc 'Build a release AAB and upload it to GOOGLE_PLAY_TRACK (upload skipped when SKIP_DEPLOY)'
   lane :deploy do
     if DeployConfig.truthy?('DRY_RUN')
       UI.important('DRY_RUN: skipping Android build and Play upload')
@@ -38,6 +38,11 @@ platform :android do
     end
 
     UI.user_error!("AAB not found at #{aab}") unless File.file?(aab)
+
+    if DeployConfig.truthy?('SKIP_DEPLOY')
+      UI.success("SKIP_DEPLOY: AAB ready at #{aab} (Play upload skipped)")
+      next
+    end
 
     upload_to_play_store(
       package_name: ENV.fetch('GOOGLE_PLAY_PACKAGE_NAME'),

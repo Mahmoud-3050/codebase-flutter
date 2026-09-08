@@ -27,7 +27,7 @@ module DeployConfig
 
   # deploy.sh exports CLI_* so flags like `--skip-build` survive Dotenv.overload.
   CLI_OVERRIDE_KEYS = %w[
-    SKIP_ANDROID SKIP_IOS SKIP_IOS_BUILD SKIP_BUILD_IF_EXISTS DEPLOY_TARGET
+    SKIP_ANDROID SKIP_IOS SKIP_IOS_BUILD SKIP_BUILD_IF_EXISTS SKIP_DEPLOY DEPLOY_TARGET
   ].freeze
 
   def self.apply_cli_overrides!
