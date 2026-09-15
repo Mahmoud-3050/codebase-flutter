@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screen_util/screen_util.dart';
 import 'package:themes/themes.dart';
 
 import '../../core/utils/values/fonts.dart';
@@ -45,7 +45,7 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
         fontFamily: Fonts.current,
       ),
     ),
-    appBarTheme: AppBarTheme(
+    appBarTheme: AppBarThemeData(
       backgroundColor: colors.background,
       elevation: 0,
       scrolledUnderElevation: 0,
@@ -59,10 +59,10 @@ ThemeData appTheme(ThemeColors colors, Brightness brightness) {
     ),
     actionIconTheme: ActionIconThemeData(
       backButtonIconBuilder: (context) => Icon(
-          Icons.arrow_back_ios_new_rounded,
-          size: 16.r,
-          color: colors.textPrimary,
-        ),
+        Icons.arrow_back_ios_new_rounded,
+        size: 16.r,
+        color: colors.textPrimary,
+      ),
     ),
   );
 }

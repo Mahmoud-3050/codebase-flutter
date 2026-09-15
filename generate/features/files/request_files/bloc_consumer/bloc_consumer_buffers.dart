@@ -15,7 +15,7 @@ class BlocConsumerRequestBuffers extends BaseRequestBuffers {
     buffer.writeln("import 'package:flutter_bloc/flutter_bloc.dart';");
     if (isDataModel) {
       buffer.writeln(
-        "import 'package:flutter_screenutil/flutter_screenutil.dart';",
+        "import 'package:screen_util/screen_util.dart';",
       );
     }
     buffer.writeln();

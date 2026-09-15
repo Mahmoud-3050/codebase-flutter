@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:store_redirect/store_redirect.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screen_util/screen_util.dart';
 import 'package:themes/themes.dart';
 
 import '../../../config/language/strings.dart';

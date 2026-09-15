@@ -1,7 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screen_util/screen_util.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:themes/themes.dart';
 

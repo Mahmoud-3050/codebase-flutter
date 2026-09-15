@@ -2,7 +2,7 @@ import 'package:field_validator/field_validator.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screen_util/screen_util.dart';
 import 'package:phone_form_field/phone_form_field.dart' hide PhoneValidator;
 import 'package:themes/themes.dart';
 

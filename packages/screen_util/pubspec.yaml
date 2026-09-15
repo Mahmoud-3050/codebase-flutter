@@ -1,0 +1,17 @@
+name: screen_util
+description: A local Flutter package for screen/font size adaptation (local port of flutter_screenutil 5.9.3).
+version: 1.0.0
+publish_to: 'none'
+
+environment:
+  sdk: '>=3.10.0 <4.0.0'
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0

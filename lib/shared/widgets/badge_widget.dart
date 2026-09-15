@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:badges/badges.dart' as badges;
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screen_util/screen_util.dart';
 import 'package:language/language.dart';
 import 'package:themes/themes.dart';
 

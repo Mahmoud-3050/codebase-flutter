@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart' hide RouteFactory;
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screen_util/screen_util.dart';
 import 'package:language/language.dart';
 import 'package:phone_form_field/phone_form_field.dart';
 import 'package:themes/themes.dart';

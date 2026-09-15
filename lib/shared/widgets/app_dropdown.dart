@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screen_util/screen_util.dart';
 import 'package:themes/themes.dart';
 
 import '../../config/language/strings.dart';
 import '../../core/utils/values/text_styles.dart';
 import 'app_shimmer.dart';
+import 'field_errors_scope.dart';
 
-class AppDropdown<T> extends StatefulWidget {
+class AppDropdown<T> extends StatelessWidget {
   final String hintText;
   final String? labelText;
   final String? textItemBuilder;
@@ -15,9 +16,17 @@ class AppDropdown<T> extends StatefulWidget {
   final List<String> names;
   final Widget? iconItemBuilder;
   final Widget? iconItemMenu;
-  final Color? backgroundColor, borderColor;
+  final List<Widget?> itemIcons;
+  final Color? backgroundColor;
+  final Color? borderColor;
   final void Function(T?)? onChanged;
   final bool isOptional;
+  final bool showRequiredSymbol;
+  final bool hasError;
+  final String? errorText;
+  final String? fieldName;
+  final bool showArrow;
+  final bool enabled;
 
   const AppDropdown({
     required this.value,
@@ -32,203 +41,230 @@ class AppDropdown<T> extends StatefulWidget {
     this.borderColor,
     this.textItemBuilder,
     this.iconItemMenu,
+    this.itemIcons = const [],
     this.isOptional = false,
+    this.showRequiredSymbol = false,
+    this.hasError = false,
+    this.errorText,
+    this.fieldName,
+    this.showArrow = true,
+    this.enabled = true,
   });
 
   @override
-  State<AppDropdown<T>> createState() => _AppDropdownState<T>();
-}
-
-class _AppDropdownState<T> extends State<AppDropdown<T>> {
-  Map<T, String> mapNamesValues = <T, String>{};
-
-  @override
-  void initState() {
-    super.initState();
-    for (int i = 0; i < widget.values.length; i++) {
-      mapNamesValues[widget.values[i]] = widget.names[i];
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    if (widget.labelText != null) {
-      return Column(
-        crossAxisAlignment: .start,
-        children: <Widget>[
-          Text(
-            widget.labelText!,
-            style: TextStyles.of(size: 16, weight: .w500),
-          ),
+    final colors = context.colors;
+    final models = _models;
+    final visibleError = _visibleError(context);
+    final isInvalid = hasError || visibleError != null;
+    final isEnabled = enabled && onChanged != null;
+
+    return Column(
+      crossAxisAlignment: .start,
+      children: [
+        if (labelText != null) ...[_buildLabel(colors), SizedBox(height: 4.h)],
+        _buildDropdown(
+          colors: colors,
+          models: models,
+          isInvalid: isInvalid,
+          isEnabled: isEnabled,
+        ),
+        if (visibleError != null) ...[
           SizedBox(height: 4.h),
-          _dropdown,
+          Padding(
+            padding: .symmetric(horizontal: 12.w),
+            child: Text(
+              visibleError,
+              style: TextStyles.of(size: 12, color: colors.error),
+            ),
+          ),
         ],
-      );
-    }
-    return _dropdown;
+      ],
+    );
   }
 
-  Widget get _dropdown {
+  List<DropdownItemModel<T>> get _models {
+    final length = values.length < names.length ? values.length : names.length;
+    return [
+      for (var i = 0; i < length; i++)
+        DropdownItemModel<T>(
+          name: names[i],
+          value: values[i],
+          icon: i < itemIcons.length ? itemIcons[i] : iconItemMenu,
+        ),
+    ];
+  }
+
+  T? get _safeValue {
+    final selected = value;
+    if (selected == null) return null;
+    for (final item in values) {
+      if (item == selected) return selected;
+    }
+    return null;
+  }
+
+  String? _visibleError(BuildContext context) {
+    if (errorText != null && errorText!.isNotEmpty) return errorText;
+    return FieldErrorsScope.of(context).messageFor(fieldName);
+  }
+
+  Widget _buildLabel(ThemeColors colors) {
+    final style = TextStyles.of(size: 16, weight: .w500);
+    final label = labelText ?? '';
+    if (!showRequiredSymbol) {
+      return Text(label, style: style);
+    }
+    return Text.rich(
+      TextSpan(
+        text: label,
+        style: style,
+        children: [
+          TextSpan(
+            text: ' *',
+            style: style.copyWith(color: colors.error),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDropdown({
+    required ThemeColors colors,
+    required List<DropdownItemModel<T>> models,
+    required bool isInvalid,
+    required bool isEnabled,
+  }) {
     return Container(
       padding: .symmetric(horizontal: 16.w, vertical: 4.h),
       decoration: BoxDecoration(
         borderRadius: .circular(8.r),
-        color: widget.backgroundColor,
-        border: .all(color: widget.borderColor ?? context.colors.hint),
+        color: backgroundColor,
+        border: .all(color: isInvalid ? colors.error : (borderColor ?? colors.hint)),
       ),
       child: DropdownButton<T>(
-        value: widget.value,
+        value: _safeValue,
         menuMaxHeight: 0.35.sh,
-        icon: Icon(
-          Icons.arrow_drop_down_rounded,
-          color: widget.values.isEmpty
-              ? context.colors.hint
-              : widget.onChanged != null
-              ? context.colors.textPrimary
-              : context.colors.hint,
-          size: 20.r,
-        ),
-        hint: _buildHintText(),
+        icon: showArrow
+            ? Icon(
+                Icons.arrow_drop_down_rounded,
+                color: isEnabled && models.isNotEmpty
+                    ? (isInvalid ? colors.error : colors.textPrimary)
+                    : colors.hint,
+                size: 20.r,
+              )
+            : const SizedBox.shrink(),
+        hint: _buildHintText(colors),
         borderRadius: .circular(8.r),
         isExpanded: true,
         underline: const SizedBox(),
-        selectedItemBuilder: (context) {
-          List<Widget> selectedItems = [];
-          if (widget.isOptional) {
-            final noneItem = DropdownMenuItem<T>(child: _buildHintText());
-            selectedItems.add(noneItem);
-          }
-          List<Widget> valuesSelectedItems = mapNamesValues.entries.map((
-            MapEntry<T, String> entry,
-          ) {
-            return DropdownMenuItem<T>(
-              value: entry.key,
-              child: Builder(
-                builder: (context) {
-                  if (widget.textItemBuilder != null) {
-                    return Row(
-                      children: <Widget>[
-                        Text(
-                          widget.textItemBuilder!,
-                          style: TextStyles.of(
-                            size: 12,
-                            color: context.colors.textSecondary,
-                          ),
-                        ),
-                        SizedBox(width: 8.w),
-                        Container(
-                          width: 2.w,
-                          height: 32.h,
-                          padding: .symmetric(horizontal: 0.w, vertical: 8.h),
-                          color: context.colors.divider,
-                        ),
-                        SizedBox(width: 8.w),
-                        Expanded(child: _buildSelectedText(entry.value)),
-                      ],
-                    );
-                  }
-                  return _buildSelectedText(entry.value);
-                },
-              ),
-            );
-          }).toList();
-          selectedItems.addAll(valuesSelectedItems);
-          return selectedItems;
-        },
-        items: _getItems(),
-        onChanged: widget.onChanged,
+        selectedItemBuilder: (BuildContext context) => _selectedItems(colors, models),
+        items: _menuItems(models),
+        onChanged: isEnabled ? onChanged : null,
       ),
     );
   }
 
-  List<DropdownMenuItem<T>> _getItems() {
-    List<DropdownMenuItem<T>> selectedItems = [];
-    if (widget.isOptional) {
-      final noneItem = DropdownMenuItem<T>(
-        child: Row(
-          children: <Widget>[
-            Builder(
-              builder: (context) {
-                if (widget.iconItemMenu != null) {
-                  return widget.iconItemMenu!;
-                }
-                return const SizedBox();
-              },
-            ),
-            SizedBox(width: 4.w),
-            Expanded(
-              child: Text(
-                Strings.none,
-                style: TextStyles.of(size: 14, weight: .w500),
-              ),
-            ),
-          ],
-        ),
-      );
-      selectedItems.add(noneItem);
-    }
-    final valuesItems = mapNamesValues.entries.map((MapEntry<T, String> entry) {
-      return DropdownMenuItem<T>(
-        value: entry.key,
-        child: Row(
-          children: <Widget>[
-            Builder(
-              builder: (context) {
-                if (widget.iconItemMenu != null) {
-                  return widget.iconItemMenu!;
-                }
-                return const SizedBox();
-              },
-            ),
-            SizedBox(width: 4.w),
-            Expanded(
-              child: Text(
-                entry.value,
-                style: TextStyles.of(size: 14, weight: .w500),
-              ),
-            ),
-          ],
-        ),
-      );
-    }).toList();
-    selectedItems.addAll(valuesItems);
-    return selectedItems;
+  List<Widget> _selectedItems(ThemeColors colors, List<DropdownItemModel<T>> models) {
+    return [
+      if (isOptional) _buildHintText(colors),
+      for (final item in models) _buildSelectedItem(colors, item),
+    ];
   }
 
-  Widget _buildHintText() {
-    return Builder(
-      builder: (BuildContext context) {
-        if (widget.iconItemBuilder != null) {
-          return Row(
-            children: <Widget>[
-              widget.iconItemBuilder!,
-              SizedBox(width: 8.w),
-              Text(
-                widget.hintText,
-                style: TextStyles.of(size: 14, color: context.colors.hint),
+  List<DropdownMenuItem<T>> _menuItems(List<DropdownItemModel<T>> models) {
+    return [
+      if (isOptional)
+        DropdownMenuItem<T>(
+          child: Text(Strings.none, style: TextStyles.of(size: 14, weight: .w500)),
+        ),
+      for (final item in models)
+        DropdownMenuItem<T>(
+          value: item.value,
+          child: Row(
+            children: [
+              if (item.icon != null) ...[item.icon!, SizedBox(width: 4.w)],
+              Expanded(
+                child: Text(item.name, style: TextStyles.of(size: 14, weight: .w500)),
               ),
             ],
-          );
-        }
-        return Text(
-          widget.hintText,
-          style: TextStyles.of(size: 12, color: context.colors.hint),
-        );
-      },
+          ),
+        ),
+    ];
+  }
+
+  Widget _buildSelectedItem(ThemeColors colors, DropdownItemModel<T> item) {
+    final prefix = textItemBuilder;
+    if (prefix != null) {
+      return Row(
+        children: [
+          showRequiredSymbol
+              ? Text.rich(
+                  TextSpan(
+                    text: prefix,
+                    style: TextStyles.of(size: 12, color: colors.textSecondary),
+                    children: [
+                      TextSpan(
+                        text: ' *',
+                        style: TextStyles.of(size: 12, color: colors.error),
+                      ),
+                    ],
+                  ),
+                )
+              : Text(prefix, style: TextStyles.of(size: 12, color: colors.textSecondary)),
+          SizedBox(width: 8.w),
+          Container(width: 2.w, height: 32.h, color: colors.divider),
+          SizedBox(width: 8.w),
+          if (item.icon != null) ...[item.icon!, SizedBox(width: 8.w)],
+          Expanded(child: _buildSelectedText(item.name)),
+        ],
+      );
+    }
+    if (item.icon != null) {
+      return Row(
+        children: [
+          item.icon!,
+          SizedBox(width: 8.w),
+          Expanded(child: _buildSelectedText(item.name)),
+        ],
+      );
+    }
+    return _buildSelectedText(item.name);
+  }
+
+  Widget _buildHintText(ThemeColors colors) {
+    final hintStyle = TextStyles.of(size: 14, color: colors.hint);
+    final Widget hint = showRequiredSymbol && labelText == null
+        ? Text.rich(
+            TextSpan(
+              text: hintText,
+              style: hintStyle,
+              children: [
+                TextSpan(
+                  text: ' *',
+                  style: TextStyles.of(size: 12, color: colors.error),
+                ),
+              ],
+            ),
+          )
+        : Text(hintText, style: hintStyle);
+
+    final icon = iconItemBuilder;
+    if (icon == null) return hint;
+    return Row(
+      children: [
+        icon,
+        SizedBox(width: 8.w),
+        Expanded(child: hint),
+      ],
     );
   }
 
   Widget _buildSelectedText(String value) {
-    return RichText(
-      text: TextSpan(
-        children: [
-          TextSpan(
-            text: value,
-            style: TextStyles.of(size: 14, weight: .w500),
-          ),
-        ],
-      ),
-      maxLines: 100,
+    return Text(
+      value,
+      style: TextStyles.of(size: 14, weight: .w500),
+      maxLines: 2,
       overflow: .ellipsis,
     );
   }
@@ -236,77 +272,109 @@ class _AppDropdownState<T> extends State<AppDropdown<T>> {
 
 class AppDropdownShimmer extends StatelessWidget {
   final String? labelText;
-  const AppDropdownShimmer({super.key, this.labelText});
+
+  const AppDropdownShimmer({this.labelText, super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Builder(
-      builder: (BuildContext context) {
-        if (labelText != null) {
-          return Column(
-            crossAxisAlignment: .start,
-            children: <Widget>[
-              Text(labelText!, style: TextStyles.of(size: 18, weight: .w500)),
-              SizedBox(height: 4.h),
-              _dropdown(context),
-            ],
-          );
-        }
-        return _dropdown(context);
-      },
+    final label = labelText;
+    if (label == null) return _dropdown(context);
+    return Column(
+      crossAxisAlignment: .start,
+      children: [
+        Text(label, style: TextStyles.of(size: 16, weight: .w500)),
+        SizedBox(height: 4.h),
+        _dropdown(context),
+      ],
     );
   }
 
   Widget _dropdown(BuildContext context) {
+    final colors = context.colors;
     return AppShimmer(
       child: Container(
-        padding: .symmetric(horizontal: 16.w),
-        decoration: BoxDecoration(
-          borderRadius: .circular(8.r),
-          color: context.colors.foreground,
-        ),
+        padding: .symmetric(horizontal: 16.w, vertical: 4.h),
+        decoration: BoxDecoration(borderRadius: .circular(8.r), color: colors.foreground),
         child: DropdownButton<int>(
-          value: 0,
-          icon: Icon(
-            Icons.arrow_drop_down_rounded,
-            color: context.colors.unselected,
-          ),
-          hint: Builder(
-            builder: (BuildContext context) {
-              return Text(
-                'hintText',
-                style: TextStyles.of(
-                  size: 15,
-                  color: context.colors.unselected,
-                ),
-              );
-            },
+          icon: Icon(Icons.arrow_drop_down_rounded, color: colors.unselected, size: 20.r),
+          hint: Text(
+            'hintText',
+            style: TextStyles.of(size: 14, color: colors.unselected),
           ),
           borderRadius: .circular(8.r),
           isExpanded: true,
           underline: const SizedBox(),
-          items: <DropdownMenuItem<int>>[
-            DropdownMenuItem<int>(
-              value: 0,
-              child: Row(
-                children: <Widget>[
-                  Icon(Icons.add, color: context.colors.primary),
-                  SizedBox(width: 8.w),
-                  Text(
-                    'entry.value',
-                    style: TextStyles.of(
-                      size: 14,
-                      weight: .w600,
-                      color: Colors.black,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-          onChanged: (int? value) {},
+          items: const [],
+          onChanged: null,
         ),
       ),
+    );
+  }
+}
+
+class AppDropdownErrorWidget extends StatelessWidget {
+  final String errorText;
+  final String? labelText;
+  final VoidCallback? onRetry;
+
+  const AppDropdownErrorWidget({
+    required this.errorText,
+    this.labelText,
+    this.onRetry,
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final label = labelText;
+    if (label == null) return _dropdown(context);
+    return Column(
+      crossAxisAlignment: .start,
+      children: [
+        Text(label, style: TextStyles.of(size: 16, weight: .w500)),
+        SizedBox(height: 4.h),
+        _dropdown(context),
+      ],
+    );
+  }
+
+  Widget _dropdown(BuildContext context) {
+    final colors = context.colors;
+    return Container(
+      padding: .symmetric(horizontal: 16.w, vertical: 4.h),
+      decoration: BoxDecoration(
+        borderRadius: .circular(8.r),
+        color: colors.foreground,
+        border: .all(color: colors.error),
+      ),
+      child: DropdownButton<int>(
+        icon: GestureDetector(
+          onTap: onRetry,
+          child: Icon(Icons.refresh_rounded, color: colors.hint, size: 20.r),
+        ),
+        hint: Text(errorText, style: TextStyles.of(size: 14, color: colors.error)),
+        borderRadius: .circular(8.r),
+        isExpanded: true,
+        underline: const SizedBox(),
+        items: const [],
+        onChanged: null,
+      ),
+    );
+  }
+}
+
+class DropdownItemModel<T> {
+  final String name;
+  final T value;
+  final Widget? icon;
+
+  const DropdownItemModel({required this.name, required this.value, this.icon});
+
+  DropdownItemModel<T> copyWith({String? name, T? value, Widget? icon}) {
+    return DropdownItemModel<T>(
+      name: name ?? this.name,
+      value: value ?? this.value,
+      icon: icon ?? this.icon,
     );
   }
 }

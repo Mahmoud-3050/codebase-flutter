@@ -20,7 +20,7 @@ effects through Dart config and ports. Do **not** add `flutter_bloc`,
 2. **One reason to change per type.** If a class name needs “and”, split it.
 3. **Depend on abstractions you own** (`ThemeStorage`,
    `ThemeChangeListener`). Never import host types (`Dio`, `GetIt`,
-   `SharedPreferences`, `flutter_screenutil`).
+   `SharedPreferences`, `screen_util`).
 4. **Widgets only rebuild.** They never write storage or branch on
    `isDark` to pick `primary` vs `primaryDark`.
 5. **Invalid states must be unrepresentable** — specific exceptions, no

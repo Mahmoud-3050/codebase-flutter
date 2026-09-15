@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 
 import '../../core/utils/values/text_styles.dart';
 
+/// Counts from empty up to [maxNumber] with a slide/fade on each tick.
+///
+/// Open `animated_counter_text_example.dart` in the Flutter Widget Preview.
 class AnimatedCounterText extends StatefulWidget {
   final int maxNumber;
   const AnimatedCounterText({required this.maxNumber, super.key});
@@ -45,7 +48,11 @@ class _AnimatedCounterTextState extends State<AnimatedCounterText> {
       builder: (context, snapshot) {
         int counter = snapshot.data ?? 0;
         return AnimatedSwitcher(
-          duration: Duration(milliseconds: counter > limitCounter ? widgetMilliseconds + 100 : widgetMilliseconds),
+          duration: Duration(
+            milliseconds: counter > limitCounter
+                ? widgetMilliseconds + 100
+                : widgetMilliseconds,
+          ),
           transitionBuilder: (child, animation) {
             final position = Tween<Offset>(
               begin: (animation.status == .completed)

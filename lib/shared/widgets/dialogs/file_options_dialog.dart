@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screen_util/screen_util.dart';
 import 'package:file_picker/file_picker.dart';
 
 import '../../../core/utils/extensions.dart';
@@ -9,7 +9,7 @@ class FileOptionsDialog extends StatelessWidget {
   final String buttonUploadTitle;
   final String buttonShowTitle;
   final String? fileUrl;
-  final void Function(FilePickerResult filePickerResult) onFilePickerResult;
+  final void Function(PlatformFile file) onFilePickerResult;
 
   const FileOptionsDialog({
     required this.buttonUploadTitle,
@@ -29,12 +29,12 @@ class FileOptionsDialog extends StatelessWidget {
           AppOutlinedButton(
             onPressed: () async {
               Navigator.pop(context);
-              FilePickerResult? filePickerResult = await FilePicker.pickFiles(
+              final file = await FilePicker.pickFile(
                 type: .custom,
-                allowedExtensions: ['pdf', 'png', 'jpg', 'jpeg'],
+                allowedExtensions: const ['pdf', 'png', 'jpg', 'jpeg'],
               );
-              if (filePickerResult != null) {
-                onFilePickerResult.call(filePickerResult);
+              if (file != null) {
+                onFilePickerResult(file);
               }
             },
             text: buttonUploadTitle,

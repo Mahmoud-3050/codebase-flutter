@@ -47,7 +47,7 @@ abstract final class ThemeDataFactory {
           iconColor: WidgetStateProperty.all<Color>(colors.textPrimary),
         ),
       ),
-      appBarTheme: AppBarTheme(
+      appBarTheme: AppBarThemeData(
         backgroundColor: colors.background,
         elevation: 0,
         scrolledUnderElevation: 0,

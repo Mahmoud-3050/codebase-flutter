@@ -10,7 +10,7 @@ alwaysApply: true
 reconstructed every frame — skip it and you're paying a rebuild cost for
 something that never changes.
 
-Use `flutter_screenutil` (`.w`, `.h`, `.sp`) and shared `TextStyles` for
+Use `screen_util` (`.w`, `.h`, `.sp`) and shared `TextStyles` for
 responsive spacing and typography — those values are runtime-sized and cannot be
 `const`. Mark the widget itself `const` and reserve `const` for subtrees whose
 values truly never change (icons, static labels, fixed durations).

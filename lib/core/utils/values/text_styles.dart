@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screen_util/screen_util.dart';
 import 'package:themes/themes.dart';
 
 /// Figma size (px) + [FontWeight] → [TextStyle].
@@ -38,7 +38,11 @@ abstract final class TextStyles {
   }) {
     return TextStyle(
       inherit: inherit,
-      color: color ?? Themes.instance.colors.textPrimary,
+      color:
+          color ??
+          (Themes.instance.isInitialized
+              ? Themes.instance.colors.textPrimary
+              : null),
       backgroundColor: backgroundColor,
       fontSize: size.sp,
       fontWeight: weight,

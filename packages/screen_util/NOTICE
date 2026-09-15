@@ -1,0 +1,9 @@
+This package is a local port of flutter_screenutil 5.9.3
+(https://github.com/OpenFlutter/flutter_screenutil), originally created by
+李卓原 (zhuoyuan93@gmail.com).
+
+The original work is licensed under the Apache License, Version 2.0.
+See LICENSE in this directory.
+
+Modifications: relocated into packages/screen_util as a path-dependent
+in-repo package; public API names are unchanged.

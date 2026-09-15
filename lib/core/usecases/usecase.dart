@@ -16,7 +16,7 @@ abstract class Params extends Equatable {
 
   abstract final Object? cancellation;
 
-  Map<String, dynamic> toJson() => const <String, dynamic>{};
+  Map<String, dynamic> toJson();
 }
 
 class NoParams extends Params {
@@ -26,5 +26,8 @@ class NoParams extends Params {
   final Object? cancellation;
 
   @override
-  List<Object?> get props => const <Object?>[];
+  Map<String, dynamic> toJson() => <String, dynamic>{};
+
+  @override
+  List<Object?> get props => <Object?>[cancellation];
 }

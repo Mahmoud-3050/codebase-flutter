@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:screen_util/screen_util.dart';
 
 import '../../config/language/strings.dart';
 import '../../core/presentation/api_call_state.dart';
 import '../../core/utils/extensions.dart';
 import '../widgets/app_shimmer.dart';
 import '../widgets/api_call_widget.dart';
+import '../widgets/loading_widget.dart';
 import 'pagination_cubit.dart';
 
 class PaginationWidget<C extends PaginationCubit<T>, T extends Object>
@@ -122,7 +123,7 @@ class _PaginationWidgetState<C extends PaginationCubit<T>, T extends Object>
 
   Widget _buildLoading() {
     if (widget.shimmerItem == null) {
-      return Center(child: const CircularProgressIndicator().appLoading);
+      return const LoadingWidget();
     }
     return ListView.separated(
       padding: _padding,
