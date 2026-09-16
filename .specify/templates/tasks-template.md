@@ -21,10 +21,17 @@ description: "Task list template for feature implementation"
 
 ## Path Conventions
 
-- **Single project**: `src/`, `tests/` at repository root
-- **Web app**: `backend/src/`, `frontend/src/`
-- **Mobile**: `api/src/`, `ios/src/` or `android/src/`
-- Paths shown below assume single project - adjust based on plan.md structure
+This repository is a Flutter app with feature-first Clean Architecture
+(constitution Principle I). Task paths MUST use:
+
+- **Feature code**: `lib/features/<feature>/{domain,data,presentation}/`
+- **Feature DI**: `lib/features/<feature>/<feature>_injection.dart`
+- **Feature route**: `lib/features/<feature>/presentation/navigation/router.dart`
+- **App-wide infra only**: `lib/core/`, `lib/shared/`, `lib/injection_container.dart`
+- **Tests**: `test/features/<feature>/` mirroring the feature layers (use cases, repositories, cubits)
+
+Do not invent `src/`, `backend/`, or `api/` trees for host features. Local packages
+live under `packages/` (`either`, `themes`, `language`, `screen_util`, `field_validator`).
 
 <!--
   ============================================================================
