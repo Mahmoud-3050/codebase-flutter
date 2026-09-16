@@ -48,7 +48,7 @@ void main() {
               required CancelToken cancellation,
             }) async {
               return Right<Failure, PaginationPage<int>>(
-                pageOf(items: const <int>[1, 2], currentPage: 1, totalPages: 3),
+                pageOf(items: const <int>[1, 2], totalPages: 3),
               );
             },
       ),
@@ -101,7 +101,7 @@ void main() {
       ),
       act: (_FakePaginationCubit cubit) => cubit.fLoadFirstPage(),
       expect: () => <ApiCallState<List<int>>>[
-        ApiCallLoading<List<int>>(),
+        const ApiCallLoading<List<int>>(),
         const ApiCallError<List<int>>(message: 'Server error'),
       ],
     );
@@ -120,7 +120,7 @@ void main() {
       ),
       act: (_FakePaginationCubit cubit) => cubit.fLoadFirstPage(),
       expect: () => <ApiCallState<List<int>>>[
-        ApiCallLoading<List<int>>(),
+        const ApiCallLoading<List<int>>(),
         ApiCallError<List<int>>(message: Strings.pleaseTryAgainLater),
       ],
     );
@@ -157,7 +157,6 @@ void main() {
                   return Right<Failure, PaginationPage<int>>(
                     pageOf(
                       items: const <int>[1, 2],
-                      currentPage: 1,
                       totalPages: 2,
                     ),
                   );
@@ -203,7 +202,7 @@ void main() {
                 fetchCount++;
                 expect(fetchCount, 1);
                 return Right<Failure, PaginationPage<int>>(
-                  pageOf(items: const <int>[1], currentPage: 1, totalPages: 1),
+                  pageOf(items: const <int>[1]),
                 );
               },
         );
@@ -232,7 +231,6 @@ void main() {
                   return Right<Failure, PaginationPage<int>>(
                     pageOf(
                       items: const <int>[1, 2],
-                      currentPage: 1,
                       totalPages: 3,
                     ),
                   );
@@ -271,7 +269,6 @@ void main() {
                   return Right<Failure, PaginationPage<int>>(
                     pageOf(
                       items: const <int>[1],
-                      currentPage: 1,
                       totalPages: 2,
                     ),
                   );
@@ -312,7 +309,6 @@ void main() {
                   return Right<Failure, PaginationPage<int>>(
                     pageOf(
                       items: const <int>[1],
-                      currentPage: 1,
                       totalPages: 5,
                     ),
                   );
@@ -349,13 +345,12 @@ void main() {
                   return Right<Failure, PaginationPage<int>>(
                     pageOf(
                       items: const <int>[1],
-                      currentPage: 1,
                       totalPages: 2,
                     ),
                   );
                 }
                 return Right<Failure, PaginationPage<int>>(
-                  pageOf(items: const <int>[9], currentPage: 1, totalPages: 1),
+                  pageOf(items: const <int>[9]),
                 );
               },
         );
@@ -395,7 +390,7 @@ void main() {
                 return pending.future;
               }
               return Right<Failure, PaginationPage<int>>(
-                pageOf(items: const <int>[1], currentPage: 1, totalPages: 1),
+                pageOf(items: const <int>[1]),
               );
             },
       );
@@ -417,7 +412,7 @@ void main() {
 }
 
 class _FakePaginationCubit extends PaginationCubit<int> {
-  _FakePaginationCubit({this.onFetch, super.perPage});
+  _FakePaginationCubit({this.onFetch});
 
   final Future<Either<Failure, PaginationPage<int>>> Function({
     required int page,

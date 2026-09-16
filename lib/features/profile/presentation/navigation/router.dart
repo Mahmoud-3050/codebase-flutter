@@ -32,10 +32,10 @@ class StudentProfileRoute extends GoRouteData with $StudentProfileRoute {
       ],
       child: MultiBlocProvider(
         providers: [
-          BlocProvider(
+          BlocProvider<GetStudentProfileCubit>(
             create: (_) => ServiceLocator.instance<GetStudentProfileCubit>(),
           ),
-          BlocProvider(
+          BlocProvider<UpdateStudentProfileCubit>(
             create: (_) => ServiceLocator.instance<UpdateStudentProfileCubit>(),
           ),
         ],

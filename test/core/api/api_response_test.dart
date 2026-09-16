@@ -74,7 +74,7 @@ void main() {
       expect((exception as ValidationException).fieldErrors['email'], <String>[
         'taken',
       ]);
-      expect((exception as ValidationException).fieldErrors['phone'], <String>[
+      expect((exception).fieldErrors['phone'], <String>[
         'required',
       ]);
     });

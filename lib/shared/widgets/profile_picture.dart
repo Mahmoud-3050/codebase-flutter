@@ -35,7 +35,6 @@ class ProfilePicture extends StatelessWidget {
             width: width ?? 80.w,
             height: height ?? 80.h,
             isCircle: true,
-            isCached: false,
           );
         }
         if (backgroundColor != null) {
