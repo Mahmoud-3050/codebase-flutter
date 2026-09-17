@@ -23,6 +23,14 @@ void main() {
     expect(ApiConstants.resetPasswordPath, '/auth/reset-password');
     expect(ApiConstants.verifyEmailPath, '/auth/verify-email');
     expect(ApiConstants.verifyPhoneNumberPath, '/auth/verify-phone-number');
+    expect(ApiConstants.emailOtpRequestPath, '/auth/email-otp/request');
+    expect(ApiConstants.phoneOtpRequestPath, '/auth/phone-otp/request');
+    expect(ApiConstants.socialSignInPath, '/auth/social');
+    expect(
+      ApiConstants.completeRegistrationPath,
+      '/auth/complete-registration',
+    );
+    expect(ApiConstants.logoutPath, '/auth/logout');
     expect(ApiHeaders.accept, 'accept');
     expect(ApiHeaders.acceptLanguage, 'accept-language');
     expect(ApiHeaders.authorization, 'authorization');
@@ -32,6 +40,23 @@ void main() {
   test('matches public auth paths including absolute URLs', () {
     expect(ApiConstants.isPublicAuthPath(ApiConstants.loginPath), isTrue);
     expect(ApiConstants.isPublicAuthPath(ApiConstants.registerPath), isTrue);
+    expect(
+      ApiConstants.isPublicAuthPath(ApiConstants.emailOtpRequestPath),
+      isTrue,
+    );
+    expect(
+      ApiConstants.isPublicAuthPath(ApiConstants.phoneOtpRequestPath),
+      isTrue,
+    );
+    expect(
+      ApiConstants.isPublicAuthPath(ApiConstants.socialSignInPath),
+      isTrue,
+    );
+    expect(
+      ApiConstants.isPublicAuthPath(ApiConstants.completeRegistrationPath),
+      isTrue,
+    );
+    expect(ApiConstants.isPublicAuthPath(ApiConstants.logoutPath), isFalse);
     expect(
       ApiConstants.isPublicAuthPath(
         'https://example.test/v1/api${ApiConstants.resetPasswordPath}',

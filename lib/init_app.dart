@@ -7,7 +7,6 @@ import 'package:themes/themes.dart';
 
 import 'config/language/language_change_adapter.dart';
 import 'config/routes/app_router.dart';
-import 'config/routes/app_routes.dart';
 import 'config/themes/colors_palettes.dart';
 import 'core/api/refresh_token_helper.dart';
 import 'core/services/bloc_observer/bloc_observer.dart';
@@ -30,7 +29,7 @@ Future<void> initApp() async {
   );
   await AppNotificationsService.initNotifications();
   RefreshTokenHelper.instance.setOnSessionExpired(() async {
-    AppRouter.router.go(AppRoutes.splash);
+    AppRouter.router.go(const SplashRoute(sessionExpired: true).location);
   });
   Bloc.observer = AppBlocObserver();
 }

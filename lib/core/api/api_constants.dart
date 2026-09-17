@@ -15,6 +15,11 @@ abstract class ApiConstants {
   static const String resetPasswordPath = '/auth/reset-password';
   static const String verifyEmailPath = '/auth/verify-email';
   static const String verifyPhoneNumberPath = '/auth/verify-phone-number';
+  static const String emailOtpRequestPath = '/auth/email-otp/request';
+  static const String phoneOtpRequestPath = '/auth/phone-otp/request';
+  static const String socialSignInPath = '/auth/social';
+  static const String completeRegistrationPath = '/auth/complete-registration';
+  static const String logoutPath = '/auth/logout';
   static const String refreshTokenPath = '/common/refresh-token';
 
   /// Login/register/verify must not send a leftover access token or trigger refresh.
@@ -25,6 +30,10 @@ abstract class ApiConstants {
     resetPasswordPath,
     verifyEmailPath,
     verifyPhoneNumberPath,
+    emailOtpRequestPath,
+    phoneOtpRequestPath,
+    socialSignInPath,
+    completeRegistrationPath,
   ];
 
   static bool matchesPath(String requestPath, String apiPath) {

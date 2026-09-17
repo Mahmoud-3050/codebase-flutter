@@ -55,6 +55,13 @@ class CancelledFailure extends Failure {
   const CancelledFailure({this.message});
 }
 
+class SocialSignInCancelledFailure extends Failure {
+  @override
+  final String? message;
+
+  const SocialSignInCancelledFailure({this.message});
+}
+
 class ValidationFailure extends Failure {
   @override
   final String? message;
