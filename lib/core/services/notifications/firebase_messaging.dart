@@ -4,6 +4,7 @@ import 'dart:developer';
 import 'package:firebase_messaging/firebase_messaging.dart';
 
 import '../../../injection_container.dart';
+import '../local_storage/impl/device_token_storage.dart';
 import 'local_notifications.dart';
 
 abstract class AppFirebaseMessagingTopics {
@@ -25,7 +26,7 @@ abstract class AppFirebaseMessaging {
 
   static void onTokenRefresh() {
     FirebaseMessaging.instance.onTokenRefresh.listen((token) {
-      ServiceLocator.injectFCMTokenSingleton(token);
+      ServiceLocator.instance<DeviceTokenStorage>().save(value: token);
       log('@AppFirebaseMessaging:: FCM onTokenRefresh: $token');
     });
   }
@@ -33,7 +34,7 @@ abstract class AppFirebaseMessaging {
   static Future<void> getToken() async {
     final String? token = await FirebaseMessaging.instance.getToken();
     if (token != null) {
-      ServiceLocator.injectFCMTokenSingleton(token);
+      ServiceLocator.instance<DeviceTokenStorage>().save(value: token);
     }
     log('@AppFirebaseMessaging:: FCM token: $token');
   }
