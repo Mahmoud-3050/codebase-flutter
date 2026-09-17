@@ -74,4 +74,28 @@ void main() {
       ApiCallError<AuthSession>(message: Strings.draftExpired),
     ],
   );
+
+  blocTest<CompleteRegistrationCubit, CompleteRegistrationState>(
+    'FR-026a 422 maps to draft_expired',
+    build: () {
+      final MockCompleteRegistrationUseCase useCase =
+          MockCompleteRegistrationUseCase();
+      when(useCase.call(any)).thenAnswer(
+        (_) async => const Left<Failure, CompleteRegistrationResponse>(
+          ValidationFailure(message: 'token expired'),
+        ),
+      );
+      return CompleteRegistrationCubit(useCase);
+    },
+    act: (CompleteRegistrationCubit cubit) => cubit.fCompleteRegistration(
+      registrationToken: 'tok',
+      source: RegistrationSource.phone,
+      fullName: 'Ada',
+      password: 'secret12',
+    ),
+    expect: () => <CompleteRegistrationState>[
+      const ApiCallLoading<AuthSession>(),
+      ApiCallError<AuthSession>(message: Strings.draftExpired),
+    ],
+  );
 }

@@ -12,7 +12,7 @@ import 'package:codebase/core/utils/enums.dart';
 import 'package:codebase/features/auth/auth_injection.dart';
 import 'package:codebase/features/auth/data/datasources/auth_local_datasource.dart';
 import 'package:codebase/features/auth/data/datasources/auth_remote_datasource.dart';
-import 'package:codebase/features/auth/data/datasources/avatar_picker.dart';
+import 'package:codebase/features/auth/domain/avatar_picker.dart';
 import 'package:codebase/features/auth/data/datasources/social_auth_service.dart';
 import 'package:codebase/features/auth/data/models/auth_json.dart';
 import 'package:codebase/features/auth/data/models/auth_user_model.dart';
@@ -52,6 +52,7 @@ import 'package:codebase/features/auth/presentation/controller/guest_mode/guest_
 import 'package:codebase/features/auth/presentation/controller/login/login_cubit.dart';
 import 'package:codebase/features/auth/presentation/controller/logout/logout_cubit.dart';
 import 'package:codebase/features/auth/presentation/controller/otp_cooldown/otp_cooldown_cubit.dart';
+import 'package:codebase/features/auth/presentation/controller/read_registration_draft/read_registration_draft_cubit.dart';
 import 'package:codebase/features/auth/presentation/controller/register/register_cubit.dart';
 import 'package:codebase/features/auth/presentation/controller/request_email_otp/request_email_otp_cubit.dart';
 import 'package:codebase/features/auth/presentation/controller/request_password_reset/request_password_reset_cubit.dart';
@@ -70,41 +71,46 @@ import 'mocks.mocks.dart';
 void main() {
   setUpAll(ensureAuthDummies);
 
-  test('FR-003 FR-006 FR-020 FR-022 FR-027 FR-028 FR-032 FR-034a FR-038 FR-040 FR-042 named coverage', () {
-    expect(SocialProvider.fromWireName('google'), SocialProvider.google);
-    expect(SocialProvider.fromWireName('apple'), SocialProvider.apple);
-    expect(SocialProvider.fromWireName('unknown'), SocialProvider.google);
-    expect(OtpPurpose.fromWireName('phone_sign_in'), OtpPurpose.phoneSignIn);
-    expect(OtpPurpose.fromWireName('nope'), OtpPurpose.verifyEmail);
-    expect(
-      RegistrationSource.fromWireName('google'),
-      RegistrationSource.google,
-    );
-    expect(RegistrationSource.fromWireName('x'), RegistrationSource.phone);
-    expect(RegistrationSource.phone.locksPhone, isTrue);
-    expect(RegistrationSource.google.locksEmail, isTrue);
-    expect(
-      SocialProviderAvailability.isOffered(
-        SocialProvider.apple,
-        platform: TargetPlatform.macOS,
-      ),
-      isTrue,
-    );
-    expect(
-      const AvatarRejectedException(reason: AvatarRejectReason.tooLarge).reason,
-      AvatarRejectReason.tooLarge,
-    );
-    expect(
-      const SocialCredential(
-        provider: SocialProvider.apple,
-        idToken: 'id',
-        authorizationCode: 'code',
-        fullName: 'Ada',
-        email: 'relay@privaterelay.appleid.com',
-      ).props,
-      isNotEmpty,
-    );
-  });
+  test(
+    'FR-003 FR-006 FR-020 FR-022 FR-027 FR-028 FR-032 FR-034a FR-038 FR-040 FR-042 named coverage',
+    () {
+      expect(SocialProvider.fromWireName('google'), SocialProvider.google);
+      expect(SocialProvider.fromWireName('apple'), SocialProvider.apple);
+      expect(SocialProvider.fromWireName('unknown'), SocialProvider.google);
+      expect(OtpPurpose.fromWireName('phone_sign_in'), OtpPurpose.phoneSignIn);
+      expect(OtpPurpose.fromWireName('nope'), OtpPurpose.verifyEmail);
+      expect(
+        RegistrationSource.fromWireName('google'),
+        RegistrationSource.google,
+      );
+      expect(RegistrationSource.fromWireName('x'), RegistrationSource.phone);
+      expect(RegistrationSource.phone.locksPhone, isTrue);
+      expect(RegistrationSource.google.locksEmail, isTrue);
+      expect(
+        SocialProviderAvailability.isOffered(
+          SocialProvider.apple,
+          platform: TargetPlatform.macOS,
+        ),
+        isTrue,
+      );
+      expect(
+        const AvatarRejectedException(
+          reason: AvatarRejectReason.tooLarge,
+        ).reason,
+        AvatarRejectReason.tooLarge,
+      );
+      expect(
+        const SocialCredential(
+          provider: SocialProvider.apple,
+          idToken: 'id',
+          authorizationCode: 'code',
+          fullName: 'Ada',
+          email: 'relay@privaterelay.appleid.com',
+        ).props,
+        isNotEmpty,
+      );
+    },
+  );
 
   test('FR-006 required fields and optional avatar are modeled', () {
     expect(kUnverifiedUser.avatarUrl, isNull);
@@ -112,15 +118,18 @@ void main() {
     expect(kPhoneDraft.verifiedPhone, isNotEmpty);
   });
 
-  test('FR-020 phone_sign_in purpose is required on every phone OTP request', () {
-    expect(
-      const RequestPhoneOtpParams(
-        dialingCode: '+966',
-        phone: '500000000',
-      ).toJson()['purpose'],
-      'phone_sign_in',
-    );
-  });
+  test(
+    'FR-020 phone_sign_in purpose is required on every phone OTP request',
+    () {
+      expect(
+        const RequestPhoneOtpParams(
+          dialingCode: '+966',
+          phone: '500000000',
+        ).toJson()['purpose'],
+        'phone_sign_in',
+      );
+    },
+  );
 
   test('FR-022 complete-registration params collect name email password', () {
     final CompleteRegistrationParams params = CompleteRegistrationParams(
@@ -223,7 +232,10 @@ void main() {
       ),
       Strings.draftExpired,
     );
-    expect(AuthErrorCopy.of(const ServerFailure()), Strings.pleaseTryAgainLater);
+    expect(
+      AuthErrorCopy.of(const ServerFailure()),
+      Strings.pleaseTryAgainLater,
+    );
   });
 
   test('FR-003 register* functions register feature types', () {
@@ -241,6 +253,7 @@ void main() {
     registerLogout(sl);
     expect(sl<ResolveVisitorStateCubit>(), isA<ResolveVisitorStateCubit>());
     expect(sl<GuestModeCubit>(), isA<GuestModeCubit>());
+    expect(sl<ReadRegistrationDraftCubit>(), isA<ReadRegistrationDraftCubit>());
     expect(sl<RegisterCubit>(), isA<RegisterCubit>());
     expect(sl<VerifyEmailCubit>(), isA<VerifyEmailCubit>());
     expect(sl<RequestEmailOtpCubit>(), isA<RequestEmailOtpCubit>());
@@ -273,9 +286,7 @@ void main() {
     when(
       repository.readRegistrationDraft(params: anyNamed('params')),
     ).thenAnswer((_) async => Right<Failure, RegistrationDraft?>(kPhoneDraft));
-    when(
-      repository.requestPhoneOtp(params: anyNamed('params')),
-    ).thenAnswer(
+    when(repository.requestPhoneOtp(params: anyNamed('params'))).thenAnswer(
       (_) async => const Right<Failure, RequestOtpResponse>(
         RequestOtpResponse(
           status: 'success',
@@ -289,7 +300,9 @@ void main() {
         VerifyPhoneOtpResponse(status: 'success', message: 'ok'),
       ),
     );
-    when(repository.completeRegistration(params: anyNamed('params'))).thenAnswer(
+    when(
+      repository.completeRegistration(params: anyNamed('params')),
+    ).thenAnswer(
       (_) async => Right<Failure, CompleteRegistrationResponse>(
         CompleteRegistrationResponse(
           status: 'success',
@@ -307,7 +320,9 @@ void main() {
         ),
       ),
     );
-    when(repository.requestPasswordReset(params: anyNamed('params'))).thenAnswer(
+    when(
+      repository.requestPasswordReset(params: anyNamed('params')),
+    ).thenAnswer(
       (_) async => const Right<Failure, RequestPasswordResetResponse>(
         RequestPasswordResetResponse(
           status: 'success',
@@ -318,11 +333,7 @@ void main() {
     );
     when(repository.resetPassword(params: anyNamed('params'))).thenAnswer(
       (_) async => Right<Failure, ResetPasswordResponse>(
-        ResetPasswordResponse(
-          status: 'success',
-          message: 'ok',
-          data: kSession,
-        ),
+        ResetPasswordResponse(status: 'success', message: 'ok', data: kSession),
       ),
     );
 
@@ -404,11 +415,7 @@ void main() {
       isNotEmpty,
     );
     expect(
-      const LoginParams(
-        email: 'a@b.c',
-        password: 'x',
-        cancellation: 'c',
-      ).props,
+      const LoginParams(email: 'a@b.c', password: 'x', cancellation: 'c').props,
       contains('a@b.c'),
     );
     expect(
@@ -420,10 +427,7 @@ void main() {
       isNotEmpty,
     );
     expect(
-      const RequestEmailOtpParams(
-        email: 'a@b.c',
-        cancellation: 'c',
-      ).props,
+      const RequestEmailOtpParams(email: 'a@b.c', cancellation: 'c').props,
       isNotEmpty,
     );
     expect(
@@ -457,10 +461,7 @@ void main() {
     expect(social.toJson()['full_name'], 'Ada');
     expect(social.props, contains('id'));
     expect(
-      const RequestPasswordResetParams(
-        email: 'a@b.c',
-        cancellation: 'c',
-      ).props,
+      const RequestPasswordResetParams(email: 'a@b.c', cancellation: 'c').props,
       isNotEmpty,
     );
     expect(

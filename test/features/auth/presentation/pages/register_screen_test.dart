@@ -3,19 +3,17 @@ import 'package:field_validator/field_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get_it/get_it.dart';
 import 'package:mockito/mockito.dart';
 
 import 'package:codebase/config/language/strings.dart';
 import 'package:codebase/config/routes/app_routes.dart';
 import 'package:codebase/core/error/failures.dart';
 import 'package:codebase/core/presentation/api_call_state.dart';
-import 'package:codebase/features/auth/data/datasources/avatar_picker.dart';
+import 'package:codebase/features/auth/domain/avatar_picker.dart';
 import 'package:codebase/features/auth/domain/entities/otp_challenge.dart';
 import 'package:codebase/features/auth/domain/entities/register_response.dart';
 import 'package:codebase/features/auth/presentation/controller/register/register_cubit.dart';
 import 'package:codebase/features/auth/presentation/pages/register_screen.dart';
-import 'package:codebase/injection_container.dart';
 
 import '../../fixtures.dart';
 import '../../mocks.mocks.dart';
@@ -108,15 +106,7 @@ void main() {
   testWidgets('FR-006a FR-006c avatar pick and reject on register', (
     WidgetTester tester,
   ) async {
-    final GetIt sl = ServiceLocator.instance;
-    sl.allowReassignment = true;
     final MockAvatarPicker picker = MockAvatarPicker();
-    sl.registerSingleton<AvatarPicker>(picker);
-    addTearDown(() {
-      if (sl.isRegistered<AvatarPicker>()) {
-        sl.unregister<AvatarPicker>();
-      }
-    });
     when(picker.pickAvatar()).thenThrow(
       const AvatarRejectedException(reason: AvatarRejectReason.tooLarge),
     );
@@ -124,6 +114,9 @@ void main() {
       tester,
       providers: <BlocProvider<dynamic>>[
         BlocProvider<RegisterCubit>.value(value: cubit),
+      ],
+      repositories: <RepositoryProvider<dynamic>>[
+        RepositoryProvider<AvatarPicker>.value(value: picker),
       ],
       child: const RegisterScreen(),
     );
@@ -135,20 +128,15 @@ void main() {
   testWidgets('FR-006c register skip photo after pick', (
     WidgetTester tester,
   ) async {
-    final GetIt sl = ServiceLocator.instance;
-    sl.allowReassignment = true;
     final MockAvatarPicker picker = MockAvatarPicker();
-    sl.registerSingleton<AvatarPicker>(picker);
-    addTearDown(() {
-      if (sl.isRegistered<AvatarPicker>()) {
-        sl.unregister<AvatarPicker>();
-      }
-    });
     when(picker.pickAvatar()).thenAnswer((_) async => '/tmp/a.png');
     await pumpAuthWidget(
       tester,
       providers: <BlocProvider<dynamic>>[
         BlocProvider<RegisterCubit>.value(value: cubit),
+      ],
+      repositories: <RepositoryProvider<dynamic>>[
+        RepositoryProvider<AvatarPicker>.value(value: picker),
       ],
       child: const RegisterScreen(),
     );

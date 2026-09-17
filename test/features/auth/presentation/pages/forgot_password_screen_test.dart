@@ -31,9 +31,8 @@ void main() {
     final MockRequestPasswordResetUseCase useCase =
         MockRequestPasswordResetUseCase();
     when(useCase.call(any)).thenAnswer(
-      (_) async => const Left<Failure, RequestPasswordResetResponse>(
-        ServerFailure(),
-      ),
+      (_) async =>
+          const Left<Failure, RequestPasswordResetResponse>(ServerFailure()),
     );
     await pumpAuthWidget(
       tester,

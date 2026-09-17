@@ -8,8 +8,8 @@ import 'data/datasources/auth_local_datasource.dart';
 import 'data/datasources/auth_local_datasource_impl.dart';
 import 'data/datasources/auth_remote_datasource.dart';
 import 'data/datasources/auth_remote_datasource_impl.dart';
-import 'data/datasources/avatar_picker.dart';
 import 'data/datasources/avatar_picker_impl.dart';
+import 'domain/avatar_picker.dart';
 import 'data/datasources/social_auth_service.dart';
 import 'data/datasources/social_auth_service_impl.dart';
 import 'data/repositories/auth_repo_impl.dart';
@@ -33,6 +33,7 @@ import 'presentation/controller/guest_mode/guest_mode_cubit.dart';
 import 'presentation/controller/login/login_cubit.dart';
 import 'presentation/controller/logout/logout_cubit.dart';
 import 'presentation/controller/otp_cooldown/otp_cooldown_cubit.dart';
+import 'presentation/controller/read_registration_draft/read_registration_draft_cubit.dart';
 import 'presentation/controller/register/register_cubit.dart';
 import 'presentation/controller/request_email_otp/request_email_otp_cubit.dart';
 import 'presentation/controller/request_password_reset/request_password_reset_cubit.dart';
@@ -77,6 +78,9 @@ void registerVisitorState(GetIt sl) {
     () => ResolveVisitorStateCubit(sl()),
   );
   sl.registerFactory<GuestModeCubit>(() => GuestModeCubit(sl()));
+  sl.registerFactory<ReadRegistrationDraftCubit>(
+    () => ReadRegistrationDraftCubit(sl()),
+  );
 }
 
 void registerRegister(GetIt sl) {

@@ -7,6 +7,7 @@ import '../../../../core/presentation/api_call_state.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_otp_field.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
+import '../../../../shared/widgets/field_errors_scope.dart';
 import '../../../home/presentation/navigation/router.dart';
 import '../../domain/entities/auth_outcome.dart';
 import '../../domain/enums/otp_purpose.dart';
@@ -53,68 +54,95 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
     super.dispose();
   }
 
+  void _showError(String message) {
+    showAppSnackBar(context: context, message: message, type: ToastType.error);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(Strings.verifyCode)),
-      body: BlocConsumer<VerifyPhoneOtpCubit, VerifyPhoneOtpState>(
-        listener: (BuildContext context, VerifyPhoneOtpState state) {
-          if (state case ApiCallError(:final message)) {
-            showAppSnackBar(
-              context: context,
-              message: message,
-              type: ToastType.error,
-            );
-          }
-          if (state case ApiCallSuccess(:final data)) {
-            switch (data) {
-              case AuthSessionEstablished():
-                const HomeRoute().go(context);
-              case AuthRegistrationRequired(:final draft):
-                CompleteRegistrationRoute($extra: draft).go(context);
-              case null:
-                Navigator.of(context).pop(true);
+      body: MultiBlocListener(
+        listeners: <BlocListener<dynamic, dynamic>>[
+          BlocListener<RequestPhoneOtpCubit, RequestPhoneOtpState>(
+            listener: (BuildContext context, RequestPhoneOtpState state) {
+              if (state case ApiCallError(:final message)) {
+                _showError(message);
+              }
+              if (state case ApiCallSuccess(:final data)) {
+                context.read<OtpCooldownCubit>().fStart(
+                  data.resendAvailableInSeconds,
+                );
+              }
+            },
+          ),
+        ],
+        child: BlocConsumer<VerifyPhoneOtpCubit, VerifyPhoneOtpState>(
+          listener: (BuildContext context, VerifyPhoneOtpState state) {
+            if (state case ApiCallError(:final message)) {
+              _showError(message);
             }
-          }
-        },
-        builder: (BuildContext context, VerifyPhoneOtpState state) {
-          return Padding(
-            padding: EdgeInsets.all(24.w),
-            child: Column(
-              children: <Widget>[
-                AppOtpField(controller: _code),
-                SizedBox(height: 24.h),
-                AppElevatedButton(
-                  text: Strings.verifyCode,
-                  isLoading: state.isLoading,
-                  onPressed: () =>
-                      context.read<VerifyPhoneOtpCubit>().fVerifyPhoneOtp(
-                        dialingCode: widget.dialingCode,
-                        phone: widget.phone,
-                        code: _code.text,
-                        purpose: widget.purpose,
-                      ),
+            if (state case ApiCallSuccess(:final data)) {
+              switch (data) {
+                case AuthSessionEstablished():
+                  const HomeRoute().go(context);
+                case AuthRegistrationRequired(:final draft):
+                  CompleteRegistrationRoute($extra: draft).go(context);
+                case null:
+                  Navigator.of(context).pop(true);
+              }
+            }
+          },
+          builder: (BuildContext context, VerifyPhoneOtpState state) {
+            return FieldErrorsScope(
+              fieldErrors: switch (state) {
+                ApiCallError(:final fieldErrors) => fieldErrors,
+                _ => const <String, List<String>>{},
+              },
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  children: <Widget>[
+                    AppOtpField(controller: _code),
+                    SizedBox(height: 24.h),
+                    AppElevatedButton(
+                      text: Strings.verifyCode,
+                      isLoading: state.isLoading,
+                      onPressed: () =>
+                          context.read<VerifyPhoneOtpCubit>().fVerifyPhoneOtp(
+                            dialingCode: widget.dialingCode,
+                            phone: widget.phone,
+                            code: _code.text,
+                            purpose: widget.purpose,
+                          ),
+                    ),
+                    BlocBuilder<OtpCooldownCubit, OtpCooldownState>(
+                      builder: (BuildContext context, OtpCooldownState cooldown) {
+                        final bool idle = cooldown is OtpCooldownIdle;
+                        return TextButton(
+                          onPressed: idle
+                              ? () => context
+                                    .read<RequestPhoneOtpCubit>()
+                                    .fRequestPhoneOtp(
+                                      dialingCode: widget.dialingCode,
+                                      phone: widget.phone,
+                                      purpose: widget.purpose,
+                                    )
+                              : null,
+                          child: Text(
+                            idle
+                                ? Strings.resend
+                                : '${Strings.resend} (${(cooldown as OtpCooldownCounting).secondsRemaining})',
+                          ),
+                        );
+                      },
+                    ),
+                  ],
                 ),
-                BlocBuilder<OtpCooldownCubit, OtpCooldownState>(
-                  builder: (BuildContext context, OtpCooldownState cooldown) {
-                    final bool idle = cooldown is OtpCooldownIdle;
-                    return TextButton(
-                      onPressed: idle
-                          ? () => context
-                                .read<RequestPhoneOtpCubit>()
-                                .fRequestPhoneOtp(
-                                  dialingCode: widget.dialingCode,
-                                  phone: widget.phone,
-                                )
-                          : null,
-                      child: Text(Strings.resend),
-                    );
-                  },
-                ),
-              ],
-            ),
-          );
-        },
+              ),
+            );
+          },
+        ),
       ),
     );
   }

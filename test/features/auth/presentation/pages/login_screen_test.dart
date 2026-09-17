@@ -94,7 +94,10 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.textContaining('routed:${AppRoutes.verifyEmail}'), findsOneWidget);
+    expect(
+      find.textContaining('routed:${AppRoutes.verifyEmail}'),
+      findsOneWidget,
+    );
     await cubit.close();
   });
 

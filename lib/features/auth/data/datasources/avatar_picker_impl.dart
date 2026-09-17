@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:image_picker/image_picker.dart';
 
-import 'avatar_picker.dart';
+import '../../domain/avatar_picker.dart';
 
 class AvatarPickerImpl implements AvatarPicker {
   AvatarPickerImpl({ImagePicker? picker}) : _picker = picker ?? ImagePicker();

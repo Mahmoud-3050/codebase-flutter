@@ -14,8 +14,6 @@ import 'package:codebase/features/auth/data/datasources/auth_local_datasource.da
     as _i16;
 import 'package:codebase/features/auth/data/datasources/auth_remote_datasource.dart'
     as _i13;
-import 'package:codebase/features/auth/data/datasources/avatar_picker.dart'
-    as _i35;
 import 'package:codebase/features/auth/data/datasources/social_auth_service.dart'
     as _i33;
 import 'package:codebase/features/auth/data/models/complete_registration_model.dart'
@@ -35,6 +33,7 @@ import 'package:codebase/features/auth/data/models/verify_email_model.dart'
     as _i4;
 import 'package:codebase/features/auth/data/models/verify_phone_otp_model.dart'
     as _i6;
+import 'package:codebase/features/auth/domain/avatar_picker.dart' as _i35;
 import 'package:codebase/features/auth/domain/entities/auth_session.dart'
     as _i17;
 import 'package:codebase/features/auth/domain/entities/complete_registration_response.dart'

@@ -8,7 +8,7 @@ import 'package:codebase/config/language/strings.dart';
 import 'package:codebase/config/routes/app_routes.dart';
 import 'package:codebase/core/error/failures.dart';
 import 'package:codebase/core/presentation/api_call_state.dart';
-import 'package:codebase/features/auth/data/datasources/avatar_picker.dart';
+import 'package:codebase/features/auth/domain/avatar_picker.dart';
 import 'package:codebase/features/auth/domain/entities/auth_session.dart';
 import 'package:codebase/features/auth/domain/entities/complete_registration_response.dart';
 import 'package:codebase/features/auth/domain/entities/otp_challenge.dart';
@@ -16,9 +16,7 @@ import 'package:codebase/features/auth/domain/entities/request_otp_response.dart
 import 'package:codebase/features/auth/presentation/controller/complete_registration/complete_registration_cubit.dart';
 import 'package:codebase/features/auth/presentation/controller/request_phone_otp/request_phone_otp_cubit.dart';
 import 'package:codebase/features/auth/presentation/pages/complete_registration_screen.dart';
-import 'package:codebase/injection_container.dart';
 import 'package:field_validator/field_validator.dart';
-import 'package:get_it/get_it.dart';
 
 import '../../fixtures.dart';
 import '../../mocks.mocks.dart';
@@ -36,20 +34,11 @@ void main() {
   setUp(() => FieldValidator.instance.init());
   tearDown(resetAuthWidget);
 
-  Future<MockAvatarPicker> bindPicker() async {
-    final GetIt sl = ServiceLocator.instance;
-    sl.allowReassignment = true;
-    final MockAvatarPicker picker = MockAvatarPicker();
-    sl.registerSingleton<AvatarPicker>(picker);
-    addTearDown(() {
-      if (sl.isRegistered<AvatarPicker>()) {
-        sl.unregister<AvatarPicker>();
-      }
-    });
-    return picker;
-  }
-
-  Future<void> pumpComplete(WidgetTester tester, {required Widget child}) {
+  Future<void> pumpComplete(
+    WidgetTester tester, {
+    required Widget child,
+    MockAvatarPicker? picker,
+  }) {
     return pumpAuthWidget(
       tester,
       providers: <BlocProvider<dynamic>>[
@@ -61,6 +50,11 @@ void main() {
           create: (_) => RequestPhoneOtpCubit(MockRequestPhoneOtpUseCase()),
         ),
       ],
+      repositories: picker == null
+          ? const <RepositoryProvider<dynamic>>[]
+          : <RepositoryProvider<dynamic>>[
+              RepositoryProvider<AvatarPicker>.value(value: picker),
+            ],
       child: child,
     );
   }
@@ -101,9 +95,8 @@ void main() {
     final MockCompleteRegistrationUseCase complete =
         MockCompleteRegistrationUseCase();
     when(complete.call(any)).thenAnswer(
-      (_) async => const Left<Failure, CompleteRegistrationResponse>(
-        ServerFailure(),
-      ),
+      (_) async =>
+          const Left<Failure, CompleteRegistrationResponse>(ServerFailure()),
     );
     await pumpAuthWidget(
       tester,
@@ -127,12 +120,13 @@ void main() {
   testWidgets('FR-006a avatar reject keeps completion form', (
     WidgetTester tester,
   ) async {
-    final MockAvatarPicker picker = await bindPicker();
+    final MockAvatarPicker picker = MockAvatarPicker();
     when(picker.pickAvatar()).thenThrow(
       const AvatarRejectedException(reason: AvatarRejectReason.tooLarge),
     );
     await pumpComplete(
       tester,
+      picker: picker,
       child: const CompleteRegistrationScreen(draft: kPhoneDraft),
     );
     await tester.tap(find.text(Strings.addPhoto));
@@ -143,12 +137,13 @@ void main() {
   testWidgets('FR-006a unsupported avatar type is rejected', (
     WidgetTester tester,
   ) async {
-    final MockAvatarPicker picker = await bindPicker();
+    final MockAvatarPicker picker = MockAvatarPicker();
     when(picker.pickAvatar()).thenThrow(
       const AvatarRejectedException(reason: AvatarRejectReason.unsupportedType),
     );
     await pumpComplete(
       tester,
+      picker: picker,
       child: const CompleteRegistrationScreen(draft: kPhoneDraft),
     );
     await tester.tap(find.text(Strings.addPhoto));
@@ -159,10 +154,11 @@ void main() {
   testWidgets('FR-006c picked avatar switches CTA to skip photo', (
     WidgetTester tester,
   ) async {
-    final MockAvatarPicker picker = await bindPicker();
+    final MockAvatarPicker picker = MockAvatarPicker();
     when(picker.pickAvatar()).thenAnswer((_) async => '/tmp/a.png');
     await pumpComplete(
       tester,
+      picker: picker,
       child: const CompleteRegistrationScreen(draft: kPhoneDraft),
     );
     await tester.tap(find.text(Strings.addPhoto));
@@ -218,11 +214,31 @@ void main() {
       ],
       child: const CompleteRegistrationScreen(draft: kPhoneDraft),
     );
-    cubit.emit(
-      ApiCallError<AuthSession>(message: Strings.draftExpired),
-    );
+    cubit.emit(ApiCallError<AuthSession>(message: Strings.draftExpired));
     await tester.pumpAndSettle();
     expect(find.text('routed:${AppRoutes.phoneSignIn}'), findsOneWidget);
+    await cubit.close();
+  });
+
+  testWidgets('FR-026a social draft_expired routes to welcome', (
+    WidgetTester tester,
+  ) async {
+    final CompleteRegistrationCubit cubit = CompleteRegistrationCubit(
+      MockCompleteRegistrationUseCase(),
+    );
+    await pumpAuthWidget(
+      tester,
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<CompleteRegistrationCubit>.value(value: cubit),
+        BlocProvider<RequestPhoneOtpCubit>(
+          create: (_) => RequestPhoneOtpCubit(MockRequestPhoneOtpUseCase()),
+        ),
+      ],
+      child: const CompleteRegistrationScreen(draft: kGoogleDraft),
+    );
+    cubit.emit(ApiCallError<AuthSession>(message: Strings.draftExpired));
+    await tester.pumpAndSettle();
+    expect(find.text('routed:${AppRoutes.welcome}'), findsOneWidget);
     await cubit.close();
   });
 
@@ -265,9 +281,7 @@ void main() {
       ],
       child: const CompleteRegistrationScreen(draft: kGoogleDraft),
     );
-    requestCubit.emit(
-      const ApiCallError<OtpChallenge>(message: 'otp failed'),
-    );
+    requestCubit.emit(const ApiCallError<OtpChallenge>(message: 'otp failed'));
     await tester.pump();
     await requestCubit.close();
   });

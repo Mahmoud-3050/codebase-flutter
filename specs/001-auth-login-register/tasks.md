@@ -391,3 +391,17 @@ Task: "T039 Register/VerifyEmail/RequestEmailOtp use cases"
 - Exclude `social_auth_service_impl.dart` and `avatar_picker_impl.dart` from the 90% denominator
 - Commit after each task or logical group
 - Stop at any checkpoint and validate the story independently
+
+---
+
+## Phase 11: Convergence
+
+**Purpose**: Close remaining gaps between spec/plan/constitution and the current implementation
+
+- [X] T124 CRITICAL Move `AvatarPicker` out of `lib/features/auth/data/datasources/` (or stop importing it from presentation) so `register_screen.dart` and `complete_registration_screen.dart` no longer depend on a datasource; widgets must not resolve `AvatarPicker` from GetIt per Constitution I (`contradicts`)
+- [X] T125 CRITICAL Drive registration-draft resume through a Cubit `f*` action instead of `WelcomeScreen` calling `ReadRegistrationDraftUseCase` via `ServiceLocator` per Constitution II/III (`contradicts`)
+- [X] T126 CRITICAL Map OTP and reset failures to canonical `invalid_code` / `expired_code` (including HTTP 410 and 422 `code` field errors) in `auth_error_copy.dart`, and always surface that copy on verify-email, phone-OTP, and reset screens — 422 field errors currently skip the snackbar and those screens have no `FieldErrorsScope` per FR-049, US1/AC3, SC-007 (`missing`)
+- [X] T127 Add a cooldown-gated resend control on `ResetPasswordScreen` (register `RequestPasswordResetCubit` on that route, restart from `resend_available_in_seconds`) so reset codes follow FR-012 per FR-046b (`missing`)
+- [X] T128 Pass `OtpPurpose` (including `verify_phone`) on phone OTP request/resend instead of hardcoding `phone_sign_in` in `RequestPhoneOtpParams`, and restart the server-driven cooldown plus show request errors on `PhoneOtpScreen` per FR-033, FR-012 (`partial`)
+- [X] T129 Treat complete-registration 409 and 422 as `draft_expired` and restart the originating phone or social path (not always `PhoneSignInRoute`) per FR-026a (`partial`)
+- [X] T130 Add the Sign in with Apple capability to `ios/Runner/Runner.entitlements` so Apple sign-in can succeed on iOS per FR-028, US6 (`missing`)

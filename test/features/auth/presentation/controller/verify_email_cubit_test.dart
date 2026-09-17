@@ -3,6 +3,7 @@ import 'package:either/either.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
+import 'package:codebase/config/language/strings.dart';
 import 'package:codebase/core/error/failures.dart';
 import 'package:codebase/core/presentation/api_call_state.dart';
 import 'package:codebase/features/auth/domain/entities/auth_session.dart';
@@ -53,7 +54,12 @@ void main() {
         cubit.fVerifyEmail(email: 'a@b.c', code: '000000'),
     expect: () => <VerifyEmailState>[
       const ApiCallLoading<AuthSession>(),
-      const ApiCallError<AuthSession>(message: 'bad'),
+      ApiCallError<AuthSession>(
+        message: Strings.invalidCode,
+        fieldErrors: <String, List<String>>{
+          'code': <String>[Strings.invalidCode],
+        },
+      ),
     ],
   );
 }

@@ -133,7 +133,9 @@ void main() {
     );
     cubit.emit(const ApiCallError<AuthSession>(message: 'bad otp'));
     await tester.pump();
-    requestCubit.emit(const ApiCallSuccess<OtpChallenge>(data: kEmailChallenge));
+    requestCubit.emit(
+      const ApiCallSuccess<OtpChallenge>(data: kEmailChallenge),
+    );
     await tester.pump();
     cubit.emit(ApiCallSuccess<AuthSession>(data: kSession));
     await tester.pumpAndSettle();

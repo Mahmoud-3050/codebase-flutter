@@ -48,7 +48,9 @@ void ensureAuthDummies() {
   provideDummy<Either<Failure, LogoutResponse>>(
     const Left<Failure, LogoutResponse>(ServerFailure()),
   );
-  provideDummy<Either<Failure, void>>(const Left<Failure, void>(ServerFailure()));
+  provideDummy<Either<Failure, void>>(
+    const Left<Failure, void>(ServerFailure()),
+  );
   provideDummy<Either<Failure, UserType>>(
     const Left<Failure, UserType>(ServerFailure()),
   );
@@ -56,9 +58,6 @@ void ensureAuthDummies() {
     const Left<Failure, RegistrationDraft?>(ServerFailure()),
   );
   provideDummy<SocialCredential>(
-    const SocialCredential(
-      provider: SocialProvider.google,
-      idToken: 'dummy',
-    ),
+    const SocialCredential(provider: SocialProvider.google, idToken: 'dummy'),
   );
 }

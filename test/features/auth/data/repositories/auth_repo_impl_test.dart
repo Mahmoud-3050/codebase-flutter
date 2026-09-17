@@ -282,8 +282,9 @@ void main() {
       isTrue,
     );
     expect(
-      (await repository.readRegistrationDraft(params: const NoParams()))
-          .isRight,
+      (await repository.readRegistrationDraft(
+        params: const NoParams(),
+      )).isRight,
       isTrue,
     );
   });
@@ -293,16 +294,13 @@ void main() {
       (_) async => const LogoutModel(status: 'success', message: ''),
     );
     when(local.clearSession()).thenThrow(const CacheException());
-    expect(
-      (await repository.logout(params: const NoParams())).isLeft,
-      isTrue,
-    );
+    expect((await repository.logout(params: const NoParams())).isLeft, isTrue);
   });
 
   test('FR-012 requestEmailOtp and social with existing idToken', () async {
-    when(remote.requestEmailOtp(params: anyNamed('params'))).thenAnswer(
-      (_) async => RequestOtpModel.fromJson(kOtpChallengeJson()),
-    );
+    when(
+      remote.requestEmailOtp(params: anyNamed('params')),
+    ).thenAnswer((_) async => RequestOtpModel.fromJson(kOtpChallengeJson()));
     expect(
       (await repository.requestEmailOtp(params: const NoParams())).isRight,
       isTrue,

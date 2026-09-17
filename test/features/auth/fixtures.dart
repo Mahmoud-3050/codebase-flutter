@@ -6,7 +6,6 @@ import 'package:codebase/features/auth/domain/entities/registration_draft.dart';
 import 'package:codebase/features/auth/domain/enums/otp_purpose.dart';
 import 'package:codebase/features/auth/domain/enums/registration_source.dart';
 
-
 const String kValidOtpCode = '123456';
 const String kInvalidOtpCode = '12ab';
 const String kAccessToken = 'access-token-value';

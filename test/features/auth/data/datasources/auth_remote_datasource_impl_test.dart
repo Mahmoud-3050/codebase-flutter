@@ -320,9 +320,13 @@ void main() {
         queryParameters: anyNamed('queryParameters'),
         cancelToken: anyNamed('cancelToken'),
       ),
-    ).thenAnswer((_) async => <String, dynamic>{'status': 'error', 'message': 'nope'});
+    ).thenAnswer(
+      (_) async => <String, dynamic>{'status': 'error', 'message': 'nope'},
+    );
     expect(
-      () => remote.login(params: const LoginParams(email: 'a@b.c', password: 'x')),
+      () => remote.login(
+        params: const LoginParams(email: 'a@b.c', password: 'x'),
+      ),
       throwsA(isA<ServerException>()),
     );
   });

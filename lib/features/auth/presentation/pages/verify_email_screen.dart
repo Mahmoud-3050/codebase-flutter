@@ -7,6 +7,7 @@ import '../../../../core/presentation/api_call_state.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_otp_field.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
+import '../../../../shared/widgets/field_errors_scope.dart';
 import '../../../home/presentation/navigation/router.dart';
 import '../controller/otp_cooldown/otp_cooldown_cubit.dart';
 import '../controller/request_email_otp/request_email_otp_cubit.dart';
@@ -46,6 +47,10 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
     super.dispose();
   }
 
+  void _showError(String message) {
+    showAppSnackBar(context: context, message: message, type: ToastType.error);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,6 +59,9 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         listeners: <BlocListener<dynamic, dynamic>>[
           BlocListener<RequestEmailOtpCubit, RequestEmailOtpState>(
             listener: (BuildContext context, RequestEmailOtpState state) {
+              if (state case ApiCallError(:final message)) {
+                _showError(message);
+              }
               if (state case ApiCallSuccess(:final data)) {
                 context.read<OtpCooldownCubit>().fStart(
                   data.resendAvailableInSeconds,
@@ -64,58 +72,55 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
         ],
         child: BlocConsumer<VerifyEmailCubit, VerifyEmailState>(
           listener: (BuildContext context, VerifyEmailState state) {
-            if (state case ApiCallError(
-              :final message,
-              :final hasFieldErrors,
-            )) {
-              if (!hasFieldErrors) {
-                showAppSnackBar(
-                  context: context,
-                  message: message,
-                  type: ToastType.error,
-                );
-              }
+            if (state case ApiCallError(:final message)) {
+              _showError(message);
             }
             if (state.isSuccess) {
               const HomeRoute().go(context);
             }
           },
           builder: (BuildContext context, VerifyEmailState state) {
-            return Padding(
-              padding: EdgeInsets.all(24.w),
-              child: Column(
-                children: <Widget>[
-                  Text(Strings.otpSentToYourInbox),
-                  SizedBox(height: 16.h),
-                  AppOtpField(controller: _code),
-                  SizedBox(height: 24.h),
-                  AppElevatedButton(
-                    text: Strings.verifyCode,
-                    isLoading: state.isLoading,
-                    enabled: !state.isLoading,
-                    onPressed: () => context
-                        .read<VerifyEmailCubit>()
-                        .fVerifyEmail(email: widget.email, code: _code.text),
-                  ),
-                  SizedBox(height: 12.h),
-                  BlocBuilder<OtpCooldownCubit, OtpCooldownState>(
-                    builder: (BuildContext context, OtpCooldownState cooldown) {
-                      final bool idle = cooldown is OtpCooldownIdle;
-                      return TextButton(
-                        onPressed: idle
-                            ? () => context
-                                  .read<RequestEmailOtpCubit>()
-                                  .fRequestEmailOtp(email: widget.email)
-                            : null,
-                        child: Text(
-                          idle
-                              ? Strings.resend
-                              : '${Strings.resend} (${(cooldown as OtpCooldownCounting).secondsRemaining})',
-                        ),
-                      );
-                    },
-                  ),
-                ],
+            return FieldErrorsScope(
+              fieldErrors: switch (state) {
+                ApiCallError(:final fieldErrors) => fieldErrors,
+                _ => const <String, List<String>>{},
+              },
+              child: Padding(
+                padding: EdgeInsets.all(24.w),
+                child: Column(
+                  children: <Widget>[
+                    Text(Strings.otpSentToYourInbox),
+                    SizedBox(height: 16.h),
+                    AppOtpField(controller: _code),
+                    SizedBox(height: 24.h),
+                    AppElevatedButton(
+                      text: Strings.verifyCode,
+                      isLoading: state.isLoading,
+                      enabled: !state.isLoading,
+                      onPressed: () => context
+                          .read<VerifyEmailCubit>()
+                          .fVerifyEmail(email: widget.email, code: _code.text),
+                    ),
+                    SizedBox(height: 12.h),
+                    BlocBuilder<OtpCooldownCubit, OtpCooldownState>(
+                      builder: (BuildContext context, OtpCooldownState cooldown) {
+                        final bool idle = cooldown is OtpCooldownIdle;
+                        return TextButton(
+                          onPressed: idle
+                              ? () => context
+                                    .read<RequestEmailOtpCubit>()
+                                    .fRequestEmailOtp(email: widget.email)
+                              : null,
+                          child: Text(
+                            idle
+                                ? Strings.resend
+                                : '${Strings.resend} (${(cooldown as OtpCooldownCounting).secondsRemaining})',
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             );
           },

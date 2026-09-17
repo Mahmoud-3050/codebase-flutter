@@ -43,8 +43,8 @@ class VerifyPhoneOtpCubit extends Cubit<VerifyPhoneOtpState>
         }
         emit(
           ApiCallError<AuthOutcome?>(
-            message: AuthErrorCopy.of(failure),
-            fieldErrors: failure.fieldErrors,
+            message: AuthErrorCopy.of(failure, otp: true),
+            fieldErrors: AuthErrorCopy.otpFieldErrors(failure),
           ),
         );
       },

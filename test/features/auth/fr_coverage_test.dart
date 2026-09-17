@@ -19,10 +19,43 @@ void main() {
     expect(kSmallPngBytes[1], 0x50); // P of PNG
   });
 
-  test('FR-018 invalid_code and expired_code copy exist', () {
-    expect(Strings.invalidCode, isNotEmpty);
-    expect(Strings.expiredCode, isNotEmpty);
-    expect(Strings.tooManyAttempts, isNotEmpty);
+  test('FR-049 AuthErrorCopy maps OTP and draft failures', () {
+    expect(
+      AuthErrorCopy.of(
+        const ServerFailure(statusCode: StatusCode.gone),
+        otp: true,
+      ),
+      Strings.expiredCode,
+    );
+    expect(
+      AuthErrorCopy.of(
+        const ValidationFailure(
+          fieldErrors: <String, List<String>>{
+            'code': <String>['wrong'],
+          },
+        ),
+        otp: true,
+      ),
+      Strings.invalidCode,
+    );
+    expect(
+      AuthErrorCopy.of(
+        const ServerFailure(statusCode: StatusCode.conflict),
+        otp: true,
+      ),
+      Strings.expiredCode,
+    );
+    expect(
+      AuthErrorCopy.of(const ValidationFailure(), draftConflict: true),
+      Strings.draftExpired,
+    );
+    expect(
+      AuthErrorCopy.of(
+        const ServerFailure(statusCode: StatusCode.unProcessableContent),
+        draftConflict: true,
+      ),
+      Strings.draftExpired,
+    );
   });
 
   test('FR-018a AuthErrorCopy maps 429 to too_many_attempts', () {

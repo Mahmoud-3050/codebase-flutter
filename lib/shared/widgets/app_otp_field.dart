@@ -5,6 +5,7 @@ import 'package:themes/themes.dart';
 
 import '../../config/language/strings.dart';
 import '../../core/utils/values/text_styles.dart';
+import 'field_errors_scope.dart';
 
 class AppOtpField extends StatelessWidget {
   const AppOtpField({
@@ -39,6 +40,7 @@ class AppOtpField extends StatelessWidget {
         counterText: '',
         labelText: Strings.verifyCode,
         hintText: List<String>.filled(length, '•').join(),
+        errorText: FieldErrorsScope.of(context).messageFor('code'),
         filled: true,
         fillColor: colors.foreground,
         contentPadding: EdgeInsets.symmetric(vertical: 16.h, horizontal: 12.w),

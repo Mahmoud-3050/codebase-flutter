@@ -8,8 +8,10 @@ import 'package:codebase/config/routes/app_routes.dart';
 import 'package:codebase/core/error/failures.dart';
 import 'package:codebase/core/presentation/api_call_state.dart';
 import 'package:codebase/features/auth/domain/entities/auth_session.dart';
+import 'package:codebase/features/auth/domain/entities/request_password_reset_response.dart';
 import 'package:codebase/features/auth/domain/entities/reset_password_response.dart';
 import 'package:codebase/features/auth/presentation/controller/otp_cooldown/otp_cooldown_cubit.dart';
+import 'package:codebase/features/auth/presentation/controller/request_password_reset/request_password_reset_cubit.dart';
 import 'package:codebase/features/auth/presentation/controller/reset_password/reset_password_cubit.dart';
 import 'package:codebase/features/auth/presentation/pages/reset_password_screen.dart';
 import 'package:codebase/features/auth/presentation/validators/auth_validators.dart';
@@ -22,6 +24,9 @@ void main() {
   setUpAll(() {
     provideDummy<Either<Failure, ResetPasswordResponse>>(
       const Left<Failure, ResetPasswordResponse>(ServerFailure()),
+    );
+    provideDummy<Either<Failure, RequestPasswordResetResponse>>(
+      const Left<Failure, RequestPasswordResetResponse>(ServerFailure()),
     );
   });
   tearDown(resetAuthWidget);
@@ -40,6 +45,10 @@ void main() {
         BlocProvider<ResetPasswordCubit>(
           create: (_) => ResetPasswordCubit(useCase),
         ),
+        BlocProvider<RequestPasswordResetCubit>(
+          create: (_) =>
+              RequestPasswordResetCubit(MockRequestPasswordResetUseCase()),
+        ),
         BlocProvider<OtpCooldownCubit>(
           create: (_) =>
               OtpCooldownCubit(tick: (int ticks) => const Stream<int>.empty()),
@@ -49,6 +58,7 @@ void main() {
     );
     expect(find.text(Strings.resetPassword), findsWidgets);
     expect(find.text(Strings.newPassword), findsWidgets);
+    expect(find.text(Strings.resend), findsOneWidget);
     await tester.tap(find.text(Strings.confirm));
     await tester.pump();
   });
@@ -63,6 +73,10 @@ void main() {
       tester,
       providers: <BlocProvider<dynamic>>[
         BlocProvider<ResetPasswordCubit>.value(value: cubit),
+        BlocProvider<RequestPasswordResetCubit>(
+          create: (_) =>
+              RequestPasswordResetCubit(MockRequestPasswordResetUseCase()),
+        ),
         BlocProvider<OtpCooldownCubit>(
           create: (_) =>
               OtpCooldownCubit(tick: (int ticks) => const Stream<int>.empty()),

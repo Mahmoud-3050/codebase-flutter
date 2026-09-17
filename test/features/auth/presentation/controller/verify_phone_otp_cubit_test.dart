@@ -3,6 +3,7 @@ import 'package:either/either.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
 
+import 'package:codebase/config/language/strings.dart';
 import 'package:codebase/core/error/failures.dart';
 import 'package:codebase/core/presentation/api_call_state.dart';
 import 'package:codebase/features/auth/domain/entities/auth_outcome.dart';
@@ -43,9 +44,7 @@ void main() {
     ),
     expect: () => <VerifyPhoneOtpState>[
       const ApiCallLoading<AuthOutcome?>(),
-      ApiCallSuccess<AuthOutcome?>(
-        data: AuthSessionEstablished(kSession),
-      ),
+      ApiCallSuccess<AuthOutcome?>(data: AuthSessionEstablished(kSession)),
     ],
   );
 
@@ -97,7 +96,12 @@ void main() {
     ),
     expect: () => <VerifyPhoneOtpState>[
       const ApiCallLoading<AuthOutcome?>(),
-      const ApiCallError<AuthOutcome?>(message: 'nope'),
+      ApiCallError<AuthOutcome?>(
+        message: Strings.invalidCode,
+        fieldErrors: <String, List<String>>{
+          'code': <String>[Strings.invalidCode],
+        },
+      ),
     ],
   );
 
@@ -106,9 +110,8 @@ void main() {
     build: () {
       final MockVerifyPhoneOtpUseCase useCase = MockVerifyPhoneOtpUseCase();
       when(useCase.call(any)).thenAnswer(
-        (_) async => const Left<Failure, VerifyPhoneOtpResponse>(
-          CancelledFailure(),
-        ),
+        (_) async =>
+            const Left<Failure, VerifyPhoneOtpResponse>(CancelledFailure()),
       );
       return VerifyPhoneOtpCubit(useCase);
     },

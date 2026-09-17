@@ -7,6 +7,7 @@ import 'package:codebase/core/error/failures.dart';
 import 'package:codebase/core/presentation/api_call_state.dart';
 import 'package:codebase/features/auth/domain/entities/otp_challenge.dart';
 import 'package:codebase/features/auth/domain/entities/request_otp_response.dart';
+import 'package:codebase/features/auth/domain/enums/otp_purpose.dart';
 import 'package:codebase/features/auth/presentation/controller/request_phone_otp/request_phone_otp_cubit.dart';
 
 import '../../fixtures.dart';
@@ -34,8 +35,11 @@ void main() {
       );
       return RequestPhoneOtpCubit(useCase);
     },
-    act: (RequestPhoneOtpCubit cubit) =>
-        cubit.fRequestPhoneOtp(dialingCode: '+966', phone: '500000000'),
+    act: (RequestPhoneOtpCubit cubit) => cubit.fRequestPhoneOtp(
+      dialingCode: '+966',
+      phone: '500000000',
+      purpose: OtpPurpose.verifyPhone,
+    ),
     expect: () => <RequestPhoneOtpState>[
       const ApiCallLoading<OtpChallenge>(),
       const ApiCallSuccess<OtpChallenge>(data: kPhoneChallenge),

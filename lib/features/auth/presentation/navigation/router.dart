@@ -6,12 +6,14 @@ import '../../../../config/routes/app_routes.dart';
 import '../../../../core/di/feature_scope.dart';
 import '../../../../injection_container.dart';
 import '../../auth_injection.dart';
+import '../../domain/avatar_picker.dart';
 import '../../domain/entities/registration_draft.dart';
 import '../../domain/enums/otp_purpose.dart';
 import '../controller/complete_registration/complete_registration_cubit.dart';
 import '../controller/guest_mode/guest_mode_cubit.dart';
 import '../controller/login/login_cubit.dart';
 import '../controller/otp_cooldown/otp_cooldown_cubit.dart';
+import '../controller/read_registration_draft/read_registration_draft_cubit.dart';
 import '../controller/register/register_cubit.dart';
 import '../controller/request_email_otp/request_email_otp_cubit.dart';
 import '../controller/request_password_reset/request_password_reset_cubit.dart';
@@ -47,11 +49,20 @@ Widget _scoped({
   required List<FeatureRegistration> registrations,
   required List<BlocProvider<dynamic>> providers,
   required Widget child,
+  List<RepositoryProvider<dynamic>> repositories =
+      const <RepositoryProvider<dynamic>>[],
 }) {
+  Widget subtree = child;
+  if (providers.isNotEmpty) {
+    subtree = MultiBlocProvider(providers: providers, child: subtree);
+  }
+  if (repositories.isNotEmpty) {
+    subtree = MultiRepositoryProvider(providers: repositories, child: subtree);
+  }
   return FeatureScope(
     scopeName: scopeName,
     registrations: registrations,
-    child: MultiBlocProvider(providers: providers, child: child),
+    child: subtree,
   );
 }
 
@@ -75,6 +86,9 @@ class WelcomeRoute extends GoRouteData with $WelcomeRoute {
         BlocProvider<SocialSignInCubit>(
           create: (_) => ServiceLocator.instance<SocialSignInCubit>(),
         ),
+        BlocProvider<ReadRegistrationDraftCubit>(
+          create: (_) => ServiceLocator.instance<ReadRegistrationDraftCubit>(),
+        ),
       ],
       child: const WelcomeScreen(),
     );
@@ -96,6 +110,11 @@ class RegisterRoute extends GoRouteData with $RegisterRoute {
       providers: <BlocProvider<dynamic>>[
         BlocProvider<RegisterCubit>(
           create: (_) => ServiceLocator.instance<RegisterCubit>(),
+        ),
+      ],
+      repositories: <RepositoryProvider<dynamic>>[
+        RepositoryProvider<AvatarPicker>(
+          create: (_) => ServiceLocator.instance<AvatarPicker>(),
         ),
       ],
       child: const RegisterScreen(),
@@ -262,6 +281,11 @@ class CompleteRegistrationRoute extends GoRouteData
           create: (_) => ServiceLocator.instance<RequestPhoneOtpCubit>(),
         ),
       ],
+      repositories: <RepositoryProvider<dynamic>>[
+        RepositoryProvider<AvatarPicker>(
+          create: (_) => ServiceLocator.instance<AvatarPicker>(),
+        ),
+      ],
       child: CompleteRegistrationScreen(draft: $extra),
     );
   }
@@ -317,6 +341,9 @@ class ResetPasswordRoute extends GoRouteData with $ResetPasswordRoute {
       providers: <BlocProvider<dynamic>>[
         BlocProvider<ResetPasswordCubit>(
           create: (_) => ServiceLocator.instance<ResetPasswordCubit>(),
+        ),
+        BlocProvider<RequestPasswordResetCubit>(
+          create: (_) => ServiceLocator.instance<RequestPasswordResetCubit>(),
         ),
         BlocProvider<OtpCooldownCubit>(
           create: (_) => ServiceLocator.instance<OtpCooldownCubit>(),

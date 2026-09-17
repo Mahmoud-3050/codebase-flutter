@@ -6,6 +6,7 @@ import '../../../../../core/presentation/api_call_state.dart';
 import '../../../../../core/presentation/cubit_request_canceller.dart';
 import '../../../domain/entities/otp_challenge.dart';
 import '../../../domain/entities/request_otp_response.dart';
+import '../../../domain/enums/otp_purpose.dart';
 import '../../../domain/usecases/request_phone_otp_usecase.dart';
 import '../../auth_error_copy.dart';
 
@@ -21,6 +22,7 @@ class RequestPhoneOtpCubit extends Cubit<RequestPhoneOtpState>
   Future<void> fRequestPhoneOtp({
     required String dialingCode,
     required String phone,
+    OtpPurpose purpose = OtpPurpose.phoneSignIn,
   }) async {
     emit(const ApiCallLoading<OtpChallenge>());
     final Either<Failure, RequestOtpResponse> result =
@@ -28,6 +30,7 @@ class RequestPhoneOtpCubit extends Cubit<RequestPhoneOtpState>
           RequestPhoneOtpParams(
             dialingCode: dialingCode,
             phone: phone,
+            purpose: purpose,
             cancellation: nextRequestCancelToken(),
           ),
         );

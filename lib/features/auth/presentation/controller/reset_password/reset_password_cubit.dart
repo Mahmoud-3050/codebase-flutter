@@ -40,8 +40,8 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState>
         }
         emit(
           ApiCallError<AuthSession>(
-            message: AuthErrorCopy.of(failure),
-            fieldErrors: failure.fieldErrors,
+            message: AuthErrorCopy.of(failure, otp: true),
+            fieldErrors: AuthErrorCopy.otpFieldErrors(failure),
           ),
         );
       },

@@ -5,13 +5,12 @@ import 'package:screen_util/screen_util.dart';
 import '../../../../config/language/strings.dart';
 import '../../../../core/presentation/api_call_state.dart';
 import '../../../../core/services/phone_number/phone_validation_service.dart';
-import '../../../../injection_container.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/field_errors_scope.dart';
 import '../../../home/presentation/navigation/router.dart';
-import '../../data/datasources/avatar_picker.dart';
+import '../../domain/avatar_picker.dart';
 import '../../domain/entities/otp_challenge.dart';
 import '../../domain/entities/registration_draft.dart';
 import '../../domain/enums/otp_purpose.dart';
@@ -64,8 +63,7 @@ class _CompleteRegistrationScreenState
 
   Future<void> _pickAvatar() async {
     try {
-      final String? path = await ServiceLocator.instance<AvatarPicker>()
-          .pickAvatar();
+      final String? path = await context.read<AvatarPicker>().pickAvatar();
       if (!mounted) {
         return;
       }
@@ -108,6 +106,7 @@ class _CompleteRegistrationScreenState
       await context.read<RequestPhoneOtpCubit>().fRequestPhoneOtp(
         dialingCode: '+${parsed.phoneCode}',
         phone: parsed.phoneNumber,
+        purpose: OtpPurpose.verifyPhone,
       );
       return;
     }
@@ -164,7 +163,13 @@ class _CompleteRegistrationScreenState
                   );
                 }
                 if (message == Strings.draftExpired) {
-                  const PhoneSignInRoute().go(context);
+                  switch (widget.draft.source) {
+                    case RegistrationSource.phone:
+                      const PhoneSignInRoute().go(context);
+                    case RegistrationSource.google:
+                    case RegistrationSource.apple:
+                      const WelcomeRoute().go(context);
+                  }
                 }
               }
               if (state.isSuccess) {

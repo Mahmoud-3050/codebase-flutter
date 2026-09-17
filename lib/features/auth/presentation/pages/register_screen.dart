@@ -5,12 +5,11 @@ import 'package:screen_util/screen_util.dart';
 import '../../../../config/language/strings.dart';
 import '../../../../core/presentation/api_call_state.dart';
 import '../../../../core/services/phone_number/phone_validation_service.dart';
-import '../../../../injection_container.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/field_errors_scope.dart';
-import '../../data/datasources/avatar_picker.dart';
+import '../../domain/avatar_picker.dart';
 import '../controller/register/register_cubit.dart';
 import '../navigation/router.dart';
 import '../validators/auth_validators.dart';
@@ -43,8 +42,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   Future<void> _pickAvatar() async {
     try {
-      final String? path = await ServiceLocator.instance<AvatarPicker>()
-          .pickAvatar();
+      final String? path = await context.read<AvatarPicker>().pickAvatar();
       if (!mounted) {
         return;
       }
