@@ -3,6 +3,12 @@ import '../../../../core/api/status_code.dart';
 import '../../../../core/error/failures.dart';
 
 abstract final class AuthErrorCopy {
+  static const String _codeField = 'code';
+  static const Set<String> _tokenFieldKeys = <String>{
+    'registration_token',
+    'token',
+  };
+
   static String of(
     Failure failure, {
     bool draftConflict = false,
@@ -31,19 +37,27 @@ abstract final class AuthErrorCopy {
   }
 
   static Map<String, List<String>> otpFieldErrors(Failure failure) {
+    if (failure is ValidationFailure &&
+        failure.fieldErrors.isNotEmpty &&
+        !_isOtpCodeFailure(failure)) {
+      return failure.fieldErrors;
+    }
     final String copy = of(failure, otp: true);
     if (failure is ValidationFailure && failure.fieldErrors.isNotEmpty) {
       return <String, List<String>>{
         ...failure.fieldErrors,
-        'code': <String>[copy],
+        _codeField: <String>[copy],
       };
     }
     return <String, List<String>>{
-      'code': <String>[copy],
+      _codeField: <String>[copy],
     };
   }
 
   static String _otpCopy(Failure failure) {
+    if (!_isOtpCodeFailure(failure)) {
+      return failure.message ?? Strings.pleaseTryAgainLater;
+    }
     if (failure is ServerFailure && failure.statusCode == StatusCode.gone) {
       return Strings.expiredCode;
     }
@@ -57,6 +71,9 @@ abstract final class AuthErrorCopy {
   }
 
   static bool _isDraftExpiredFailure(Failure failure) {
+    if (_hasNonTokenFieldErrors(failure)) {
+      return false;
+    }
     if (failure is ValidationFailure) {
       return true;
     }
@@ -68,11 +85,27 @@ abstract final class AuthErrorCopy {
     return false;
   }
 
+  static bool _hasNonTokenFieldErrors(Failure failure) {
+    if (failure is! ValidationFailure) {
+      return false;
+    }
+    return failure.fieldErrors.keys.any(
+      (String key) => !_tokenFieldKeys.contains(key),
+    );
+  }
+
+  static bool _isOtpCodeFailure(Failure failure) {
+    if (failure is! ValidationFailure || failure.fieldErrors.isEmpty) {
+      return true;
+    }
+    return failure.fieldErrors.containsKey(_codeField);
+  }
+
   static bool _codeFieldLooksExpired(Failure failure) {
     if (failure is! ValidationFailure) {
       return false;
     }
-    return failure.fieldErrors['code']?.any(_looksExpired) ?? false;
+    return failure.fieldErrors[_codeField]?.any(_looksExpired) ?? false;
   }
 
   static bool _looksExpired(String? text) {

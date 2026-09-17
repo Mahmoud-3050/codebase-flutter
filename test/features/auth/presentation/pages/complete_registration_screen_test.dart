@@ -242,6 +242,36 @@ void main() {
     await cubit.close();
   });
 
+  testWidgets('FR-033 phone field error does not restart the flow', (
+    WidgetTester tester,
+  ) async {
+    final CompleteRegistrationCubit cubit = CompleteRegistrationCubit(
+      MockCompleteRegistrationUseCase(),
+    );
+    await pumpAuthWidget(
+      tester,
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<CompleteRegistrationCubit>.value(value: cubit),
+        BlocProvider<RequestPhoneOtpCubit>(
+          create: (_) => RequestPhoneOtpCubit(MockRequestPhoneOtpUseCase()),
+        ),
+      ],
+      child: const CompleteRegistrationScreen(draft: kGoogleDraft),
+    );
+    cubit.emit(
+      ApiCallError<AuthSession>(
+        message: Strings.draftExpired,
+        fieldErrors: const <String, List<String>>{
+          'phone': <String>['unverified'],
+        },
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(find.text('routed:${AppRoutes.welcome}'), findsNothing);
+    expect(find.text(Strings.completeRegistration), findsWidgets);
+    await cubit.close();
+  });
+
   testWidgets('FR-025 complete success routes home', (
     WidgetTester tester,
   ) async {

@@ -405,3 +405,11 @@ Task: "T039 Register/VerifyEmail/RequestEmailOtp use cases"
 - [X] T128 Pass `OtpPurpose` (including `verify_phone`) on phone OTP request/resend instead of hardcoding `phone_sign_in` in `RequestPhoneOtpParams`, and restart the server-driven cooldown plus show request errors on `PhoneOtpScreen` per FR-033, FR-012 (`partial`)
 - [X] T129 Treat complete-registration 409 and 422 as `draft_expired` and restart the originating phone or social path (not always `PhoneSignInRoute`) per FR-026a (`partial`)
 - [X] T130 Add the Sign in with Apple capability to `ios/Runner/Runner.entitlements` so Apple sign-in can succeed on iOS per FR-028, US6 (`missing`)
+
+---
+
+## Phase 12: Convergence
+
+**Purpose**: Narrow error-copy mapping so field-level 422s are not treated as flow-ending failures
+
+- [X] T131 Restrict `AuthErrorCopy` so complete-registration `draft_expired` applies only to token 409/410/422 without form field errors, and OTP `invalid_code`/`expired_code` applies only to code failures — a `phone` or `password` `ValidationFailure` must stay on the form per FR-026a, FR-033, FR-007, FR-046c, FR-049 (`partial`)

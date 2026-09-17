@@ -162,7 +162,7 @@ class _CompleteRegistrationScreenState
                     type: ToastType.error,
                   );
                 }
-                if (message == Strings.draftExpired) {
+                if (message == Strings.draftExpired && !hasFieldErrors) {
                   switch (widget.draft.source) {
                     case RegistrationSource.phone:
                       const PhoneSignInRoute().go(context);

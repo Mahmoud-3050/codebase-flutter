@@ -56,6 +56,40 @@ void main() {
       ),
       Strings.draftExpired,
     );
+    expect(
+      AuthErrorCopy.of(
+        const ValidationFailure(
+          fieldErrors: <String, List<String>>{
+            'phone': <String>['unverified'],
+          },
+        ),
+        draftConflict: true,
+      ),
+      isNot(Strings.draftExpired),
+    );
+    expect(
+      AuthErrorCopy.of(
+        const ValidationFailure(
+          fieldErrors: <String, List<String>>{
+            'password': <String>['weak'],
+          },
+        ),
+        otp: true,
+      ),
+      isNot(Strings.invalidCode),
+    );
+    expect(
+      AuthErrorCopy.otpFieldErrors(
+        const ValidationFailure(
+          fieldErrors: <String, List<String>>{
+            'password': <String>['weak'],
+          },
+        ),
+      ),
+      const <String, List<String>>{
+        'password': <String>['weak'],
+      },
+    );
   });
 
   test('FR-018a AuthErrorCopy maps 429 to too_many_attempts', () {

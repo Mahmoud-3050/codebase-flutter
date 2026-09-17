@@ -98,4 +98,38 @@ void main() {
       ApiCallError<AuthSession>(message: Strings.draftExpired),
     ],
   );
+
+  blocTest<CompleteRegistrationCubit, CompleteRegistrationState>(
+    'FR-033 FR-007 phone field 422 stays on the form',
+    build: () {
+      final MockCompleteRegistrationUseCase useCase =
+          MockCompleteRegistrationUseCase();
+      when(useCase.call(any)).thenAnswer(
+        (_) async => const Left<Failure, CompleteRegistrationResponse>(
+          ValidationFailure(
+            fieldErrors: <String, List<String>>{
+              'phone': <String>['unverified'],
+            },
+          ),
+        ),
+      );
+      return CompleteRegistrationCubit(useCase);
+    },
+    act: (CompleteRegistrationCubit cubit) => cubit.fCompleteRegistration(
+      registrationToken: 'tok',
+      source: RegistrationSource.google,
+      fullName: 'Ada',
+      password: 'secret12',
+      phone: '500000000',
+    ),
+    expect: () => <CompleteRegistrationState>[
+      const ApiCallLoading<AuthSession>(),
+      ApiCallError<AuthSession>(
+        message: Strings.pleaseTryAgainLater,
+        fieldErrors: const <String, List<String>>{
+          'phone': <String>['unverified'],
+        },
+      ),
+    ],
+  );
 }
