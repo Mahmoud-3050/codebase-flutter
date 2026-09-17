@@ -21,14 +21,15 @@ Every response uses the app's existing envelope, which `ApiResponse.isSuccess` a
 
 Failure handling, already implemented in `dio_exception_mapper.dart` and `api_response.dart`:
 
-| HTTP | Body condition | Mapped exception | Reaches the UI as |
+| HTTP | Body condition | Mapped exception | Error copy id |
 |---|---|---|---|
-| 200 | `status != "success"` | `ApiResponse.exceptionOf` → `ServerException` or `ValidationException` | error message or field errors |
+| 200 | `status != "success"` | `ApiResponse.exceptionOf` → `ServerException` or `ValidationException` | matching field or generic row |
 | 422, or 400 with `errors` | — | `ValidationException(fieldErrors)` | per-field messages via `FieldErrorsScope` |
-| 401 | — | `UnauthorizedException` | non-revealing credentials message (FR-016) |
-| 409 | — | `ConflictException` | "email already taken", offer sign-in (FR-008) |
-| 429 | — | `TooManyRequestsException` | throttle message (FR-018, SC-009) |
-| timeout / offline | — | `InternetConnectionException` | retry path (spec edge case) |
+| 401 | login | `UnauthorizedException` | `invalid_credentials` (FR-016) |
+| 409 | register email taken | `ConflictException` | `email_taken` (FR-008) |
+| 409 / 422 | complete-registration token expired or consumed | `ConflictException` / `ValidationException` | `draft_expired` (FR-026a) |
+| 429 | — | `TooManyRequestsException` | `too_many_attempts` (FR-018, FR-018a, SC-009) |
+| timeout / offline | — | `InternetConnectionException` | `no_internet` |
 
 Field-error keys must be the wire field names (`full_name`, `email`, `dialing_code`, `phone`,
 `password`, `code`, `avatar`) so `AppTextFormField`'s `fieldName` lookup resolves them. The lookup
@@ -77,8 +78,8 @@ Request: `{ "email": "...", "code": "123456" }`
 
 Response `data`: a session envelope (see **Session payload** below).
 
-Errors: `422` with `code` field error for a wrong code; `410` or `422` for an expired code — either
-must carry a message that explains how to get a new one (FR-013). A code already used returns
+Errors: `422` with `code` field error for a wrong code (`invalid_code`); `410` or `422` for an expired code (`expired_code`) — either
+must carry a message that explains how to get a new one (FR-013). A fifth consecutive wrong guess for the **current** code returns `429` (`too_many_attempts`, FR-018a). A code already used returns
 `409` (FR-046d applies the same rule to reset codes).
 
 ---
@@ -167,9 +168,13 @@ Outcome B — no account yet, so registration must be completed (FR-022):
 }
 ```
 
+`registration_token` is valid for **30 minutes** from issue (FR-026a). The client MUST NOT invent a
+local TTL; treat 409/422 on complete-registration as `draft_expired` and restart the flow.
+
 The same endpoint with `purpose: "verify_phone"` verifies the phone entered on the social completion
 form (FR-033). In that case it returns neither outcome — it returns `status: success` with an empty
-`data`, because the account is created by endpoint 8, not here.
+`data`, because the account is created by endpoint 8, not here. Wrong/expired codes and the five-guess
+cap follow the same mapping as email verify (`invalid_code`, `expired_code`, `too_many_attempts`).
 
 ---
 
@@ -201,7 +206,7 @@ provider-supplied email:
 }
 ```
 
-A private relay address must be accepted exactly like a real one (FR-034). When the provider email
+A private relay address must be accepted exactly like a real one (FR-034). When Apple omits email on a later authorization, the backend still returns the stored email on the draft or session (FR-034a). When the provider email
 matches an existing account, return `outcome: "session"` and link the provider to it (FR-041).
 
 ---
@@ -225,8 +230,7 @@ Request (`multipart/form-data`):
 
 Response `data`: session payload.
 
-Errors: `409` or `422` when the token is expired or already consumed — the client must then restart
-the flow rather than show a dead end. Submitting a social completion whose phone was not verified
+Errors: `409` or `422` when the token is expired (older than **30 minutes**) or already consumed — the client shows `draft_expired` and restarts the flow rather than a dead end. Submitting a social completion whose phone was not verified
 must fail with a `phone` field error, so the client cannot skip FR-033.
 
 ---
@@ -253,7 +257,7 @@ Request: `{ "email": "...", "code": "123456", "password": "...", "password_confi
 
 Response `data`: session payload.
 
-Errors: `422` with a `code` field error for wrong or expired codes; `409` when the code was already
+Errors: `422` with a `code` field error for wrong or expired codes (`invalid_code` / `expired_code`); `429` after five wrong guesses (FR-018a); `409` when the code was already
 used (FR-046d); `422` with a `password` field error when the new password fails the strength rule.
 
 ---
@@ -312,4 +316,5 @@ changes.
    so step 2 satisfies FR-045 and SC-010 for everything except logout, whose body is empty.
 4. Send `dialing_code` and `phone` separately, normalized through `PhoneValidationService`
    (research R7).
-5. Treat every `429` as a throttle with a user-facing wait, not a generic failure.
+5. Treat every `429` as a throttle with `too_many_attempts` copy, not a generic failure. OTP verify endpoints apply this after **5** wrong guesses for the current code (FR-018a).
+6. Map every user-visible failure to the spec **Error copy** id; never show a raw HTTP or SDK message (FR-049).

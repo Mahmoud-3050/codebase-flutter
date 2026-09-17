@@ -32,8 +32,10 @@ identity token — and leave session ownership with the existing backend.
   `SignInWithApple.isAvailable()`. Cancellation is `SignInWithAppleAuthorizationException`
   with `AuthorizationErrorCode.canceled`.
 - Apple returns `email` and name **only on the very first authorization** for an Apple ID.
-  Every later authorization omits them. The social completion form must therefore not depend on
-  Apple re-sending the email; the backend stores it on first exchange (FR-034 relay case included).
+  Every later authorization omits them. Reuse the email already stored for that Apple identity or
+  on the registration draft; never ask the user to type one (FR-034a). The social completion form
+  must therefore not depend on Apple re-sending the email; the backend stores it on first exchange
+  (FR-034 relay case included).
 
 **Alternatives rejected**:
 - `firebase_auth` — duplicate identity authority, as above.
@@ -121,7 +123,7 @@ need its own theming bridge to match `themes`.
 
 **Decision**: The backend is the authority. When a verified phone number or provider identity has no
 completed account, the verify/exchange response returns
-`outcome: "registration_required"` plus a short-lived `registration_token` and whatever fields the
+`outcome: "registration_required"` plus a `registration_token` valid for **30 minutes** and whatever fields the
 provider supplied. The client persists that token and the prefill in a new
 `RegistrationDraftStorage` (backed by the already-registered `FlutterSecureStorage`) so the form can
 be restored after a cold start.
@@ -152,7 +154,9 @@ writes, and sign-out performs the inverse. Reuse `RefreshTokenHelper` untouched 
 401, retries once, and on unrecoverable failure calls `invalidateSession()`, which clears the token,
 writes `UserType.guest`, and fires the `onSessionExpired` callback that `init_app.dart` points at
 splash. That is exactly the "return to guest state rather than a dead end" behavior FR-044 describes,
-already built and already tested in `test/core/api/refresh_token_helper_test.dart`. Building a
+already built and already tested in `test/core/api/refresh_token_helper_test.dart`. The remaining gap
+is the **explanation**: after that routing, the destination MUST show `session_expired` copy (spec
+Error copy), not a silent guest home. Building a
 parallel session concept would create two sources of truth for "am I signed in".
 
 **Consequence**: sign-out (FR-043) should call `clearAuthTokens()` and write `UserType.guest`, not
@@ -248,13 +252,14 @@ the dialog and a demonstration trigger, as the spec's assumption about guest lim
 
 **Decision**: A single `SocialSignInCubit` whose action takes the provider as a parameter, backed by
 one `SocialSignInUseCase` and a `SocialProvider` enhanced enum that carries the provider's wire
-name and availability rule.
+name. Platform availability is **not** on the enum (Principle I: domain has no `dart:io`).
+Presentation owns `SocialProviderAvailability` for FR-029.
 
 **Rationale**: Stories 5 and 6 describe the same operation with a different identity source — the
 spec itself says Apple "follows the same shape as Google". Two cubits would duplicate identical
 fold-and-emit logic, contradicting "one Cubit per user-facing operation" by splitting one operation
-in two. The enhanced enum is where `isAvailableOnThisPlatform` belongs (modern Dart §4.1), which is
-what FR-029 needs to hide the Apple button.
+in two. Wire names stay on the enum (§4.1); `defaultTargetPlatform` stays in presentation so domain
+tests do not need a fake `Platform`.
 
 **Alternatives rejected**: `GoogleSignInCubit` + `AppleSignInCubit` (duplicated logic); a string
 `provider` argument (stringly-typed, §4.1).
@@ -303,8 +308,8 @@ passes the `Either` through untouched.
 | "Letter and digit" password rule | `FieldValidator.combine` of `password` + `pattern` (R2) |
 | Avatar pick/resize/upload | `image_picker` with 1024 px cap, 2 MB check, Dio `FormData` (R3) |
 | OTP input | New `AppOtpField` shared widget (R4) |
-| Draft persistence | Backend `registration_token` cached in secure storage (R5) |
-| Session model | Existing `AccessTokenStorage` + `UserTypeStorage` + `RefreshTokenHelper` (R6) |
+| Draft persistence | Backend `registration_token` (30 min, FR-026a) cached in secure storage (R5) |
+| Session model | Existing `AccessTokenStorage` + `UserTypeStorage` + `RefreshTokenHelper`; show `session_expired` (R6) |
 | Phone normalization | Existing `PhoneValidationService`, `dialing_code` + `phone` on the wire (R7) |
 | Resend countdown | `OtpCooldownCubit` with its own sealed state (R8) |
 | Startup destination | `ResolveVisitorStateCubit` in splash over existing `UserType` (R9) |

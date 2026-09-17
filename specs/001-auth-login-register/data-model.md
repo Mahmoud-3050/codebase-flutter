@@ -12,12 +12,12 @@ adds `fromJson`. Field names below are Dart names; the wire names are in `contra
 
 ### `SocialProvider` (enhanced enum)
 
-Carries its own wire name and platform rule so FR-029 has one place to ask (research R11).
+Carries only the provider `wireName` (research R11). Platform availability is **not** on this type.
 
-| Value | `wireName` | Availability |
-|---|---|---|
-| `google` | `google` | Always |
-| `apple` | `apple` | iOS and macOS only |
+| Value | `wireName` |
+|---|---|
+| `google` | `google` |
+| `apple` | `apple` |
 
 ```dart
 enum SocialProvider {
@@ -26,11 +26,13 @@ enum SocialProvider {
 
   const SocialProvider({required this.wireName});
   final String wireName;
-
-  bool get isAvailableOnThisPlatform =>
-      this == SocialProvider.google || Platform.isIOS || Platform.isMacOS;
 }
 ```
+
+Availability (FR-029) MUST NOT live on this enum. Domain stays pure Dart with no `dart:io` or Flutter.
+Presentation owns `SocialProviderAvailability.isOffered(SocialProvider)` using `defaultTargetPlatform`
+(Apple: iOS and macOS only; Google: always). Tests inject or override that helper; they never import
+`Platform` into `domain/`.
 
 ### `OtpPurpose` (enhanced enum)
 
@@ -102,7 +104,7 @@ to `/common/refresh-token` (research R6).
 
 | Field | Type | Notes |
 |---|---|---|
-| `registrationToken` | `String` | Short-lived server token authorizing completion; secret |
+| `registrationToken` | `String` | Short-lived server token authorizing completion; secret; **30 minutes** (FR-026a) |
 | `source` | `RegistrationSource` | Drives which fields the form collects |
 | `verifiedEmail` | `String?` | Present for `google` / `apple`, absent for `phone` |
 | `verifiedDialingCode` | `String?` | Present for `phone`, absent for social |
@@ -243,7 +245,7 @@ a **missing** value to `firstOpen` explicitly rather than relying on that fallba
 
 ```text
 issued ──▶ valid ──┬── correct entry ──▶ used (further entries rejected, FR-046d)
-                   ├── wrong entry ×N ──▶ attempt cap reached, cooldown
+                   ├── wrong entry ×5 ──▶ attempt cap, cooldown (FR-018a)
                    ├── expiry elapsed ──▶ expired (FR-013)
                    └── newer code issued ─▶ superseded (FR-012)
 ```

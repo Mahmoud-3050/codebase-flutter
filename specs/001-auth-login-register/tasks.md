@@ -10,7 +10,7 @@
 
 ## Format: `[ID] [P?] [Story] Description`
 
-- **[P]**: Can run in parallel (different files, no dependencies on incomplete tasks)
+- **[P]**: Can run in parallel (different files, no dependencies on incomplete tasks). Do **not** treat `[P]` as cross-story parallel when two tasks append the same file (`auth_repo_impl_test.dart`, `welcome_screen_test.dart`, `mocks.dart`).
 - **[Story]**: Which user story this task belongs to (`US1`–`US6`, `US7` = password recovery)
 - Every task includes an exact file path
 
@@ -30,11 +30,11 @@
 
 - [ ] T001 Create `lib/features/auth/` folder tree (`data/{datasources,models,repositories}`, `domain/{entities,enums,repositories,usecases}`, `presentation/{controller,navigation,pages,validators,widgets}`) plus `lib/features/home/` (`presentation/{pages,navigation}`) and `test/features/auth/{data/{models,repositories},domain/usecases,presentation/{controller,pages}}` and `integration_test/auth/`
 - [ ] T002 Add `google_sign_in: ^7.2.0`, `sign_in_with_apple: ^8.2.0` to `pubspec.yaml` dependencies and `integration_test` (SDK) to `dev_dependencies`, then run `flutter pub get`
-- [ ] T003 [P] Add new auth string keys (`password_letter_requirement` plus completion-form, guest-gate, avatar-limit, and throttle copy) to `generate/strings/lang.json` and run `dart generate/strings/main.dart` to update `assets/lang/*.json` and `lib/config/language/strings.dart`
+- [ ] T003 [P] Add new auth string keys for Error copy ids in spec.md (`invalid_credentials`, `invalid_code`, `expired_code`, `email_taken`, `social_failed`, `too_many_attempts`, `session_expired`, `no_internet`, `avatar_too_large`, `avatar_unsupported_type`, `draft_expired`, `password_letter_requirement`, plus completion-form, guest-gate, and avatar-limit copy) to `generate/strings/lang.json` and run `dart generate/strings/main.dart` to update `assets/lang/*.json` and `lib/config/language/strings.dart`
 - [ ] T004 [P] Add `emailOtpRequestPath`, `phoneOtpRequestPath`, `socialSignInPath`, `completeRegistrationPath`, and `logoutPath` in `lib/core/api/api_constants.dart`; put the first four on `publicAuthPaths`; leave `logoutPath` off the public list
 - [ ] T005 [P] Add welcome, login, register, verify-email, phone-sign-in, phone-otp, complete-registration, forgot-password, and reset-password path constants in `lib/config/routes/app_routes.dart` (`home` already exists)
 - [ ] T006 [P] Create `test/features/auth/fixtures.dart` with a verified `AuthUser`, an unverified account, valid/invalid 6-digit codes, session JSON, `registration_required` JSON per `RegistrationSource`, and a small PNG within JPEG/PNG and 2 MB limits
-- [ ] T007 Create `test/features/auth/mocks.dart` with `@GenerateMocks` for `AuthRemoteDataSource`, `AuthLocalDataSource`, `AuthRepository`, `SocialAuthService`, `AvatarPicker`, and the use cases that exist after Phase 2 (`ResolveVisitorStateUseCase`); run `dart run build_runner build --delete-conflicting-outputs`
+- [ ] T007 Create `test/features/auth/mocks.dart` with `@GenerateMocks` for `AuthRemoteDataSource`, `AuthLocalDataSource`, `AuthRepository`, `SocialAuthService`, `AvatarPicker`, and `ResolveVisitorStateUseCase`; run `dart run build_runner build --delete-conflicting-outputs`. Each later story that adds a use case MUST append that type here and re-run `build_runner` before its tests (see T033, T048, T059, T069, T083, T105).
 
 ---
 
@@ -49,12 +49,12 @@
 - [ ] T008 [P] Unit tests for `AuthValidators` password/email/phone rules (FR-007, FR-007a, FR-007b) in `test/features/auth/presentation/validators/auth_validators_test.dart`
 - [ ] T009 [P] Widget tests for `AppOtpField` (6 digits, digit-only, RTL) in `test/shared/widgets/app_otp_field_test.dart`
 - [ ] T010 [P] Bloc tests for `OtpCooldownCubit` driven by an injected ticker (FR-012) in `test/features/auth/presentation/controller/otp_cooldown_cubit_test.dart`
-- [ ] T011 [P] Unit tests for `AuthLocalDataSourceImpl.readVisitorState` mapping missing and unreadable values to `UserType.firstOpen` (spec edge case) in `test/features/auth/data/datasources/auth_local_datasource_impl_test.dart`
-- [ ] T012 [P] Bloc tests for `ResolveVisitorStateCubit` success/error (FR-002) in `test/features/auth/presentation/controller/resolve_visitor_state_cubit_test.dart`
+- [ ] T011 [P] Unit tests for `AuthLocalDataSourceImpl.readVisitorState` mapping missing and unreadable values to `UserType.firstOpen` (spec edge case) and never treating a draft-only store as `loggedIn` (FR-004) in `test/features/auth/data/datasources/auth_local_datasource_impl_test.dart`
+- [ ] T012 [P] Bloc tests for `ResolveVisitorStateCubit` success/error (FR-002) in `test/features/auth/presentation/controller/resolve_visitor_state_cubit_test.dart`. A stored draft without a session MUST NOT route as `loggedIn` (FR-004).
 
 ### Implementation
 
-- [ ] T013 [P] Create `SocialProvider`, `OtpPurpose`, and `RegistrationSource` enhanced enums in `lib/features/auth/domain/enums/social_provider.dart`, `otp_purpose.dart`, and `registration_source.dart`
+- [ ] T013 [P] Create `SocialProvider` (wireName only, no `Platform`), `OtpPurpose`, and `RegistrationSource` in `lib/features/auth/domain/enums/social_provider.dart`, `otp_purpose.dart`, and `registration_source.dart`, plus `SocialProviderAvailability` in `lib/features/auth/presentation/social_provider_availability.dart` (FR-029; domain stays free of `dart:io`)
 - [ ] T014 [P] Create `AuthUser`, `AuthSession`, sealed `AuthOutcome`, sealed `LoginOutcome`, `RegistrationDraft`, and `OtpChallenge` in `lib/features/auth/domain/entities/`
 - [ ] T015 [P] Create `AuthValidators` combining `FieldValidator.password(minLength: 8, requireNumbers: true)` with a `[A-Za-z]` pattern in `lib/features/auth/presentation/validators/auth_validators.dart`
 - [ ] T016 [P] Create 6-digit `AppOtpField` in `lib/shared/widgets/app_otp_field.dart`
@@ -71,8 +71,8 @@
 - [ ] T027 Create `ResolveVisitorStateCubit` in `lib/features/auth/presentation/controller/resolve_visitor_state/`
 - [ ] T028 Create `registerAuthDataLayer` and `registerVisitorState` in `lib/features/auth/auth_injection.dart` (cubits `registerFactory`, others `registerLazySingleton`; no types in `ServiceLocator.init()`)
 - [ ] T029 Create blank `HomeScreen` with a sign-out control and a guest "account required" control in `lib/features/home/presentation/pages/home_screen.dart` and `HomeRoute` in `lib/features/home/presentation/navigation/router.dart` (FR-003, FR-039, FR-043)
-- [ ] T030 Wire splash: wrap `SplashScreen` in `FeatureScope` + `ResolveVisitorStateCubit` in `lib/features/splash/presentation/navigation/router.dart` and route `firstOpen` → welcome, `loggedIn`/`guest` → home in `lib/features/splash/presentation/pages/splash_screen.dart` (FR-002)
-- [ ] T031 Create welcome/entry `WelcomeScreen` offering register, sign-in, phone, Google, Apple (hidden when `!SocialProvider.apple.isAvailableOnThisPlatform`), and continue-as-guest in `lib/features/auth/presentation/pages/welcome_screen.dart` with stubs navigating to the constants from T005 (FR-001, FR-029)
+- [ ] T030 Wire splash: wrap `SplashScreen` in `FeatureScope` + `ResolveVisitorStateCubit` in `lib/features/splash/presentation/navigation/router.dart` and route `firstOpen` → welcome, `loggedIn`/`guest` → home in `lib/features/splash/presentation/pages/splash_screen.dart` (FR-002). Incomplete drafts MUST NOT set `UserType.loggedIn` (FR-004). When `RefreshTokenHelper` invalidates the session, show `session_expired` copy after routing to guest home (FR-044).
+- [ ] T031 Create welcome/entry `WelcomeScreen` offering register, sign-in, phone, Google, Apple (hidden unless `SocialProviderAvailability.isOffered(SocialProvider.apple)`), and continue-as-guest in `lib/features/auth/presentation/pages/welcome_screen.dart` with stubs navigating to the constants from T005 (FR-001, FR-029). No role picker (FR-047).
 - [ ] T032 Create typed auth routes with `FeatureScope` in `lib/features/auth/presentation/navigation/router.dart`, then add `...auth.$appRoutes` and `...home.$appRoutes` to `lib/config/routes/app_router.dart` and run `build_runner` for `router.g.dart`
 
 **Checkpoint**: App launches splash → welcome (first open) or home (guest/logged-in). Shared types, local session, validators, and DI compile. User stories can start.
@@ -87,21 +87,21 @@
 
 ### Tests for User Story 1
 
-- [ ] T033 [P] [US1] Unit tests for `RegisterParams.toJson` wire names and null-omission of `avatarPath` in `test/features/auth/domain/usecases/register_usecase_test.dart`
+- [ ] T033 [P] [US1] Unit tests for `RegisterParams.toJson` wire names and null-omission of `avatarPath` in `test/features/auth/domain/usecases/register_usecase_test.dart`; append `RegisterUseCase`, `VerifyEmailUseCase`, `RequestEmailOtpUseCase` to `test/features/auth/mocks.dart` and re-run `build_runner`
 - [ ] T034 [P] [US1] Unit tests for `RegisterModel`/`VerifyEmailModel`/`RequestOtpModel` `fromJson` in `test/features/auth/data/models/register_model_test.dart`
-- [ ] T035 [P] [US1] Repository tests mapping `ServerException`/`ValidationException`/`ConflictException` to `Failure` for `register`/`verifyEmail`/`requestEmailOtp` in `test/features/auth/data/repositories/auth_repo_impl_test.dart`
+- [ ] T035 [US1] Repository tests mapping `ServerException`/`ValidationException`/`ConflictException` to `Failure` for `register`/`verifyEmail`/`requestEmailOtp`, and asserting `register` never calls `persistSession` (FR-004), in `test/features/auth/data/repositories/auth_repo_impl_test.dart` (append-only; not parallel with other stories' edits to this file)
 - [ ] T036 [P] [US1] Bloc tests for `RegisterCubit`, `VerifyEmailCubit`, `RequestEmailOtpCubit` (Loading/Success/Error/fieldErrors/cancel) in `test/features/auth/presentation/controller/register_cubit_test.dart`, `verify_email_cubit_test.dart`, `request_email_otp_cubit_test.dart`
-- [ ] T037 [P] [US1] Widget tests for register and verify-email screens: holding/loading/success/error, field errors, optional avatar, duplicate-submit (FR-007, FR-008, FR-048) in `test/features/auth/presentation/pages/register_screen_test.dart` and `verify_email_screen_test.dart` (en LTR and ar RTL)
+- [ ] T037 [P] [US1] Widget tests for register and verify-email screens: holding/loading/success/error, field errors using Error copy ids, optional avatar, duplicate-submit, avatar reject keeps other fields (FR-006b), placeholder when skipped (FR-006c), no role control (FR-047), connectivity shows `no_internet` (FR-049), back from code screen still allows resend (edge case), form text still present after a simulated lifecycle pause without process kill (FR-051), labels present (FR-052) in `test/features/auth/presentation/pages/register_screen_test.dart` and `verify_email_screen_test.dart` (en LTR and ar RTL)
 
 ### Implementation for User Story 1
 
 - [ ] T038 [P] [US1] Create `RegisterResponse`, `VerifyEmailResponse`, `RequestOtpResponse` entities in `lib/features/auth/domain/entities/` and matching models with `fromJson` in `lib/features/auth/data/models/`
 - [ ] T039 [P] [US1] Create `RegisterUseCase` + `RegisterParams`, `VerifyEmailUseCase` + `VerifyEmailParams`, `RequestEmailOtpUseCase` + `RequestEmailOtpParams` in `lib/features/auth/domain/usecases/`
-- [ ] T040 [US1] Implement `register`, `verifyEmail`, and `requestEmailOtp` in `lib/features/auth/data/datasources/auth_remote_datasource_impl.dart` (multipart when avatar present; persist session on verify via local datasource)
-- [ ] T041 [US1] Persist session (`accessToken` + `UserType.loggedIn`) after successful verify in `lib/features/auth/data/repositories/auth_repo_impl.dart` (FR-011, FR-042)
+- [ ] T040 [US1] Implement `register`, `verifyEmail`, and `requestEmailOtp` HTTP calls only in `lib/features/auth/data/datasources/auth_remote_datasource_impl.dart` (multipart when avatar present). Do **not** write tokens or `UserType` here.
+- [ ] T041 [US1] After successful `verifyEmail`, call `AuthLocalDataSource.persistSession` from `lib/features/auth/data/repositories/auth_repo_impl.dart` only (FR-011, FR-042). Never persist a session for an unverified registration.
 - [ ] T042 [P] [US1] Create `RegisterCubit` in `lib/features/auth/presentation/controller/register/`, `VerifyEmailCubit` in `verify_email/`, `RequestEmailOtpCubit` in `request_email_otp/`
 - [ ] T043 [US1] Add `registerRegister` and `registerVerifyEmail` (includes request-otp + cooldown factories) in `lib/features/auth/auth_injection.dart`
-- [ ] T044 [US1] Build `RegisterScreen` with `AppTextFormField` name/email/`phoneWithCountryCode`/password, optional avatar via `AvatarPicker`, `FieldErrorsScope`, and 409 → offer sign-in (FR-005–FR-010) in `lib/features/auth/presentation/pages/register_screen.dart` plus form widgets under `lib/features/auth/presentation/widgets/`
+- [ ] T044 [US1] Build `RegisterScreen` with `AppTextFormField` name/email/`phoneWithCountryCode`/password, optional avatar via `AvatarPicker`, `FieldErrorsScope`, 409 → offer sign-in, keep fields on avatar reject, default placeholder when skipped, no role picker (FR-005–FR-010, FR-006b, FR-006c, FR-047, FR-052) in `lib/features/auth/presentation/pages/register_screen.dart` plus form widgets under `lib/features/auth/presentation/widgets/`
 - [ ] T045 [US1] Build `VerifyEmailScreen` using `AppOtpField` + `OtpCooldownCubit` seeded from `resendAvailableInSeconds` (never hardcode 60) in `lib/features/auth/presentation/pages/verify_email_screen.dart` (FR-012, FR-013)
 - [ ] T046 [US1] Wire `RegisterRoute` and `VerifyEmailRoute` `FeatureScope` + `BlocProvider`s in `lib/features/auth/presentation/navigation/router.dart` and navigate welcome → register → verify-email → home
 - [ ] T047 [US1] Integration test: register → verify email → home, session survives restart, in `integration_test/auth/us1_register_email_test.dart`
@@ -118,11 +118,11 @@
 
 ### Tests for User Story 2
 
-- [ ] T048 [P] [US2] Unit tests for `LoginParams.toJson` and `LoginUseCase` pass-through in `test/features/auth/domain/usecases/login_usecase_test.dart`
+- [ ] T048 [P] [US2] Unit tests for `LoginParams.toJson` and `LoginUseCase` pass-through in `test/features/auth/domain/usecases/login_usecase_test.dart`; append `LoginUseCase` to `test/features/auth/mocks.dart` and re-run `build_runner`
 - [ ] T049 [P] [US2] Model tests for both `LoginOutcome` branches (`session` vs `email_verification_required`) in `test/features/auth/data/models/login_model_test.dart`
-- [ ] T050 [P] [US2] Repository tests for 401 non-revealing mapping and throttle 429 (FR-016, FR-018) in `test/features/auth/data/repositories/auth_repo_impl_test.dart`
+- [ ] T050 [US2] Repository tests for 401 mapping to `invalid_credentials` (same body whether unknown email or wrong password) and throttle 429 / FR-018a five OTP guesses (FR-016, FR-018, FR-018a) in `test/features/auth/data/repositories/auth_repo_impl_test.dart`
 - [ ] T051 [P] [US2] Bloc tests for `LoginCubit` emitting `LoginSucceeded` vs `LoginNeedsEmailVerification` (FR-015, FR-017) in `test/features/auth/presentation/controller/login_cubit_test.dart`
-- [ ] T052 [P] [US2] Widget tests for login screen four `ApiCallState` branches, identical wrong-password/unknown-email copy, and forgot-password link in `test/features/auth/presentation/pages/login_screen_test.dart`
+- [ ] T052 [P] [US2] Widget tests for login screen four `ApiCallState` branches, identical wrong-password/unknown-email copy (`invalid_credentials`), forgot-password link (FR-014, FR-046a), and `no_internet` (FR-049) in `test/features/auth/presentation/pages/login_screen_test.dart`
 
 ### Implementation for User Story 2
 
@@ -145,8 +145,8 @@
 
 ### Tests for User Story 3
 
-- [ ] T059 [P] [US3] Unit tests for `ContinueAsGuestUseCase` and `LogoutUseCase` in `test/features/auth/domain/usecases/continue_as_guest_usecase_test.dart` and `logout_usecase_test.dart`
-- [ ] T060 [P] [US3] Repository tests: `markGuest` / `clearSession` and logout still succeeding locally when remote fails (FR-043) in `test/features/auth/data/repositories/auth_repo_impl_test.dart`
+- [ ] T059 [P] [US3] Unit tests for `ContinueAsGuestUseCase` and `LogoutUseCase` in `test/features/auth/domain/usecases/continue_as_guest_usecase_test.dart` and `logout_usecase_test.dart`; append those use cases to `test/features/auth/mocks.dart` and re-run `build_runner`
+- [ ] T060 [US3] Repository tests: `markGuest` / `clearSession` and logout still succeeding locally when remote fails (FR-043) in `test/features/auth/data/repositories/auth_repo_impl_test.dart`
 - [ ] T061 [P] [US3] Bloc tests for `GuestModeCubit` and `LogoutCubit` in `test/features/auth/presentation/controller/guest_mode_cubit_test.dart` and `logout_cubit_test.dart`
 - [ ] T062 [P] [US3] Widget tests for welcome guest action, `GuestGateDialog`, and home sign-out/guest-gate controls in `test/features/auth/presentation/pages/welcome_screen_test.dart`, `test/features/auth/presentation/widgets/guest_gate_dialog_test.dart`, and `test/features/home/presentation/pages/home_screen_test.dart`
 
@@ -157,7 +157,7 @@
 - [ ] T065 [P] [US3] Create `GuestModeCubit` in `lib/features/auth/presentation/controller/guest_mode/` and `LogoutCubit` in `logout/`
 - [ ] T066 [US3] Add `registerLogout` in `lib/features/auth/auth_injection.dart`; provide `LogoutCubit` on `HomeRoute` in `lib/features/home/presentation/navigation/router.dart`
 - [ ] T067 [US3] Implement `GuestGateDialog` + `context.requireAccount()` in `lib/features/auth/presentation/widgets/guest_gate_dialog.dart` and wire welcome "continue as guest" plus home's two controls (FR-037–FR-040, FR-043)
-- [ ] T068 [US3] Integration test: guest → home → relaunch guest → gate offers sign-in/register; signed-in sign-out → guest, in `integration_test/auth/us3_guest_mode_test.dart`
+- [ ] T068 [US3] Integration test: guest → home → relaunch guest → gate offers sign-in/register; signed-in sign-out → guest; guest then completes register/login and stays on home signed-in with no extra welcome choice (SC-011, FR-040); session-expired path shows `session_expired` then guest (FR-044), in `integration_test/auth/us3_guest_mode_test.dart`
 
 **Checkpoint**: Guest cycle and sign-out work without Stories 4–6
 
@@ -171,22 +171,22 @@
 
 ### Tests for User Story 4
 
-- [ ] T069 [P] [US4] Unit tests for `RequestPhoneOtpParams`/`VerifyPhoneOtpParams`/`CompleteRegistrationParams.toJson` in `test/features/auth/domain/usecases/request_phone_otp_usecase_test.dart`, `verify_phone_otp_usecase_test.dart`, `complete_registration_usecase_test.dart`
+- [ ] T069 [P] [US4] Unit tests for `RequestPhoneOtpParams`/`VerifyPhoneOtpParams`/`CompleteRegistrationParams.toJson` in `test/features/auth/domain/usecases/request_phone_otp_usecase_test.dart`, `verify_phone_otp_usecase_test.dart`, `complete_registration_usecase_test.dart`; append those use cases to `test/features/auth/mocks.dart` and re-run `build_runner`
 - [ ] T070 [P] [US4] Model tests for both `AuthOutcome` branches and phone-source draft fields in `test/features/auth/data/models/verify_phone_otp_model_test.dart`
-- [ ] T071 [P] [US4] Repository tests for auto-link session (FR-041, FR-041a, FR-041b) vs `registration_required` and draft persist in `test/features/auth/data/repositories/auth_repo_impl_test.dart`
+- [ ] T071 [US4] Repository tests for auto-link session (FR-041, FR-041a, FR-041b) vs `registration_required`, draft persist, expired token → `draft_expired` (FR-026a), and fifth wrong OTP → throttle (FR-018a) in `test/features/auth/data/repositories/auth_repo_impl_test.dart`
 - [ ] T072 [P] [US4] Bloc tests for `RequestPhoneOtpCubit`, `VerifyPhoneOtpCubit`, `CompleteRegistrationCubit` in `test/features/auth/presentation/controller/request_phone_otp_cubit_test.dart`, `verify_phone_otp_cubit_test.dart`, `complete_registration_cubit_test.dart`
-- [ ] T073 [P] [US4] Widget tests: phone locked/non-editable on completion form; no email-code step (FR-023, FR-024) in `test/features/auth/presentation/pages/phone_sign_in_screen_test.dart`, `phone_otp_screen_test.dart`, `complete_registration_screen_test.dart`
+- [ ] T073 [P] [US4] Widget tests: phone locked/non-editable on completion form; no email-code step (FR-023, FR-024); no role control (FR-047) in `test/features/auth/presentation/pages/phone_sign_in_screen_test.dart`, `phone_otp_screen_test.dart`, `complete_registration_screen_test.dart`
 
 ### Implementation for User Story 4
 
 - [ ] T074 [P] [US4] Create `VerifyPhoneOtpResponse` and `CompleteRegistrationResponse` entities/models in `lib/features/auth/domain/entities/` and `lib/features/auth/data/models/`
 - [ ] T075 [P] [US4] Create `RequestPhoneOtpUseCase`, `VerifyPhoneOtpUseCase`, `CompleteRegistrationUseCase` with params in `lib/features/auth/domain/usecases/`
-- [ ] T076 [US4] Implement `requestPhoneOtp`, `verifyPhoneOtp` (`purpose: phone_sign_in`), and `completeRegistration` in `lib/features/auth/data/datasources/auth_remote_datasource_impl.dart`; save/clear draft in `lib/features/auth/data/repositories/auth_repo_impl.dart` (FR-026)
+- [ ] T076 [US4] Implement `requestPhoneOtp`, `verifyPhoneOtp` (`purpose: phone_sign_in`), and `completeRegistration` HTTP in `lib/features/auth/data/datasources/auth_remote_datasource_impl.dart`; save/clear draft and persist session only from `lib/features/auth/data/repositories/auth_repo_impl.dart` (FR-026, FR-025)
 - [ ] T077 [P] [US4] Create the three cubits in `lib/features/auth/presentation/controller/request_phone_otp/`, `verify_phone_otp/`, `complete_registration/`
 - [ ] T078 [US4] Add `registerPhoneSignIn` and `registerCompleteRegistration` in `lib/features/auth/auth_injection.dart`
 - [ ] T079 [US4] Build `PhoneSignInScreen` and `PhoneOtpScreen` in `lib/features/auth/presentation/pages/` using `PhoneValidationService` for `dialing_code` + NSN (FR-019–FR-021, FR-027)
 - [ ] T080 [US4] Build `CompleteRegistrationScreen` driven by `RegistrationSource` (phone source: collect name/email/password/avatar; phone display-only) in `lib/features/auth/presentation/pages/complete_registration_screen.dart`
-- [ ] T081 [US4] Wire phone and complete-registration routes in `lib/features/auth/presentation/navigation/router.dart`; resume draft on welcome/phone re-entry via `ReadRegistrationDraftUseCase`
+- [ ] T081 [US4] Wire phone and complete-registration routes in `lib/features/auth/presentation/navigation/router.dart`; resume draft on welcome/phone re-entry via `ReadRegistrationDraftUseCase` (FR-026). 409/expired token shows `draft_expired` and restarts the phone path (FR-026a). Social-source drafts of the same provider resume in T094 (FR-036).
 - [ ] T082 [US4] Integration test: existing phone → home; new phone → complete → home; abandon → resume, in `integration_test/auth/us4_phone_otp_test.dart`
 
 **Checkpoint**: Phone path works with or without Stories 5–6
@@ -201,22 +201,22 @@
 
 ### Tests for User Story 5
 
-- [ ] T083 [P] [US5] Unit tests for `SocialSignInUseCase` passing `SocialProvider.google` in `test/features/auth/domain/usecases/social_sign_in_usecase_test.dart`
+- [ ] T083 [P] [US5] Unit tests for `SocialSignInUseCase` passing `SocialProvider.google` in `test/features/auth/domain/usecases/social_sign_in_usecase_test.dart`; append `SocialSignInUseCase` to `test/features/auth/mocks.dart` and re-run `build_runner`
 - [ ] T084 [P] [US5] Model tests for social `AuthOutcome` session vs google-source draft (FR-030–FR-032) in `test/features/auth/data/models/social_sign_in_model_test.dart`
-- [ ] T085 [P] [US5] Repository tests: cancellation → `SocialSignInCancelledException` does not persist a draft (FR-035); auto-link by email (FR-041) in `test/features/auth/data/repositories/auth_repo_impl_test.dart`
-- [ ] T086 [P] [US5] Bloc tests for `SocialSignInCubit`: session, registration required, silent cancel, surfaced error in `test/features/auth/presentation/controller/social_sign_in_cubit_test.dart`
-- [ ] T087 [P] [US5] Widget tests: Google button on welcome; completion form email locked; phone OTP required before create (FR-031–FR-033) in `test/features/auth/presentation/pages/welcome_screen_test.dart` and `complete_registration_screen_test.dart`
+- [ ] T085 [US5] Repository tests: cancellation → `SocialSignInCancelledException` does not persist a draft (FR-035); other failures map to `social_failed` (FR-035a); auto-link by email (FR-041) in `test/features/auth/data/repositories/auth_repo_impl_test.dart`
+- [ ] T086 [P] [US5] Bloc tests for `SocialSignInCubit`: session, registration required, silent cancel (no error emit for cancel), surfaced `social_failed` in `test/features/auth/presentation/controller/social_sign_in_cubit_test.dart`
+- [ ] T087 [P] [US5] Widget tests: Google button on welcome; completion form email locked; phone OTP required before create (FR-031–FR-033); no role control (FR-047) in `test/features/auth/presentation/pages/welcome_screen_test.dart` and `complete_registration_screen_test.dart`
 
 ### Implementation for User Story 5
 
 - [ ] T088 [P] [US5] Create `SocialSignInResponse` entity/model in `lib/features/auth/domain/entities/social_sign_in_response.dart` and `lib/features/auth/data/models/social_sign_in_model.dart`
 - [ ] T089 [P] [US5] Create `SocialSignInUseCase` + `SocialSignInParams` in `lib/features/auth/domain/usecases/social_sign_in_usecase.dart`
 - [ ] T090 [US5] Implement `SocialAuthServiceImpl` Google path (`initialize` then `authenticate`, map canceled → `SocialSignInCancelledException`) in `lib/features/auth/data/datasources/social_auth_service_impl.dart`
-- [ ] T091 [US5] Implement `socialSignIn` and social-purpose `verifyPhoneOtp` (`purpose: verify_phone`) in `lib/features/auth/data/datasources/auth_remote_datasource_impl.dart`; persist draft on `AuthRegistrationRequired`
+- [ ] T091 [US5] Implement `socialSignIn` and social-purpose `verifyPhoneOtp` (`purpose: verify_phone`) HTTP only in `lib/features/auth/data/datasources/auth_remote_datasource_impl.dart`. Persist draft on `AuthRegistrationRequired` and persist session on `AuthSessionEstablished` only from `lib/features/auth/data/repositories/auth_repo_impl.dart`.
 - [ ] T092 [US5] Create `SocialSignInCubit` in `lib/features/auth/presentation/controller/social_sign_in/` and `registerSocialSignIn` in `lib/features/auth/auth_injection.dart`
 - [ ] T093 [US5] Extend `CompleteRegistrationScreen` for `RegistrationSource.google` (email locked, collect name/phone/password/avatar, phone OTP before submit) in `lib/features/auth/presentation/pages/complete_registration_screen.dart`
-- [ ] T094 [US5] Wire Google button on `WelcomeScreen` to `fSocialSignIn(SocialProvider.google)` in `lib/features/auth/presentation/pages/welcome_screen.dart` and provide cubit on `WelcomeRoute` in `lib/features/auth/presentation/navigation/router.dart`
-- [ ] T095 [US5] Integration test with fake `SocialAuthService`: linked → home; unlinked → complete + phone OTP → home; cancel → welcome, in `integration_test/auth/us5_google_sign_in_test.dart`
+- [ ] T094 [US5] Wire Google button on `WelcomeScreen` to `fSocialSignIn(SocialProvider.google)` in `lib/features/auth/presentation/pages/welcome_screen.dart` and provide cubit on `WelcomeRoute` in `lib/features/auth/presentation/navigation/router.dart`. A second Google sign-in with a stored google-source draft MUST open `CompleteRegistrationScreen` (FR-036).
+- [ ] T095 [US5] Integration test with fake `SocialAuthService`: linked → home; unlinked → complete + phone OTP → home; cancel → welcome with no snackbar; non-cancel failure → `social_failed`; abandon then same Google account → resume completion (FR-036), in `integration_test/auth/us5_google_sign_in_test.dart`
 
 **Checkpoint**: Google path works; Apple button may still be a stub
 
@@ -230,18 +230,18 @@
 
 ### Tests for User Story 6
 
-- [ ] T096 [P] [US6] Unit tests for `SocialProvider.apple.isAvailableOnThisPlatform` in `test/features/auth/domain/enums/social_provider_test.dart`
+- [ ] T096 [P] [US6] Unit tests for `SocialProviderAvailability.isOffered` in `test/features/auth/presentation/social_provider_availability_test.dart` (not under `domain/`)
 - [ ] T097 [P] [US6] Model tests for apple-source draft with relay `verified_email` (FR-034) in `test/features/auth/data/models/social_sign_in_model_test.dart`
 - [ ] T098 [P] [US6] Bloc tests: `fSocialSignIn(SocialProvider.apple)` session vs draft vs cancel in `test/features/auth/presentation/controller/social_sign_in_cubit_test.dart`
 - [ ] T099 [P] [US6] Widget tests: Apple control absent when unavailable; present on iOS (FR-029) in `test/features/auth/presentation/pages/welcome_screen_test.dart`
 
 ### Implementation for User Story 6
 
-- [ ] T100 [US6] Implement Apple path in `lib/features/auth/data/datasources/social_auth_service_impl.dart` (`SignInWithApple.getAppleIDCredential`, canceled → `SocialSignInCancelledException`; send `authorization_code` + optional `full_name`)
+- [ ] T100 [US6] Implement Apple path in `lib/features/auth/data/datasources/social_auth_service_impl.dart` (`SignInWithApple.getAppleIDCredential`, canceled → `SocialSignInCancelledException`; send `authorization_code` + optional `full_name`). When Apple omits email on a later authorization, reuse draft/stored email (FR-034a).
 - [ ] T101 [US6] Extend `CompleteRegistrationScreen` for `RegistrationSource.apple` (email locked, including relay) in `lib/features/auth/presentation/pages/complete_registration_screen.dart` (FR-034)
-- [ ] T102 [US6] Show Apple button on `WelcomeScreen` only when `SocialProvider.apple.isAvailableOnThisPlatform` in `lib/features/auth/presentation/pages/welcome_screen.dart` (FR-029)
+- [ ] T102 [US6] Show Apple button on `WelcomeScreen` only when `SocialProviderAvailability.isOffered(SocialProvider.apple)` in `lib/features/auth/presentation/pages/welcome_screen.dart` (FR-029)
 - [ ] T103 [US6] Document iOS Sign in with Apple capability and URL scheme in `specs/001-auth-login-register/quickstart.md` (already outlined; confirm steps match the impl)
-- [ ] T104 [US6] Integration test with fake Apple credential: linked → home; relay email → complete → home, in `integration_test/auth/us6_apple_sign_in_test.dart`
+- [ ] T104 [US6] Integration test with fake Apple credential: linked → home; relay email → complete → home; second authorization omitting email still completes (FR-034a), in `integration_test/auth/us6_apple_sign_in_test.dart`
 
 **Checkpoint**: All six entry paths independently demonstrable
 
@@ -255,8 +255,8 @@
 
 ### Tests for User Story 7
 
-- [ ] T105 [P] [US7] Unit tests for `RequestPasswordResetParams`/`ResetPasswordParams.toJson` in `test/features/auth/domain/usecases/request_password_reset_usecase_test.dart` and `reset_password_usecase_test.dart`
-- [ ] T106 [P] [US7] Repository tests: identical handling for unknown email vs no-password account; used-once code → conflict (FR-046b, FR-046d) in `test/features/auth/data/repositories/auth_repo_impl_test.dart`
+- [ ] T105 [P] [US7] Unit tests for `RequestPasswordResetParams`/`ResetPasswordParams.toJson` in `test/features/auth/domain/usecases/request_password_reset_usecase_test.dart` and `reset_password_usecase_test.dart`; append those use cases to `test/features/auth/mocks.dart` and re-run `build_runner`
+- [ ] T106 [US7] Repository tests: identical handling for unknown email vs no-password account; used-once code → conflict (FR-046b, FR-046d) in `test/features/auth/data/repositories/auth_repo_impl_test.dart`
 - [ ] T107 [P] [US7] Bloc tests for `RequestPasswordResetCubit` and `ResetPasswordCubit` in `test/features/auth/presentation/controller/request_password_reset_cubit_test.dart` and `reset_password_cubit_test.dart`
 - [ ] T108 [P] [US7] Widget tests for forgot-password and reset screens; new password uses `AuthValidators.password` (FR-007b, FR-046c) in `test/features/auth/presentation/pages/forgot_password_screen_test.dart` and `reset_password_screen_test.dart`
 
@@ -264,7 +264,7 @@
 
 - [ ] T109 [P] [US7] Create `RequestPasswordResetResponse`/`ResetPasswordResponse` entities/models in `lib/features/auth/domain/entities/` and `lib/features/auth/data/models/`
 - [ ] T110 [P] [US7] Create `RequestPasswordResetUseCase` and `ResetPasswordUseCase` with params in `lib/features/auth/domain/usecases/`
-- [ ] T111 [US7] Implement `requestPasswordReset` and `resetPassword` in `lib/features/auth/data/datasources/auth_remote_datasource_impl.dart`; persist session on reset in `lib/features/auth/data/repositories/auth_repo_impl.dart`
+- [ ] T111 [US7] Implement `requestPasswordReset` and `resetPassword` HTTP in `lib/features/auth/data/datasources/auth_remote_datasource_impl.dart`; persist session on reset only from `lib/features/auth/data/repositories/auth_repo_impl.dart`
 - [ ] T112 [P] [US7] Create cubits in `lib/features/auth/presentation/controller/request_password_reset/` and `reset_password/`
 - [ ] T113 [US7] Add `registerPasswordRecovery` in `lib/features/auth/auth_injection.dart`
 - [ ] T114 [US7] Build `ForgotPasswordScreen` and `ResetPasswordScreen` in `lib/features/auth/presentation/pages/` and link from `LoginScreen` (FR-046a)
@@ -285,7 +285,7 @@
 - [ ] T120 Assert `AuthValidators.password` is the only password rule used on register, phone complete, social complete, and reset (FR-007b) in `test/features/auth/presentation/validators/auth_validators_test.dart`
 - [ ] T121 Run `flutter analyze` (0 issues) and `flutter test --coverage`; confirm ≥90% line coverage of `lib/features/auth/**` excluding `*.g.dart`, `*.mocks.dart`, `social_auth_service_impl.dart`, and `avatar_picker_impl.dart` per plan Testing Strategy
 - [ ] T122 Execute `specs/001-auth-login-register/quickstart.md` verification steps for Stories 1–7 on a device or emulator
-- [ ] T123 [P] Search `test/features/auth/` and `integration_test/auth/` for every `FR-0xx` from the spec and add any missing named tests
+- [ ] T123 [P] Search `test/features/auth/` and `integration_test/auth/` for every spec FR id (`FR-001`–`FR-052`, including `FR-006a`/`b`/`c`, `FR-007a`/`b`, `FR-018a`, `FR-026a`, `FR-034a`, `FR-035a`, `FR-041a`/`b`, `FR-046a`–`d`) and add any missing named tests
 
 ---
 
@@ -385,7 +385,9 @@ Task: "T039 Register/VerifyEmail/RequestEmailOtp use cases"
 - [P] = different files, no dependency on incomplete tasks
 - Do not register auth types in `lib/injection_container.dart`
 - Do not hardcode OTP expiry/cooldown literals; use `expiresInSeconds` / `resendAvailableInSeconds`
-- Provider cancellation is silent; real failures show a snackbar (plan Testing Strategy)
+- Provider cancellation is silent (FR-035); real failures show `social_failed` (FR-035a)
+- Session and draft persistence belong in the repository via `AuthLocalDataSource`, never in the remote datasource
+- Domain `SocialProvider` has `wireName` only; `SocialProviderAvailability` lives in presentation
 - Exclude `social_auth_service_impl.dart` and `avatar_picker_impl.dart` from the 90% denominator
 - Commit after each task or logical group
 - Stop at any checkpoint and validate the story independently

@@ -18,6 +18,15 @@
 - Q: What counts as a strong enough password? → A: At least 8 characters containing at least one letter and at least one digit; no upper case, lower case, or symbol requirement.
 - Q: What are the avatar image constraints? → A: JPEG and PNG only, downscaled on device to a max edge of 1024 px, rejected above 2 MB after downscaling.
 
+### Glossary (canonical terms)
+
+| Spec term | Means |
+|---|---|
+| Entry screen | The welcome / choose-a-path screen shown to first-time visitors (`WelcomeScreen`) |
+| User Account | The signed-in person; implemented as `AuthUser` |
+| Visitor state | `firstOpen`, `guest`, or `loggedIn` (existing `UserType`) |
+| Completion form | The remaining-fields screen after a verified phone or social identity |
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Create an account with email and password (Priority: P1)
@@ -110,8 +119,9 @@ A user chooses Google sign-in and authorizes with their Google account. Returnin
 2. **Given** a visitor authorizing with a Google account that has no app account, **When** authorization succeeds, **Then** a completion form appears asking for avatar, full name, phone number, and password, with the email taken from Google and not editable in that form.
 3. **Given** a new social user on the completion form, **When** they submit their phone number, **Then** a one-time code is sent to that number and must be entered correctly before the account is created.
 4. **Given** a new social user who verified their phone code, **When** the account is created, **Then** the email from the provider is treated as verified without any email code, and they arrive on the home screen signed in.
-5. **Given** a visitor starting Google sign-in, **When** they cancel the provider screen or authorization fails, **Then** they return to the entry screen with no partial account created and an option to try again.
-6. **Given** a new social user who abandons the completion form, **When** they sign in again with the same provider, **Then** they resume the completion form rather than reaching the home screen.
+5. **Given** a visitor starting Google sign-in, **When** they cancel the provider screen, **Then** they return to the entry screen with no message and no partial account (FR-035).
+6. **Given** a visitor starting Google sign-in, **When** authorization fails for any reason other than cancel, **Then** they return to the entry screen with the `social_failed` message and no partial account (FR-035a).
+7. **Given** a new social user who abandons the completion form, **When** they sign in again with the same provider, **Then** they resume the completion form rather than reaching the home screen.
 
 ---
 
@@ -129,7 +139,9 @@ A user chooses Apple sign-in and authorizes with their Apple ID, following the s
 2. **Given** a visitor authorizing with an unlinked Apple ID that shares a real email, **When** authorization succeeds, **Then** the completion form appears with that email established and a phone code step required.
 3. **Given** a visitor authorizing with an unlinked Apple ID that withholds the real email (private relay), **When** authorization succeeds, **Then** the account is still created against the relayed address and the user is never blocked from finishing registration.
 4. **Given** a visitor on a platform where Apple sign-in is unavailable, **When** they view the entry screen, **Then** the Apple option is not offered and the remaining options work normally.
-5. **Given** a visitor starting Apple sign-in, **When** they cancel or authorization fails, **Then** they return to the entry screen with no partial account created.
+5. **Given** a visitor starting Apple sign-in, **When** they cancel the provider screen, **Then** they return to the entry screen with no message and no partial account (FR-035).
+6. **Given** a visitor starting Apple sign-in, **When** authorization fails for any reason other than cancel, **Then** they return to the entry screen with the `social_failed` message and no partial account (FR-035a).
+7. **Given** a returning Apple user whose later authorization omits email and name, **When** they complete sign-in or resume a draft, **Then** the system reuses the stored or draft email and does not ask them to type one (FR-034a).
 
 ---
 
@@ -157,7 +169,7 @@ A user chooses Apple sign-in and authorizes with their Apple ID, following the s
 - **FR-001**: The system MUST present an entry screen offering sign-in with email and password, sign-in with a phone one-time code, Google sign-in, Apple sign-in (where available), registration, and continuing as a guest.
 - **FR-002**: The system MUST decide the post-launch destination from stored state: first-time visitors see the entry screen, signed-in users go to the home screen, and guests go to the home screen in guest state.
 - **FR-003**: The system MUST provide a home screen that any completed authentication path and guest mode can reach, so the entry-to-home cycle is demonstrable end to end. For this feature the home screen MAY be intentionally empty of product content.
-- **FR-004**: The system MUST prevent a user who has not completed an authentication path from reaching the home screen in a signed-in state.
+- **FR-004**: The system MUST prevent a user who has not completed an authentication path from reaching the home screen in a signed-in state. Incomplete registration (including a `RegistrationDraft`) MUST keep visitor state as first-open or guest, never logged-in.
 
 #### Registration with email and password
 
@@ -182,7 +194,8 @@ A user chooses Apple sign-in and authorizes with their Apple ID, following the s
 - **FR-015**: The system MUST NOT request an email one-time code during email-and-password sign-in.
 - **FR-016**: The system MUST reject invalid credentials with a message that does not disclose whether the email address is registered.
 - **FR-017**: The system MUST route a user with an unverified email to email code verification instead of the home screen when they sign in.
-- **FR-018**: The system MUST limit consecutive failed sign-in attempts for an identifier and MUST communicate when further attempts are temporarily blocked.
+- **FR-018**: The system MUST limit consecutive failed sign-in attempts for an identifier and MUST communicate when further attempts are temporarily blocked using the `too_many_attempts` error copy.
+- **FR-018a**: One-time code entry MUST allow at most **5** wrong attempts for the current code, then reject further guesses until a new code is requested after the cooldown, using the `too_many_attempts` error copy (SC-009).
 
 #### Sign-in and registration with a phone one-time code
 
@@ -194,6 +207,7 @@ A user chooses Apple sign-in and authorizes with their Apple ID, following the s
 - **FR-024**: The system MUST NOT send or require an email one-time code in the phone-first registration path; the email is collected as unverified.
 - **FR-025**: The system MUST create the account and establish a signed-in session when the completion form is submitted successfully, then route to the home screen.
 - **FR-026**: The system MUST resume the completion form for a phone number whose registration was started but not completed, rather than signing the user into an incomplete account.
+- **FR-026a**: A registration draft token lasts **30 minutes**. After that, or if it was already consumed, complete-registration fails with `draft_expired` and the user MUST restart the phone or social path.
 - **FR-027**: The system MUST normalize equivalent phone number inputs so the same real number resolves to one account regardless of spacing, punctuation, or country-code formatting.
 
 #### Sign-in and registration with Google and Apple
@@ -201,12 +215,14 @@ A user chooses Apple sign-in and authorizes with their Apple ID, following the s
 - **FR-028**: Users MUST be able to sign in with Google, and MUST be able to sign in with Apple where the platform supports it.
 - **FR-029**: The system MUST hide or disable a social option on platforms where that provider is unavailable, without breaking the remaining options.
 - **FR-030**: The system MUST sign in and route to the home screen when the provider account is already linked to an app account.
-- **FR-031**: The system MUST present a completion form only when the provider account is neither already linked nor matched to an existing account by its email address, collecting full name, phone number, and password, with an optional avatar.
+- **FR-031**: The system MUST present a completion form only when the provider account is neither already linked nor matched to an existing account by its email address, collecting full name, phone number, and password, with an optional avatar. When linking applies, FR-041b wins: no completion form.
 - **FR-032**: The system MUST take the email address from the provider in the social registration path, MUST NOT ask the user to enter it, and MUST NOT require an email one-time code for it.
 - **FR-033**: The system MUST require verification of the phone number entered in the social completion form by sending a one-time code to it and requiring correct entry before the account is created.
 - **FR-034**: The system MUST complete registration successfully when a provider withholds the user's real email address and supplies a private relay address instead.
-- **FR-035**: The system MUST return the user to the entry screen with no partial account when provider authorization is cancelled or fails.
-- **FR-036**: The system MUST resume the completion form for a provider account whose registration was started but not completed.
+- **FR-034a**: On a later Apple authorization that omits email and name (Apple sends those only the first time), the system MUST reuse the email already stored for that Apple identity or on the registration draft, MUST NOT ask the user to type an email, and MUST NOT block completion.
+- **FR-035**: When the user cancels the provider sheet, the system MUST return to the entry screen with no message and no partial account.
+- **FR-035a**: When provider authorization fails for any reason other than cancel, the system MUST return to the entry screen with the `social_failed` error copy (see Error copy) and no partial account.
+- **FR-036**: The system MUST resume the completion form for a provider account whose registration was started but not completed, including when the user signs in again with the same Google or Apple account.
 
 #### Guest mode
 
@@ -222,11 +238,11 @@ A user chooses Apple sign-in and authorizes with their Apple ID, following the s
 - **FR-041b**: The system MUST NOT present a completion form when linking resolves to an existing account; the user goes straight to the home screen because the account already holds the required fields.
 - **FR-042**: The system MUST establish a persistent session on successful authentication so users stay signed in across app restarts until they sign out or the session can no longer be renewed.
 - **FR-043**: Users MUST be able to sign out, which MUST clear their session and return them to guest state.
-- **FR-044**: The system MUST return the user to guest state with an explanation when a session can no longer be renewed, rather than leaving them on a failing screen.
+- **FR-044**: The system MUST return the user to guest state and show the `session_expired` error copy when a session can no longer be renewed, rather than leaving them on a failing screen. The copy is shown on the destination after routing (home in guest state or the entry screen), not as a raw HTTP error.
 - **FR-045**: The system MUST NOT display or log passwords or one-time codes in readable form anywhere in the app or its diagnostics.
 - **FR-046**: Users MUST be able to recover from a forgotten password by requesting a reset code at their email address, entering it correctly, and then setting a new password.
 - **FR-046a**: The system MUST reach password recovery from the email-and-password sign-in screen, so a user who cannot sign in is never left without a next step.
-- **FR-046b**: The system MUST apply the same one-time code rules to reset codes as to every other code in this feature: a limited validity window, a resend cooldown, invalidation of any earlier code, a capped number of wrong attempts, and a message that does not disclose whether the email address is registered.
+- **FR-046b**: Reset codes MUST follow FR-012, FR-013, and FR-018a (validity window, resend cooldown, invalidate older codes, five wrong attempts then throttle). In addition, the request-reset response MUST NOT disclose whether the email is registered.
 - **FR-046c**: The system MUST validate the new password against the same strength rules as registration, and MUST sign the user in and route them to the home screen once the reset succeeds.
 - **FR-046d**: The system MUST reject a reset code that has been used once, so a single code cannot change the password twice.
 - **FR-047**: The system MUST create one single generic account type for every registration path, and MUST NOT ask the user to choose a role. Every path collects the same field set, so no registration or completion form varies by role.
@@ -234,9 +250,30 @@ A user chooses Apple sign-in and authorizes with their Apple ID, following the s
 #### Cross-cutting behavior
 
 - **FR-048**: The system MUST show a clear progress state during any authentication request and MUST prevent duplicate submissions while one is in flight.
-- **FR-049**: The system MUST present every authentication error as an actionable message rather than a raw technical failure, and MUST keep the user's already-entered input where it is safe to do so.
+- **FR-049**: The system MUST present every authentication error as the matching row in **Error copy** below, never a raw technical failure, and MUST keep already-entered input where it is safe (not passwords or codes).
 - **FR-050**: The system MUST present all authentication screens and messages in the languages the app already supports, in both reading directions.
-- **FR-051**: The system MUST NOT lose an in-progress registration form when the app is briefly backgrounded and resumed.
+- **FR-051**: When the app is backgrounded and resumed **without process death**, every auth form MUST still show the text the user had typed (name, email, phone, password fields). After **process death**, only a `RegistrationDraft` (phone or social completion) is restored; an unfinished email-and-password registration form starts empty.
+- **FR-052**: Every auth text field MUST have a visible label (or an equivalent `labelText`), errors MUST appear on the same field, and primary actions MUST use a text label (not icon-only), so the forms are usable with a screen reader and with the existing theme contrast.
+
+#### Error copy (FR-049, SC-007)
+
+Canonical ids. Localized strings are added under these keys (see `tasks.md` T003). Widget tests assert the id's resolved string, not a free-form message.
+
+| Id | When it is shown | Next step the copy must name |
+|---|---|---|
+| `invalid_credentials` | Wrong password **or** unknown email (same copy) | Try again or recover password |
+| `invalid_code` | Wrong one-time code, attempts remaining | Re-enter the code |
+| `expired_code` | Code past validity window | Request a new code |
+| `email_taken` | Register email already has an account | Sign in instead |
+| `social_failed` | Provider authorization failed (not cancel) | Try again or another method |
+| `no_internet` | Request failed because the device is offline | Retry when connected |
+| `too_many_attempts` | Login or OTP attempt cap / HTTP 429 | Wait, then retry |
+| `session_expired` | Access token cannot be renewed (FR-044) | Sign in again |
+| `avatar_too_large` | Avatar still over 2 MB after downscale | Pick another image or skip |
+| `avatar_unsupported_type` | Avatar is not JPEG or PNG | Pick JPEG/PNG or skip |
+| `draft_expired` | `registration_token` expired or already used | Restart phone or social sign-in |
+
+Provider **cancel** has no row: FR-035, no snackbar.
 
 ### Key Entities
 
@@ -258,7 +295,7 @@ A user chooses Apple sign-in and authorizes with their Apple ID, following the s
 - **SC-004**: 95% of one-time codes reach the user's inbox or handset within 60 seconds of being requested.
 - **SC-005**: 95% of users who start any authentication path finish it on the first attempt, without needing to restart the flow.
 - **SC-006**: A signed-in user remains signed in across app restarts for the full session lifetime, with zero unintended sign-outs observed in testing.
-- **SC-007**: Every authentication failure a user can trigger, including wrong password, wrong code, expired code, taken email, cancelled social sign-in, and lost connectivity, produces a specific message that names the problem and the next step; no path shows a raw error or a dead end.
+- **SC-007**: Every authentication failure a user can trigger, including wrong password, wrong code, expired code, taken email, failed (not cancelled) social sign-in, and lost connectivity, produces the matching **Error copy** row that names the problem and the next step; no path shows a raw error or a dead end. Cancelling a provider sheet is not a failure (FR-035).
 - **SC-008**: Registration, sign-in, and one-time code entry are all usable from a fresh install with no prior setup, on both supported platforms, and in both supported languages and reading directions.
 - **SC-009**: Repeated one-time code requests and repeated wrong code entries are throttled, so no identifier can be targeted with unlimited codes or unlimited guesses.
 - **SC-010**: No password or one-time code appears in any log, diagnostic report, or crash report collected during testing.
@@ -273,7 +310,7 @@ A user chooses Apple sign-in and authorizes with their Apple ID, following the s
 - **The email code applies only to email-and-password registration.** The description says email OTP is not verified at email sign-in, and explicitly excludes an email code from both the phone-first and social completion paths.
 - **The phone code applies to every phone sign-in and to the social completion path.** Phone-first registration inherits the already-verified number, and email-and-password registration does not verify the phone at all.
 - **The password rule is enforced on the client for immediate feedback and by the backend as the authority.** The client check exists so the user sees the problem before submitting, not as the security boundary.
-- **One-time codes are 6 digits, expire after 10 minutes, allow a small number of wrong attempts, and can be resent after a 60-second cooldown.** These are common defaults; no specific values were given.
+- **One-time codes are 6 digits.** Typical backend values are 10 minutes' validity and a 60-second resend cooldown; the **client MUST use** `expires_in_seconds` and `resend_available_in_seconds` from the API and MUST NOT hardcode 600 or 60. Wrong-attempt cap is **5** (FR-018a).
 - **Sign-out is in scope** even though it was not listed, because the entry-to-home cycle cannot be demonstrated repeatedly or tested without it.
 - **The home screen is deliberately blank** for this feature. It exists to prove routing and session state, and its product content is a separate feature.
 - **Guest mode grants read-only browsing.** Since the home screen has no content yet, guest limitations are defined by the rule in FR-039 rather than by a list of specific blocked features.

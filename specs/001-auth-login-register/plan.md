@@ -76,7 +76,8 @@ recorded in Complexity Tracking.
   `SocialAuthService` behind an `abstract interface class`, so `google_sign_in` and
   `sign_in_with_apple` never appear in domain or presentation imports. One touch outside the feature
   is unavoidable and intended: `SplashScreen` must read visitor state to route, and it does so through
-  an auth cubit provided at the splash route.
+  an auth cubit provided at the splash route. Domain `SocialProvider` carries `wireName` only;
+  `SocialProviderAvailability` lives in presentation so domain never imports `dart:io` or Flutter.
 - **II Scoped DI**: PASS. No auth type is registered in `ServiceLocator.init()`. `auth_injection.dart`
   exposes ten granular `register*` functions and each route wraps its screen in `FeatureScope` with
   only what that route needs. Cubits are `registerFactory`; use cases, repositories, datasources, and
@@ -119,7 +120,8 @@ specs/001-auth-login-register/
 │   ├── auth-api.md              # Backend HTTP contract (11 endpoints)
 │   └── auth-repository.md       # Dart layer contract (repo, datasources, use cases, cubits, DI)
 ├── checklists/
-│   └── requirements.md          # Spec quality checklist
+│   ├── requirements.md          # Spec quality checklist
+│   └── test.md                  # Test-requirements quality checklist
 └── tasks.md                     # Phase 2 output (/speckit-tasks — NOT created by /speckit-plan)
 ```
 
@@ -160,6 +162,7 @@ lib/features/auth/
     ├── pages/                               # welcome, login, register, verify_email,
     │                                        # phone_sign_in, phone_otp, complete_registration,
     │                                        # forgot_password, reset_password
+    ├── social_provider_availability.dart    # FR-029; not on the domain enum
     ├── validators/
     │   └── auth_validators.dart             # single source for the password/email/phone rules
     └── widgets/                             # forms, social buttons, avatar picker, guest gate
@@ -346,16 +349,14 @@ the test asserts the auth feature's outcome rather than re-testing the intercept
 
 ### Two conflicts resolved at plan level
 
-The checklist surfaced two places where artifacts disagreed. Resolving them here so tests are written
-once:
+The checklist surfaced two places where artifacts disagreed. Spec.md now matches this plan, so tests
+are written once:
 
 1. **Code expiry and resend cooldown come from the server.** The spec's assumed 10-minute expiry and
    60-second cooldown are documentation of typical values, not requirements. Tests drive
    `expires_in_seconds` and `resend_available_in_seconds` from the response and must never assert the
    literals 600 or 60.
-2. **A cancelled provider authorization is silent.** FR-035 groups "cancelled or fails"; the split is
-   that cancellation returns the user to the entry screen with no message, while a genuine failure
-   shows an actionable error. `SocialSignInCancelledException` is what distinguishes them.
+2. **A cancelled provider authorization is silent.** FR-035 is cancel with no message; FR-035a is any other provider failure with `social_failed` copy. `SocialSignInCancelledException` is what distinguishes them.
 
 ### Two product surfaces this feature must define to be testable
 
@@ -381,19 +382,21 @@ enforced by the author running the commands above and by the reviewer checking t
 and the `FR-0xx` traceability search. Adding a CI workflow that fails the build below 90% is a
 worthwhile follow-up but is out of scope for this feature.
 
-### Checklist items this section does not resolve
+### Analysis remediations (2026-09-17)
 
-These need spec amendments, not a testing decision, and remain open in
-[checklists/test.md](./checklists/test.md):
+Closed the leftover spec gaps so `/speckit-implement` is unblocked:
 
-| Item | Missing requirement |
-|---|---|
-| CHK018 | Exact message text, or string keys, per failure named in SC-007 |
-| CHK022 | Any accessibility requirement for the auth forms |
-| CHK030 | A quantified wrong-attempt cap ("a small number" is unassertable) |
-| CHK031 | Registration-draft token lifetime ("short-lived" has no boundary) |
-| CHK035 | An observable definition of FR-051's "must not lose the form" on resume |
-| CHK038 | Expected behavior when Apple omits the email on a second authorization |
+- Error copy table in spec.md (CHK018 / FR-049)
+- FR-052 labels and text primary actions (CHK022)
+- Five wrong OTP attempts then throttle (CHK030 / FR-018a)
+- Draft token TTL 30 minutes (CHK031 / FR-026a)
+- FR-051 process-alive vs process-death (CHK035)
+- FR-034a Apple second authorization omits email (CHK038)
+- Domain `SocialProvider` has no `Platform` (constitution)
+- Session persist only in the repository (T040 / T041 / T091)
+- FR-044 `session_expired` copy after refresh invalidation
+- FR-006b / FR-006c / FR-004 / FR-047 / FR-036 resume tasked
+- Glossary: entry screen = WelcomeScreen; User Account = AuthUser
 
 ## Complexity Tracking
 

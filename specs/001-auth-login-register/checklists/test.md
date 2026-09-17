@@ -44,11 +44,11 @@ code works. Items ask "is this specified?", never "does this behave?".
 - [x] CHK015 Is a widget-test obligation stated at all? The constitution's testing gate lists only unit and bloc tests, so the widget level the request asks for is currently unrequired. [Gap]
 - [x] CHK016 Is it specified which `ApiCallState` variants each auth screen must render? Without this, a widget test cannot know whether an `ApiCallEmpty` or `ApiCallRefresh` branch is expected or dead. [Completeness, Gap]
 - [x] CHK017 Are per-field error display requirements specified for each form, so a widget test can assert the error lands on the right field rather than merely appearing? [Clarity, Spec §FR-007]
-- [ ] CHK018 Are the exact user-facing messages, or their string keys, specified for each failure named in SC-007? FR-049 requires an "actionable message" without saying which, so a widget test can only assert that *some* message rendered. [Clarity, Spec §FR-049, §SC-007]
+- [x] CHK018 Are the exact user-facing messages, or their string keys, specified for each failure named in SC-007? FR-049 requires an "actionable message" without saying which, so a widget test can only assert that *some* message rendered. [Clarity, Spec §FR-049, §SC-007]
 - [x] CHK019 Is the observable effect of duplicate-submission prevention specified (one request emitted, control disabled, or both)? [Clarity, Spec §FR-048]
 - [x] CHK020 Are the fields the social and phone-first completion forms must show as fixed and non-editable specified per source, so a widget test can assert the correct field is locked? [Completeness, Spec §FR-023, §FR-032]
 - [x] CHK021 Is a requirement stated that auth screens be verified in both supported languages and both reading directions? SC-008 asserts the outcome but never assigns it to a test level. [Coverage, Spec §SC-008, §FR-050]
-- [ ] CHK022 Are accessibility requirements defined for the auth forms? None appear in the spec, so there is no a11y assertion a widget test could make. [Gap]
+- [x] CHK022 Are accessibility requirements defined for the auth forms? None appear in the spec, so there is no a11y assertion a widget test could make. [Gap]
 
 ## Integration-Level Requirement Completeness
 
@@ -62,18 +62,18 @@ code works. Items ask "is this specified?", never "does this behave?".
 
 ## Requirement Clarity & Quantification
 
-- [ ] CHK030 Is the wrong-attempt cap quantified? The spec says "a small number of wrong attempts", which no test can assert. [Ambiguity, Spec §Assumptions]
-- [ ] CHK031 Is the registration-draft token lifetime specified? `contracts/auth-api.md` calls it "short-lived", so the expired-token path in FR-026 and FR-036 has no assertable boundary. [Gap, Contracts §auth-api]
+- [x] CHK030 Is the wrong-attempt cap quantified? The spec says "a small number of wrong attempts", which no test can assert. [Ambiguity, Spec §Assumptions]
+- [x] CHK031 Is the registration-draft token lifetime specified? `contracts/auth-api.md` calls it "short-lived", so the expired-token path in FR-026 and FR-036 has no assertable boundary. [Gap, Contracts §auth-api]
 - [x] CHK032 Is the session lifetime quantified? SC-006 asserts persistence "for the full session lifetime" while the plan defers the duration to the backend, leaving nothing to assert. [Measurability, Spec §SC-006]
 - [x] CHK033 Is the guest-gate trigger specified as a requirement? FR-039 requires the prompt, but with a deliberately blank home screen no concrete account-required action is defined for a test to exercise. [Gap, Spec §FR-039]
 - [x] CHK034 Is the sign-out entry point specified? FR-043 requires sign-out to exist without stating where it is reachable from, so no widget or integration test has a target. [Gap, Spec §FR-043]
-- [ ] CHK035 Is the observable behavior of FR-051 defined? "MUST NOT lose an in-progress registration form" when backgrounded names no mechanism and no observable, so a test cannot distinguish pass from fail. [Clarity, Spec §FR-051]
+- [x] CHK035 Is the observable behavior of FR-051 defined? "MUST NOT lose an in-progress registration form" when backgrounded names no mechanism and no observable, so a test cannot distinguish pass from fail. [Clarity, Spec §FR-051]
 
 ## Requirement Consistency & Conflicts
 
 - [x] CHK036 Do the one-time-code timing values agree between artifacts? The spec assumes a fixed 10-minute expiry and 60-second cooldown, while `contracts/auth-api.md` has the server return `expires_in_seconds` and `resend_available_in_seconds`. A test written against the fixed values contradicts one written against the server's. [Conflict, Spec §Assumptions, Contracts §auth-api]
 - [x] CHK037 Do the spec and plan agree on cancelled social authorization? FR-035 treats "cancelled or fails" as one case, while the plan and research distinguish silent cancellation from a surfaced error. Which behavior is the assertion? [Conflict, Spec §FR-035, Plan §Constitution Check]
-- [ ] CHK038 Is the second-authorization Apple case covered by a requirement? Research notes that Apple returns the email and name only on the first authorization, but no FR states the expected behavior on subsequent ones. [Gap, Research §R1, Spec §FR-034]
+- [x] CHK038 Is the second-authorization Apple case covered by a requirement? Research notes that Apple returns the email and name only on the first authorization, but no FR states the expected behavior on subsequent ones. [Gap, Research §R1, Spec §FR-034]
 - [x] CHK039 Are FR-041a's verification side effects specified observably enough to assert — that a previously unverified phone becomes verified after a phone-code sign-in? [Measurability, Spec §FR-041a]
 
 ## Test Seams, Determinism & Assumptions
@@ -102,7 +102,7 @@ naming, seams and fixtures, the injected ticker that makes the cooldown assertab
 four-state rendering contract, both artifact conflicts, and the two product surfaces that had no test
 target (sign-out location and the guest-gate trigger).
 
-**6 items remain open** because each needs a spec amendment rather than a testing decision:
+**At that time, 6 items remained open** because each needed a spec amendment rather than a testing decision (closed in Resolution pass 2 below):
 
 | Item | Missing requirement | Impact if left open |
 |---|---|---|
@@ -113,5 +113,17 @@ target (sign-out location and the guest-gate trigger).
 | CHK035 | Observable definition for FR-051 | Pass and fail are indistinguishable |
 | CHK038 | Apple second-authorization behavior | A known provider behavior has no specified expectation |
 
-None blocks `/speckit-tasks`; all six should be closed before the tasks that implement the affected
-requirements begin.
+### Resolution pass 2 (2026-09-17)
+
+All six leftover items are closed in spec.md, `contracts/auth-api.md`, and `tasks.md`:
+
+| Item | Resolution |
+|---|---|
+| CHK018 | Spec **Error copy** table; widget tests assert those ids |
+| CHK022 | FR-052 labels, field errors, text primary actions |
+| CHK030 | FR-018a: **5** wrong OTP attempts then `too_many_attempts` |
+| CHK031 | FR-026a / contract: `registration_token` valid **30 minutes** |
+| CHK035 | FR-051: keep form text across process-alive backgrounding; draft-only after process death |
+| CHK038 | FR-034a: reuse stored/draft email when Apple omits it on later authorization |
+
+**0 items remain open.** The checklist no longer blocks `/speckit-implement`.

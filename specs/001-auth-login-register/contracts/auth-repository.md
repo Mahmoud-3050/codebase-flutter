@@ -110,7 +110,7 @@ abstract interface class SocialAuthService {
 `SocialCredential` is a data-layer record of `idToken`, optional `authorizationCode`, and optional
 `fullName`. User cancellation throws a dedicated `SocialSignInCancelledException` (an `AppException`)
 so the cubit can return the user to the entry screen silently rather than showing an error
-(FR-035).
+(FR-035). Any other provider failure maps to `social_failed` (FR-035a).
 
 ---
 
