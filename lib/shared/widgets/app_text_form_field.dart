@@ -707,26 +707,18 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
   }
 
   Widget _boxedIcon({required IconData? icon, VoidCallback? onTap}) {
-    final Widget child = Icon(icon);
-    return Column(
-      mainAxisAlignment: .center,
-      children: [
-        if (onTap == null)
-          child
-        else
-          InkWell(onTap: onTap, overlayColor: _transparentOverlay, child: child),
-      ],
-    );
+    final Widget child = Icon(icon, size: 20.r);
+    final Widget interactive = onTap == null
+        ? child
+        : InkWell(onTap: onTap, overlayColor: _transparentOverlay, child: child);
+    return Center(child: interactive);
   }
 
   Widget _focusAwareSlot({required Widget Function(bool hasFocus) builder}) {
     return ListenableBuilder(
       listenable: _focusNode,
       builder: (BuildContext context, Widget? child) {
-        return Column(
-          mainAxisAlignment: .center,
-          children: [builder(_focusNode.hasFocus)],
-        );
+        return Center(child: builder(_focusNode.hasFocus));
       },
     );
   }

@@ -20,10 +20,9 @@ abstract class ServiceLocator {
     instance.allowReassignment = true;
 
     /// Core
-    injectFCMTokenSingleton('');
     await _injectSharedPreferences();
-    _injectUserTypeStorage();
     _injectSecureStorage();
+    _injectUserTypeStorage();
     _injectAccessTokenStorage();
     _injectDeviceTokenStorage();
     _injectDio();
@@ -63,26 +62,19 @@ abstract class ServiceLocator {
 
   static void _injectUserTypeStorage() {
     instance.registerLazySingleton<UserTypeStorage>(
-      () => UserTypeStorage(preferences: instance()),
+      () => UserTypeStorage(preferences: instance(instanceName: 'sharedPreferences')),
     );
   }
 
   static void _injectAccessTokenStorage() {
     instance.registerLazySingleton<AccessTokenStorage>(
-      () => AccessTokenStorage(secureStorage: instance()),
+      () => AccessTokenStorage(secureStorage: instance<FlutterSecureStorage>(instanceName: 'secureStorage')),
     );
   }
 
   static void _injectDeviceTokenStorage() {
     instance.registerLazySingleton<DeviceTokenStorage>(
-      () => DeviceTokenStorage(secureStorage: instance()),
-    );
-  }
-
-  static void injectFCMTokenSingleton(String? fcmToken) {
-    instance.registerLazySingleton<String>(
-      () => fcmToken ?? '',
-      instanceName: 'fcmToken',
+      () => DeviceTokenStorage(secureStorage: instance<FlutterSecureStorage>(instanceName: 'secureStorage')),
     );
   }
 
@@ -100,9 +92,7 @@ abstract class ServiceLocator {
     );
   }
 
-  static void injectNavigatorKeySingleton(
-    GlobalKey<NavigatorState> navigatorKey,
-  ) {
+  static void injectNavigatorKeySingleton(GlobalKey<NavigatorState> navigatorKey) {
     instance.registerLazySingleton<GlobalKey<NavigatorState>>(
       () => navigatorKey,
       instanceName: 'navigatorKey',
@@ -111,17 +101,12 @@ abstract class ServiceLocator {
 }
 
 SharedPreferences get sharedPreferences =>
-    ServiceLocator.instance<SharedPreferences>(
-      instanceName: 'sharedPreferences',
-    );
+    ServiceLocator.instance<SharedPreferences>(instanceName: 'sharedPreferences');
 
 FlutterSecureStorage get secureStorage =>
-    ServiceLocator.instance<FlutterSecureStorage>(
-      instanceName: 'secureStorage',
-    );
+    ServiceLocator.instance<FlutterSecureStorage>(instanceName: 'secureStorage');
 
-UserTypeStorage get userTypeStorage =>
-    ServiceLocator.instance<UserTypeStorage>();
+UserTypeStorage get userTypeStorage => ServiceLocator.instance<UserTypeStorage>();
 
 AccessTokenStorage get accessTokenStorage =>
     ServiceLocator.instance<AccessTokenStorage>();
@@ -133,11 +118,7 @@ DioConsumer get dioConsumer => ServiceLocator.instance<DioConsumer>();
 
 AppFlavor get currentFlavor => ServiceLocator.instance<AppFlavor>();
 
-String get fcmToken =>
-    ServiceLocator.instance<String>(instanceName: 'fcmToken');
-
 DeviceType get deviceType =>
     ServiceLocator.instance<DeviceType>(instanceName: 'deviceType');
 
-String? get deviceId =>
-    ServiceLocator.instance<String>(instanceName: 'deviceId');
+String? get deviceId => ServiceLocator.instance<String>(instanceName: 'deviceId');

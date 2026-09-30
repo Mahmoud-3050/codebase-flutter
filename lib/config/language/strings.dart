@@ -637,4 +637,48 @@ abstract class Strings {
 
   static String countsFrom({required String current, required String total}) => 'counts_from'.trParams({'current': current, 'total': total});
 
+  static String get invalidCredentials => 'invalid_credentials'.tr;
+
+  static String get invalidCode => 'invalid_code'.tr;
+
+  static String get expiredCode => 'expired_code'.tr;
+
+  static String get emailTaken => 'email_taken'.tr;
+
+  static String get socialFailed => 'social_failed'.tr;
+
+  static String get tooManyAttempts => 'too_many_attempts'.tr;
+
+  static String get sessionExpired => 'session_expired'.tr;
+
+  static String get noInternet => 'no_internet'.tr;
+
+  static String get avatarTooLarge => 'avatar_too_large'.tr;
+
+  static String get avatarUnsupportedType => 'avatar_unsupported_type'.tr;
+
+  static String get draftExpired => 'draft_expired'.tr;
+
+  static String get passwordLetterRequirement => 'password_letter_requirement'.tr;
+
+  static String get continueAsGuest => 'continue_as_guest'.tr;
+
+  static String get signInWithGoogle => 'sign_in_with_google'.tr;
+
+  static String get signInWithApple => 'sign_in_with_apple'.tr;
+
+  static String get signInWithPhone => 'sign_in_with_phone'.tr;
+
+  static String get completeRegistration => 'complete_registration'.tr;
+
+  static String get verifyCode => 'verify_code'.tr;
+
+  static String get accountRequired => 'account_required'.tr;
+
+  static String get accountRequiredMessage => 'account_required_message'.tr;
+
+  static String get addPhoto => 'add_photo'.tr;
+
+  static String get skipPhoto => 'skip_photo'.tr;
+
 }

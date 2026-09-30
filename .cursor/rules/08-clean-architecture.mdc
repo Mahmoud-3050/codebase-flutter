@@ -270,39 +270,51 @@ Future<GetStudentProfileModel> getStudentProfile() async {
 
 ### 8.7 Dependency Injection
 
-Every feature exposes `{feature}_injection.dart` following profile:
+App-wide infrastructure (Dio, storage, device identity) is registered in
+`ServiceLocator.init()`. Feature types are **not** registered there.
+
+Every feature exposes `{feature}_injection.dart` with granular `register*`
+functions. The route wraps the screen in `FeatureScope` and provides only the
+cubits that route needs:
 
 ```dart
-Future<void> initProfileFeatureInjection() async {
-  // Cubits — registerFactory
-  _sl.registerFactory<GetStudentProfileCubit>(() => GetStudentProfileCubit(_sl()));
-
-  // UseCases — registerLazySingleton
-  _sl.registerLazySingleton<GetStudentProfileUseCase>(
-    () => GetStudentProfileUseCase(repository: _sl()),
-  );
-
-  // Repository — registerLazySingleton
-  _sl.registerLazySingleton<ProfileRepository>(
-    () => ProfileRepositoryImpl(remote: _sl()),
-  );
-
-  // DataSource — registerLazySingleton
-  _sl.registerLazySingleton<ProfileRemoteDataSource>(
+void registerProfileDataLayer(GetIt sl) {
+  sl.registerLazySingleton<ProfileRemoteDataSource>(
     () => ProfileRemoteDataSourceImpl(),
+  );
+  sl.registerLazySingleton<ProfileRepository>(
+    () => ProfileRepositoryImpl(remote: sl()),
   );
 }
 
-List<BlocProvider> get profileBlocs => <BlocProvider>[
-  BlocProvider<GetStudentProfileCubit>(
-    create: (context) => _sl<GetStudentProfileCubit>(),
+void registerGetStudentProfile(GetIt sl) {
+  sl.registerFactory<GetStudentProfileCubit>(
+    () => GetStudentProfileCubit(sl()),
+  );
+  sl.registerLazySingleton<GetStudentProfileUseCase>(
+    () => GetStudentProfileUseCase(repository: sl()),
+  );
+}
+
+// In presentation/navigation/router.dart
+return FeatureScope(
+  scopeName: 'StudentProfileScope',
+  registrations: const [
+    registerProfileDataLayer,
+    registerGetStudentProfile,
+  ],
+  child: MultiBlocProvider(
+    providers: [
+      BlocProvider<GetStudentProfileCubit>(
+        create: (_) => ServiceLocator.instance<GetStudentProfileCubit>(),
+      ),
+    ],
+    child: const StudentProfileScreen(),
   ),
-  // ...one BlocProvider per cubit
-];
+);
 ```
 
-- Call `init{Feature}FeatureInjection()` from `injection_container.dart`.
-- Spread `...{feature}Blocs` into `MultiBlocProvider` in `app.dart`.
+- Cubits: `registerFactory`. UseCases, repositories, datasources: `registerLazySingleton`.
 - **Never** construct cubits, use cases, or repositories with `new` in widgets.
 
 ### 8.8 Avoid Unnecessary Abstractions
@@ -331,7 +343,7 @@ not over-engineering.
 | Cubit imports only use cases + entities | No datasource, no repo impl |
 | Widgets dispatch via `context.read<Cubit>().f…()` | No `dioConsumer`, no `setState` for API data |
 | Errors flow as `Either<Failure, T>` | Exceptions caught only in repository impl |
-| DI registered in `{feature}_injection.dart` | Factory for cubits, lazy singleton for rest |
+| DI registered in `{feature}_injection.dart` | Granular `register*` + `FeatureScope` at the route |
 | States are sealed + `part of` cubit | `Initial / Loading / Success / Error` |
 
 ---

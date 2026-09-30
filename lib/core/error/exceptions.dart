@@ -152,3 +152,15 @@ class RequestCancelledException extends AppException {
     return CancelledFailure(message: message);
   }
 }
+
+class SocialSignInCancelledException extends AppException {
+  @override
+  final String? message;
+
+  const SocialSignInCancelledException({this.message});
+
+  @override
+  Failure toFailure() {
+    return SocialSignInCancelledFailure(message: message);
+  }
+}
