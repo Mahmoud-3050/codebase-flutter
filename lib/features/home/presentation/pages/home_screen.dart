@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 
 import '../../../../config/language/strings.dart';
+import '../../../../core/presentation/api_call_state.dart';
+import '../../../../config/routes/auth_navigation.dart';
+import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../auth/presentation/controller/logout/logout_cubit.dart';
-import '../../../auth/presentation/navigation/router.dart';
 import '../../../auth/presentation/widgets/guest_gate_dialog.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -46,8 +48,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             BlocListener<LogoutCubit, LogoutState>(
               listener: (BuildContext context, LogoutState state) {
+                if (state case ApiCallError(:final message)) {
+                  showAppSnackBar(
+                    context: context,
+                    message: message,
+                    type: ToastType.error,
+                  );
+                }
                 if (state.isSuccess) {
-                  const WelcomeRoute().go(context);
+                  openSignedOut(context);
                 }
               },
               child: TextButton(

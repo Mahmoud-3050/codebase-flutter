@@ -215,6 +215,21 @@ void main() {
     verifyNever(local.persistSession(any));
   });
 
+  test(
+    'FR-035a provider SDK errors do not stick the cubit on loading',
+    () async {
+      when(
+        social.authorize(SocialProvider.apple),
+      ).thenThrow(StateError('apple unavailable'));
+      final result = await repository.socialSignIn(
+        params: const SocialSignInParams(provider: SocialProvider.apple),
+      );
+      result.fold((Failure f) {
+        expect(f.message, Strings.socialFailed);
+      }, (_) => fail('expected left'));
+    },
+  );
+
   test('FR-035a other social failures map to social_failed', () async {
     when(
       social.authorize(SocialProvider.google),
@@ -294,8 +309,24 @@ void main() {
       (_) async => const LogoutModel(status: 'success', message: ''),
     );
     when(local.clearSession()).thenThrow(const CacheException());
+    when(local.readVisitorState()).thenAnswer((_) async => UserType.loggedIn);
     expect((await repository.logout(params: const NoParams())).isLeft, isTrue);
   });
+
+  test(
+    'FR-043 logout signs out when the stored session is no longer logged in',
+    () async {
+      when(remote.logout(params: anyNamed('params'))).thenAnswer(
+        (_) async => const LogoutModel(status: 'success', message: ''),
+      );
+      when(local.clearSession()).thenThrow(const CacheException());
+      when(local.readVisitorState()).thenAnswer((_) async => UserType.guest);
+      expect(
+        (await repository.logout(params: const NoParams())).isRight,
+        isTrue,
+      );
+    },
+  );
 
   test('FR-012 requestEmailOtp and social with existing idToken', () async {
     when(

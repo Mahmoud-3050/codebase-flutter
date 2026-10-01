@@ -26,19 +26,33 @@ class FeatureScope extends StatefulWidget {
 }
 
 class _FeatureScopeState extends State<FeatureScope> {
-  late final Future<void> _ready;
+  bool _ready = false;
 
   @override
   void initState() {
     super.initState();
-    _ready = _init();
+    final GetIt sl = ServiceLocator.instance;
+    if (sl.hasScope(widget.scopeName)) {
+      unawaited(_replaceScope());
+      return;
+    }
+    _register(sl);
+    _ready = true;
   }
 
-  Future<void> _init() async {
-    final sl = ServiceLocator.instance;
+  Future<void> _replaceScope() async {
+    final GetIt sl = ServiceLocator.instance;
     if (sl.hasScope(widget.scopeName)) {
       await sl.dropScope(widget.scopeName);
     }
+    if (!mounted) {
+      return;
+    }
+    _register(sl);
+    setState(() => _ready = true);
+  }
+
+  void _register(GetIt sl) {
     sl.pushNewScope(scopeName: widget.scopeName);
     for (final FeatureRegistration register in widget.registrations) {
       register(sl);
@@ -56,14 +70,9 @@ class _FeatureScopeState extends State<FeatureScope> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<void>(
-      future: _ready,
-      builder: (BuildContext context, AsyncSnapshot<void> snapshot) {
-        if (snapshot.connectionState != .done) {
-          return const SizedBox.shrink();
-        }
-        return widget.child;
-      },
-    );
+    if (!_ready) {
+      return const SizedBox.shrink();
+    }
+    return widget.child;
   }
 }

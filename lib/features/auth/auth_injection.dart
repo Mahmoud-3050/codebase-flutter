@@ -1,6 +1,7 @@
 import 'package:get_it/get_it.dart';
 
 import '../../core/services/local_storage/impl/access_token_storage.dart';
+import '../../core/services/session_write_guard.dart';
 import '../../core/services/local_storage/impl/registration_draft_storage.dart';
 import '../../core/services/local_storage/impl/user_type_storage.dart';
 import '../../injection_container.dart';
@@ -10,6 +11,7 @@ import 'data/datasources/auth_remote_datasource.dart';
 import 'data/datasources/auth_remote_datasource_impl.dart';
 import 'data/datasources/avatar_picker_impl.dart';
 import 'domain/avatar_picker.dart';
+import 'data/datasources/google_server_client_id.dart';
 import 'data/datasources/social_auth_service.dart';
 import 'data/datasources/social_auth_service_impl.dart';
 import 'data/repositories/auth_repo_impl.dart';
@@ -29,6 +31,7 @@ import 'domain/usecases/social_sign_in_usecase.dart';
 import 'domain/usecases/verify_email_usecase.dart';
 import 'domain/usecases/verify_phone_otp_usecase.dart';
 import 'presentation/controller/complete_registration/complete_registration_cubit.dart';
+import 'presentation/controller/verified_phone/verified_phone_cubit.dart';
 import 'presentation/controller/guest_mode/guest_mode_cubit.dart';
 import 'presentation/controller/login/login_cubit.dart';
 import 'presentation/controller/logout/logout_cubit.dart';
@@ -54,9 +57,12 @@ void registerAuthDataLayer(GetIt sl) {
       accessTokenStorage: sl<AccessTokenStorage>(),
       userTypeStorage: sl<UserTypeStorage>(),
       registrationDraftStorage: sl<RegistrationDraftStorage>(),
+      sessionWriteGuard: sl<SessionWriteGuard>(),
     ),
   );
-  sl.registerLazySingleton<SocialAuthService>(SocialAuthServiceImpl.new);
+  sl.registerLazySingleton<SocialAuthService>(
+    () => SocialAuthServiceImpl(googleServerClientId: googleServerClientId),
+  );
   sl.registerLazySingleton<AvatarPicker>(AvatarPickerImpl.new);
   sl.registerLazySingleton<AuthRepository>(
     () =>
@@ -130,6 +136,7 @@ void registerCompleteRegistration(GetIt sl) {
   sl.registerFactory<CompleteRegistrationCubit>(
     () => CompleteRegistrationCubit(sl()),
   );
+  sl.registerFactory<VerifiedPhoneCubit>(VerifiedPhoneCubit.new);
 }
 
 void registerSocialSignIn(GetIt sl) {

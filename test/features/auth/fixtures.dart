@@ -214,6 +214,12 @@ class MemoryStorage implements LocalStorageInterface {
   bool failSave = false;
   bool failRemove = false;
 
+  /// Successful saves allowed before [save] starts returning false.
+  int? savesUntilFailure;
+
+  /// How many of the next [remove] calls return false, then succeed.
+  int removalsToFail = 0;
+
   @override
   Future<String?> read({String? key}) async => value;
 
@@ -222,13 +228,23 @@ class MemoryStorage implements LocalStorageInterface {
     if (failSave) {
       return false;
     }
+    final int? remaining = savesUntilFailure;
+    if (remaining != null) {
+      if (remaining <= 0) {
+        return false;
+      }
+      savesUntilFailure = remaining - 1;
+    }
     this.value = value;
     return true;
   }
 
   @override
   Future<bool> remove({String? key}) async {
-    if (failRemove) {
+    if (failRemove || removalsToFail > 0) {
+      if (removalsToFail > 0) {
+        removalsToFail--;
+      }
       return false;
     }
     value = null;

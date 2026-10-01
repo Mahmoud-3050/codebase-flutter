@@ -7,6 +7,10 @@ import 'package:themes/testing.dart';
 import 'package:themes/themes.dart';
 
 import 'package:codebase/config/routes/app_routes.dart';
+import 'package:codebase/config/routes/visitor_redirect.dart';
+import 'package:codebase/core/services/session_write_guard.dart';
+import 'package:codebase/injection_container.dart';
+import 'package:get_it/get_it.dart';
 import 'package:codebase/config/themes/app_theme.dart';
 import 'package:codebase/config/themes/colors_palettes.dart';
 
@@ -17,8 +21,11 @@ Future<void> pumpAuthWidget(
   List<RepositoryProvider<dynamic>> repositories =
       const <RepositoryProvider<dynamic>>[],
   TextDirection textDirection = TextDirection.ltr,
+  TextScaler? textScaler,
   TargetPlatform? platform,
+  bool confirmPhoneOtp = false,
 }) async {
+  _ensureVisitorRedirect();
   await Themes.instance.init(config: ColorsPalettes.config);
   Widget body = child;
   if (providers.isNotEmpty) {
@@ -38,12 +45,20 @@ Future<void> pumpAuthWidget(
         AppRoutes.register,
         AppRoutes.verifyEmail,
         AppRoutes.phoneSignIn,
-        AppRoutes.phoneOtp,
         AppRoutes.completeRegistration,
         AppRoutes.forgotPassword,
         AppRoutes.resetPassword,
       ])
         GoRoute(path: path, builder: (_, _) => Text('routed:$path')),
+      GoRoute(
+        path: AppRoutes.phoneOtp,
+        builder: (BuildContext context, _) {
+          if (!confirmPhoneOtp) {
+            return Text('routed:${AppRoutes.phoneOtp}');
+          }
+          return const _ConfirmPhoneOtpPage();
+        },
+      ),
     ],
   );
   tester.view.physicalSize = const Size(1179, 2556);
@@ -62,10 +77,18 @@ Future<void> pumpAuthWidget(
           ).copyWith(platform: platform),
           routerConfig: router,
           builder: (BuildContext context, Widget? widget) {
-            return Directionality(
+            Widget child = Directionality(
               textDirection: textDirection,
               child: widget ?? const SizedBox.shrink(),
             );
+            final TextScaler? scale = textScaler;
+            if (scale != null) {
+              child = MediaQuery(
+                data: MediaQuery.of(context).copyWith(textScaler: scale),
+                child: child,
+              );
+            }
+            return child;
           },
         );
       },
@@ -74,6 +97,38 @@ Future<void> pumpAuthWidget(
   await tester.pump();
 }
 
+void _ensureVisitorRedirect() {
+  final GetIt sl = ServiceLocator.instance;
+  if (!sl.isRegistered<VisitorRedirect>()) {
+    sl.registerSingleton<VisitorRedirect>(VisitorRedirect());
+  }
+  if (!sl.isRegistered<SessionWriteGuard>()) {
+    sl.registerSingleton<SessionWriteGuard>(CountingSessionWriteGuard());
+  }
+}
+
 Future<void> resetAuthWidget() async {
   resetThemes();
+}
+
+class _ConfirmPhoneOtpPage extends StatefulWidget {
+  const _ConfirmPhoneOtpPage();
+
+  @override
+  State<_ConfirmPhoneOtpPage> createState() => _ConfirmPhoneOtpPageState();
+}
+
+class _ConfirmPhoneOtpPageState extends State<_ConfirmPhoneOtpPage> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.pop(true);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }

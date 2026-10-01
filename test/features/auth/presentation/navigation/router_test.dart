@@ -10,10 +10,14 @@ import 'package:themes/themes.dart';
 
 import 'package:codebase/config/language/strings.dart';
 import 'package:codebase/config/routes/app_routes.dart';
+import 'package:codebase/config/routes/visitor_redirect.dart';
+import 'package:codebase/core/di/auth_data_scope_lease.dart';
+import 'package:codebase/core/services/session_write_guard.dart';
 import 'package:codebase/config/themes/app_theme.dart';
 import 'package:codebase/config/themes/colors_palettes.dart';
 import 'package:codebase/core/services/local_storage/impl/access_token_storage.dart';
 import 'package:codebase/core/services/local_storage/impl/user_type_storage.dart';
+import 'package:codebase/features/auth/domain/enums/otp_purpose.dart';
 import 'package:codebase/features/auth/presentation/navigation/router.dart'
     as auth;
 import 'package:codebase/features/auth/presentation/pages/complete_registration_screen.dart';
@@ -55,6 +59,9 @@ Future<void> _registerStorage() async {
       secureStorage: sl<FlutterSecureStorage>(instanceName: 'secureStorage'),
     ),
   );
+  sl.registerLazySingleton<AuthDataScopeLease>(() => AuthDataScopeLease(sl));
+  sl.registerLazySingleton<VisitorRedirect>(VisitorRedirect.new);
+  sl.registerLazySingleton<SessionWriteGuard>(CountingSessionWriteGuard.new);
 }
 
 Future<GoRouter> _pumpRouter(
@@ -125,10 +132,8 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.byType(ForgotPasswordScreen), findsOneWidget);
     router.go(
-      Uri(
-        path: AppRoutes.resetPassword,
-        queryParameters: <String, String>{'email': 'ada@example.com'},
-      ).toString(),
+      AppRoutes.resetPassword,
+      extra: const auth.ResetPasswordArgs(email: 'ada@example.com'),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
@@ -140,13 +145,11 @@ void main() {
   ) async {
     final GoRouter router = await _pumpRouter(
       tester,
-      location: Uri(
-        path: AppRoutes.verifyEmail,
-        queryParameters: <String, String>{
-          'email': 'ada@example.com',
-          'resend-available-in-seconds': '12',
-        },
-      ).toString(),
+      location: AppRoutes.verifyEmail,
+      extra: const auth.VerifyEmailArgs(
+        email: 'ada@example.com',
+        resendAvailableInSeconds: 12,
+      ),
     );
     expect(find.byType(VerifyEmailScreen), findsOneWidget);
     router.go(AppRoutes.phoneSignIn);
@@ -154,19 +157,30 @@ void main() {
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.byType(PhoneSignInScreen), findsOneWidget);
     router.go(
-      Uri(
-        path: AppRoutes.phoneOtp,
-        queryParameters: <String, String>{
-          'dialing-code': '+966',
-          'phone': '500000000',
-          'resend-available-in-seconds': '8',
-          'purpose': 'verify_phone',
-        },
-      ).toString(),
+      AppRoutes.phoneOtp,
+      extra: const auth.PhoneOtpArgs(
+        dialingCode: '+966',
+        phone: '500000000',
+        resendAvailableInSeconds: 8,
+        purpose: OtpPurpose.verifyPhone,
+      ),
     );
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 50));
     expect(find.byType(PhoneOtpScreen), findsOneWidget);
+  });
+
+  testWidgets('FR-011 verify email without args returns to welcome', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await _pumpRouter(
+      tester,
+      location: AppRoutes.verifyEmail,
+    );
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 50));
+    expect(find.byType(WelcomeScreen), findsOneWidget);
+    router.dispose();
   });
 
   testWidgets('FR-022 FR-003 complete-registration and home scopes', (

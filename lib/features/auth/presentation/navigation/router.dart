@@ -6,10 +6,12 @@ import '../../../../config/routes/app_routes.dart';
 import '../../../../core/di/feature_scope.dart';
 import '../../../../injection_container.dart';
 import '../../auth_injection.dart';
+import 'auth_data_layer.dart';
 import '../../domain/avatar_picker.dart';
 import '../../domain/entities/registration_draft.dart';
 import '../../domain/enums/otp_purpose.dart';
 import '../controller/complete_registration/complete_registration_cubit.dart';
+import '../controller/verified_phone/verified_phone_cubit.dart';
 import '../controller/guest_mode/guest_mode_cubit.dart';
 import '../controller/login/login_cubit.dart';
 import '../controller/otp_cooldown/otp_cooldown_cubit.dart';
@@ -59,10 +61,12 @@ Widget _scoped({
   if (repositories.isNotEmpty) {
     subtree = MultiRepositoryProvider(providers: repositories, child: subtree);
   }
-  return FeatureScope(
-    scopeName: scopeName,
-    registrations: registrations,
-    child: subtree,
+  return AuthDataLayer(
+    child: FeatureScope(
+      scopeName: scopeName,
+      registrations: registrations,
+      child: subtree,
+    ),
   );
 }
 
@@ -75,7 +79,6 @@ class WelcomeRoute extends GoRouteData with $WelcomeRoute {
     return _scoped(
       scopeName: _welcomeScope,
       registrations: const <FeatureRegistration>[
-        registerAuthDataLayer,
         registerVisitorState,
         registerSocialSignIn,
       ],
@@ -103,10 +106,7 @@ class RegisterRoute extends GoRouteData with $RegisterRoute {
   Widget build(BuildContext context, GoRouterState state) {
     return _scoped(
       scopeName: _registerScope,
-      registrations: const <FeatureRegistration>[
-        registerAuthDataLayer,
-        registerRegister,
-      ],
+      registrations: const <FeatureRegistration>[registerRegister],
       providers: <BlocProvider<dynamic>>[
         BlocProvider<RegisterCubit>(
           create: (_) => ServiceLocator.instance<RegisterCubit>(),
@@ -122,25 +122,34 @@ class RegisterRoute extends GoRouteData with $RegisterRoute {
   }
 }
 
-@TypedGoRoute<VerifyEmailRoute>(
-  path: AppRoutes.verifyEmail,
-  name: AppRoutes.verifyEmail,
-)
-class VerifyEmailRoute extends GoRouteData with $VerifyEmailRoute {
-  const VerifyEmailRoute({
+final class VerifyEmailArgs {
+  const VerifyEmailArgs({
     required this.email,
     this.resendAvailableInSeconds = 0,
   });
 
   final String email;
   final int resendAvailableInSeconds;
+}
+
+@TypedGoRoute<VerifyEmailRoute>(
+  path: AppRoutes.verifyEmail,
+  name: AppRoutes.verifyEmail,
+)
+class VerifyEmailRoute extends GoRouteData with $VerifyEmailRoute {
+  const VerifyEmailRoute({this.$extra});
+
+  final VerifyEmailArgs? $extra;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
+    final VerifyEmailArgs? args = $extra;
+    if (args == null) {
+      return const _MissingRouteArgs(location: AppRoutes.welcome);
+    }
     return _scoped(
       scopeName: _verifyEmailScope,
       registrations: const <FeatureRegistration>[
-        registerAuthDataLayer,
         registerVerifyEmail,
         registerOtpCooldown,
       ],
@@ -156,8 +165,8 @@ class VerifyEmailRoute extends GoRouteData with $VerifyEmailRoute {
         ),
       ],
       child: VerifyEmailScreen(
-        email: email,
-        resendAvailableInSeconds: resendAvailableInSeconds,
+        email: args.email,
+        resendAvailableInSeconds: args.resendAvailableInSeconds,
       ),
     );
   }
@@ -171,10 +180,7 @@ class LoginRoute extends GoRouteData with $LoginRoute {
   Widget build(BuildContext context, GoRouterState state) {
     return _scoped(
       scopeName: _loginScope,
-      registrations: const <FeatureRegistration>[
-        registerAuthDataLayer,
-        registerLogin,
-      ],
+      registrations: const <FeatureRegistration>[registerLogin],
       providers: <BlocProvider<dynamic>>[
         BlocProvider<LoginCubit>(
           create: (_) => ServiceLocator.instance<LoginCubit>(),
@@ -196,10 +202,7 @@ class PhoneSignInRoute extends GoRouteData with $PhoneSignInRoute {
   Widget build(BuildContext context, GoRouterState state) {
     return _scoped(
       scopeName: _phoneSignInScope,
-      registrations: const <FeatureRegistration>[
-        registerAuthDataLayer,
-        registerPhoneSignIn,
-      ],
+      registrations: const <FeatureRegistration>[registerPhoneSignIn],
       providers: <BlocProvider<dynamic>>[
         BlocProvider<RequestPhoneOtpCubit>(
           create: (_) => ServiceLocator.instance<RequestPhoneOtpCubit>(),
@@ -210,26 +213,35 @@ class PhoneSignInRoute extends GoRouteData with $PhoneSignInRoute {
   }
 }
 
-@TypedGoRoute<PhoneOtpRoute>(path: AppRoutes.phoneOtp, name: AppRoutes.phoneOtp)
-class PhoneOtpRoute extends GoRouteData with $PhoneOtpRoute {
-  const PhoneOtpRoute({
+final class PhoneOtpArgs {
+  const PhoneOtpArgs({
     required this.dialingCode,
     required this.phone,
     this.resendAvailableInSeconds = 0,
-    this.purpose = 'phone_sign_in',
+    this.purpose = OtpPurpose.phoneSignIn,
   });
 
   final String dialingCode;
   final String phone;
   final int resendAvailableInSeconds;
-  final String purpose;
+  final OtpPurpose purpose;
+}
+
+@TypedGoRoute<PhoneOtpRoute>(path: AppRoutes.phoneOtp, name: AppRoutes.phoneOtp)
+class PhoneOtpRoute extends GoRouteData with $PhoneOtpRoute {
+  const PhoneOtpRoute({this.$extra});
+
+  final PhoneOtpArgs? $extra;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
+    final PhoneOtpArgs? args = $extra;
+    if (args == null) {
+      return const _MissingRouteArgs(location: AppRoutes.phoneSignIn);
+    }
     return _scoped(
       scopeName: _phoneOtpScope,
       registrations: const <FeatureRegistration>[
-        registerAuthDataLayer,
         registerPhoneSignIn,
         registerOtpCooldown,
       ],
@@ -245,10 +257,10 @@ class PhoneOtpRoute extends GoRouteData with $PhoneOtpRoute {
         ),
       ],
       child: PhoneOtpScreen(
-        dialingCode: dialingCode,
-        phone: phone,
-        resendAvailableInSeconds: resendAvailableInSeconds,
-        purpose: OtpPurpose.fromWireName(purpose),
+        dialingCode: args.dialingCode,
+        phone: args.phone,
+        resendAvailableInSeconds: args.resendAvailableInSeconds,
+        purpose: args.purpose,
       ),
     );
   }
@@ -269,13 +281,15 @@ class CompleteRegistrationRoute extends GoRouteData
     return _scoped(
       scopeName: _completeRegistrationScope,
       registrations: const <FeatureRegistration>[
-        registerAuthDataLayer,
         registerCompleteRegistration,
         registerPhoneSignIn,
       ],
       providers: <BlocProvider<dynamic>>[
         BlocProvider<CompleteRegistrationCubit>(
           create: (_) => ServiceLocator.instance<CompleteRegistrationCubit>(),
+        ),
+        BlocProvider<VerifiedPhoneCubit>(
+          create: (_) => ServiceLocator.instance<VerifiedPhoneCubit>(),
         ),
         BlocProvider<RequestPhoneOtpCubit>(
           create: (_) => ServiceLocator.instance<RequestPhoneOtpCubit>(),
@@ -302,10 +316,7 @@ class ForgotPasswordRoute extends GoRouteData with $ForgotPasswordRoute {
   Widget build(BuildContext context, GoRouterState state) {
     return _scoped(
       scopeName: _forgotPasswordScope,
-      registrations: const <FeatureRegistration>[
-        registerAuthDataLayer,
-        registerPasswordRecovery,
-      ],
+      registrations: const <FeatureRegistration>[registerPasswordRecovery],
       providers: <BlocProvider<dynamic>>[
         BlocProvider<RequestPasswordResetCubit>(
           create: (_) => ServiceLocator.instance<RequestPasswordResetCubit>(),
@@ -316,25 +327,34 @@ class ForgotPasswordRoute extends GoRouteData with $ForgotPasswordRoute {
   }
 }
 
-@TypedGoRoute<ResetPasswordRoute>(
-  path: AppRoutes.resetPassword,
-  name: AppRoutes.resetPassword,
-)
-class ResetPasswordRoute extends GoRouteData with $ResetPasswordRoute {
-  const ResetPasswordRoute({
+final class ResetPasswordArgs {
+  const ResetPasswordArgs({
     required this.email,
     this.resendAvailableInSeconds = 0,
   });
 
   final String email;
   final int resendAvailableInSeconds;
+}
+
+@TypedGoRoute<ResetPasswordRoute>(
+  path: AppRoutes.resetPassword,
+  name: AppRoutes.resetPassword,
+)
+class ResetPasswordRoute extends GoRouteData with $ResetPasswordRoute {
+  const ResetPasswordRoute({this.$extra});
+
+  final ResetPasswordArgs? $extra;
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
+    final ResetPasswordArgs? args = $extra;
+    if (args == null) {
+      return const _MissingRouteArgs(location: AppRoutes.forgotPassword);
+    }
     return _scoped(
       scopeName: _resetPasswordScope,
       registrations: const <FeatureRegistration>[
-        registerAuthDataLayer,
         registerPasswordRecovery,
         registerOtpCooldown,
       ],
@@ -350,9 +370,33 @@ class ResetPasswordRoute extends GoRouteData with $ResetPasswordRoute {
         ),
       ],
       child: ResetPasswordScreen(
-        email: email,
-        resendAvailableInSeconds: resendAvailableInSeconds,
+        email: args.email,
+        resendAvailableInSeconds: args.resendAvailableInSeconds,
       ),
     );
   }
+}
+
+class _MissingRouteArgs extends StatefulWidget {
+  const _MissingRouteArgs({required this.location});
+
+  final String location;
+
+  @override
+  State<_MissingRouteArgs> createState() => _MissingRouteArgsState();
+}
+
+class _MissingRouteArgsState extends State<_MissingRouteArgs> {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) {
+        context.go(widget.location);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) => const SizedBox.shrink();
 }

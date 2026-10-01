@@ -80,51 +80,28 @@ RouteBase get $verifyEmailRoute => GoRouteData.$route(
 );
 
 mixin $VerifyEmailRoute on GoRouteData {
-  static VerifyEmailRoute _fromState(GoRouterState state) => VerifyEmailRoute(
-    email: state.uri.queryParameters['email']!,
-    resendAvailableInSeconds:
-        _$convertMapValue(
-          'resend-available-in-seconds',
-          state.uri.queryParameters,
-          int.parse,
-        ) ??
-        0,
-  );
+  static VerifyEmailRoute _fromState(GoRouterState state) =>
+      VerifyEmailRoute($extra: state.extra as VerifyEmailArgs?);
 
   VerifyEmailRoute get _self => this as VerifyEmailRoute;
 
   @override
-  String get location => GoRouteData.$location(
-    '/verify-email',
-    queryParams: {
-      'email': _self.email,
-      if (_self.resendAvailableInSeconds != 0)
-        'resend-available-in-seconds': _self.resendAvailableInSeconds
-            .toString(),
-    },
-  );
+  String get location => GoRouteData.$location('/verify-email');
 
   @override
-  void go(BuildContext context) => context.go(location);
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
 
   @override
-  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: _self.$extra);
 
   @override
   void pushReplacement(BuildContext context) =>
-      context.pushReplacement(location);
+      context.pushReplacement(location, extra: _self.$extra);
 
   @override
-  void replace(BuildContext context) => context.replace(location);
-}
-
-T? _$convertMapValue<T>(
-  String key,
-  Map<String, String> map,
-  T? Function(String) converter,
-) {
-  final value = map[key];
-  return value == null ? null : converter(value);
+  void replace(BuildContext context) =>
+      context.replace(location, extra: _self.$extra);
 }
 
 RouteBase get $loginRoute => GoRouteData.$route(
@@ -190,46 +167,28 @@ RouteBase get $phoneOtpRoute => GoRouteData.$route(
 );
 
 mixin $PhoneOtpRoute on GoRouteData {
-  static PhoneOtpRoute _fromState(GoRouterState state) => PhoneOtpRoute(
-    dialingCode: state.uri.queryParameters['dialing-code']!,
-    phone: state.uri.queryParameters['phone']!,
-    resendAvailableInSeconds:
-        _$convertMapValue(
-          'resend-available-in-seconds',
-          state.uri.queryParameters,
-          int.parse,
-        ) ??
-        0,
-    purpose: state.uri.queryParameters['purpose'] ?? 'phone_sign_in',
-  );
+  static PhoneOtpRoute _fromState(GoRouterState state) =>
+      PhoneOtpRoute($extra: state.extra as PhoneOtpArgs?);
 
   PhoneOtpRoute get _self => this as PhoneOtpRoute;
 
   @override
-  String get location => GoRouteData.$location(
-    '/phone-otp',
-    queryParams: {
-      'dialing-code': _self.dialingCode,
-      'phone': _self.phone,
-      if (_self.resendAvailableInSeconds != 0)
-        'resend-available-in-seconds': _self.resendAvailableInSeconds
-            .toString(),
-      if (_self.purpose != 'phone_sign_in') 'purpose': _self.purpose,
-    },
-  );
+  String get location => GoRouteData.$location('/phone-otp');
 
   @override
-  void go(BuildContext context) => context.go(location);
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
 
   @override
-  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: _self.$extra);
 
   @override
   void pushReplacement(BuildContext context) =>
-      context.pushReplacement(location);
+      context.pushReplacement(location, extra: _self.$extra);
 
   @override
-  void replace(BuildContext context) => context.replace(location);
+  void replace(BuildContext context) =>
+      context.replace(location, extra: _self.$extra);
 }
 
 RouteBase get $completeRegistrationRoute => GoRouteData.$route(
@@ -301,40 +260,25 @@ RouteBase get $resetPasswordRoute => GoRouteData.$route(
 
 mixin $ResetPasswordRoute on GoRouteData {
   static ResetPasswordRoute _fromState(GoRouterState state) =>
-      ResetPasswordRoute(
-        email: state.uri.queryParameters['email']!,
-        resendAvailableInSeconds:
-            _$convertMapValue(
-              'resend-available-in-seconds',
-              state.uri.queryParameters,
-              int.parse,
-            ) ??
-            0,
-      );
+      ResetPasswordRoute($extra: state.extra as ResetPasswordArgs?);
 
   ResetPasswordRoute get _self => this as ResetPasswordRoute;
 
   @override
-  String get location => GoRouteData.$location(
-    '/reset-password',
-    queryParams: {
-      'email': _self.email,
-      if (_self.resendAvailableInSeconds != 0)
-        'resend-available-in-seconds': _self.resendAvailableInSeconds
-            .toString(),
-    },
-  );
+  String get location => GoRouteData.$location('/reset-password');
 
   @override
-  void go(BuildContext context) => context.go(location);
+  void go(BuildContext context) => context.go(location, extra: _self.$extra);
 
   @override
-  Future<T?> push<T>(BuildContext context) => context.push<T>(location);
+  Future<T?> push<T>(BuildContext context) =>
+      context.push<T>(location, extra: _self.$extra);
 
   @override
   void pushReplacement(BuildContext context) =>
-      context.pushReplacement(location);
+      context.pushReplacement(location, extra: _self.$extra);
 
   @override
-  void replace(BuildContext context) => context.replace(location);
+  void replace(BuildContext context) =>
+      context.replace(location, extra: _self.$extra);
 }

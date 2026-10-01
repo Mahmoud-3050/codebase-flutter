@@ -6,7 +6,10 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:get_it/get_it.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'config/routes/visitor_redirect.dart';
 import 'core/api/dio_consumer.dart';
+import 'core/di/auth_data_scope_lease.dart';
+import 'core/services/session_write_guard.dart';
 import 'core/services/local_storage/impl/access_token_storage.dart';
 import 'core/services/local_storage/impl/device_token_storage.dart';
 import 'core/services/local_storage/impl/user_type_storage.dart';
@@ -21,6 +24,8 @@ abstract class ServiceLocator {
 
     /// Core
     await _injectSharedPreferences();
+    _injectVisitorRedirect();
+    _injectAuthDataScopeLease();
     _injectSecureStorage();
     _injectUserTypeStorage();
     _injectAccessTokenStorage();
@@ -29,6 +34,19 @@ abstract class ServiceLocator {
     _injectDioConsumer();
     injectDeviceTypeSingleton(Platform.isIOS ? .ios : .android);
     injectDeviceIdSingleton(await getDeviceId());
+  }
+
+  static void _injectAuthDataScopeLease() {
+    instance.registerLazySingleton<AuthDataScopeLease>(
+      () => AuthDataScopeLease(instance),
+    );
+  }
+
+  static void _injectVisitorRedirect() {
+    instance.registerLazySingleton<VisitorRedirect>(VisitorRedirect.new);
+    instance.registerLazySingleton<SessionWriteGuard>(
+      CountingSessionWriteGuard.new,
+    );
   }
 
   static void _injectDio() {
@@ -62,19 +80,29 @@ abstract class ServiceLocator {
 
   static void _injectUserTypeStorage() {
     instance.registerLazySingleton<UserTypeStorage>(
-      () => UserTypeStorage(preferences: instance(instanceName: 'sharedPreferences')),
+      () => UserTypeStorage(
+        preferences: instance(instanceName: 'sharedPreferences'),
+      ),
     );
   }
 
   static void _injectAccessTokenStorage() {
     instance.registerLazySingleton<AccessTokenStorage>(
-      () => AccessTokenStorage(secureStorage: instance<FlutterSecureStorage>(instanceName: 'secureStorage')),
+      () => AccessTokenStorage(
+        secureStorage: instance<FlutterSecureStorage>(
+          instanceName: 'secureStorage',
+        ),
+      ),
     );
   }
 
   static void _injectDeviceTokenStorage() {
     instance.registerLazySingleton<DeviceTokenStorage>(
-      () => DeviceTokenStorage(secureStorage: instance<FlutterSecureStorage>(instanceName: 'secureStorage')),
+      () => DeviceTokenStorage(
+        secureStorage: instance<FlutterSecureStorage>(
+          instanceName: 'secureStorage',
+        ),
+      ),
     );
   }
 
@@ -92,7 +120,9 @@ abstract class ServiceLocator {
     );
   }
 
-  static void injectNavigatorKeySingleton(GlobalKey<NavigatorState> navigatorKey) {
+  static void injectNavigatorKeySingleton(
+    GlobalKey<NavigatorState> navigatorKey,
+  ) {
     instance.registerLazySingleton<GlobalKey<NavigatorState>>(
       () => navigatorKey,
       instanceName: 'navigatorKey',
@@ -101,12 +131,17 @@ abstract class ServiceLocator {
 }
 
 SharedPreferences get sharedPreferences =>
-    ServiceLocator.instance<SharedPreferences>(instanceName: 'sharedPreferences');
+    ServiceLocator.instance<SharedPreferences>(
+      instanceName: 'sharedPreferences',
+    );
 
 FlutterSecureStorage get secureStorage =>
-    ServiceLocator.instance<FlutterSecureStorage>(instanceName: 'secureStorage');
+    ServiceLocator.instance<FlutterSecureStorage>(
+      instanceName: 'secureStorage',
+    );
 
-UserTypeStorage get userTypeStorage => ServiceLocator.instance<UserTypeStorage>();
+UserTypeStorage get userTypeStorage =>
+    ServiceLocator.instance<UserTypeStorage>();
 
 AccessTokenStorage get accessTokenStorage =>
     ServiceLocator.instance<AccessTokenStorage>();
@@ -116,9 +151,13 @@ DeviceTokenStorage get deviceTokenStorage =>
 
 DioConsumer get dioConsumer => ServiceLocator.instance<DioConsumer>();
 
+VisitorRedirect get visitorRedirect =>
+    ServiceLocator.instance<VisitorRedirect>();
+
 AppFlavor get currentFlavor => ServiceLocator.instance<AppFlavor>();
 
 DeviceType get deviceType =>
     ServiceLocator.instance<DeviceType>(instanceName: 'deviceType');
 
-String? get deviceId => ServiceLocator.instance<String>(instanceName: 'deviceId');
+String? get deviceId =>
+    ServiceLocator.instance<String>(instanceName: 'deviceId');

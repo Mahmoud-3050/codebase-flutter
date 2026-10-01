@@ -6,6 +6,7 @@ import '../../../../config/routes/app_routes.dart';
 import '../../../../core/di/feature_scope.dart';
 import '../../../../injection_container.dart';
 import '../../../auth/auth_injection.dart';
+import '../../../auth/presentation/navigation/auth_data_layer.dart';
 import '../../../auth/presentation/controller/logout/logout_cubit.dart';
 import '../pages/home_screen.dart';
 
@@ -21,19 +22,18 @@ class HomeRoute extends GoRouteData with $HomeRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return FeatureScope(
-      scopeName: _homeScopeName,
-      registrations: const <FeatureRegistration>[
-        registerAuthDataLayer,
-        registerLogout,
-      ],
-      child: MultiBlocProvider(
-        providers: <BlocProvider<dynamic>>[
-          BlocProvider<LogoutCubit>(
-            create: (_) => ServiceLocator.instance<LogoutCubit>(),
-          ),
-        ],
-        child: HomeScreen(sessionExpired: sessionExpired),
+    return AuthDataLayer(
+      child: FeatureScope(
+        scopeName: _homeScopeName,
+        registrations: const <FeatureRegistration>[registerLogout],
+        child: MultiBlocProvider(
+          providers: <BlocProvider<dynamic>>[
+            BlocProvider<LogoutCubit>(
+              create: (_) => ServiceLocator.instance<LogoutCubit>(),
+            ),
+          ],
+          child: HomeScreen(sessionExpired: sessionExpired),
+        ),
       ),
     );
   }

@@ -135,6 +135,10 @@ class AuthRepositoryImpl with RepositoryGuard implements AuthRepository {
             statusCode: error is ServerException ? error.statusCode : null,
           ),
         );
+      } on Object {
+        return Left<Failure, SocialSignInResponse>(
+          ServerFailure(message: Strings.socialFailed),
+        );
       }
     }
     return guard(() async {
@@ -212,7 +216,19 @@ class AuthRepositoryImpl with RepositoryGuard implements AuthRepository {
       await local.clearSession();
       return Right<Failure, LogoutResponse>(remoteResult);
     } on AppException catch (error) {
-      return Left<Failure, LogoutResponse>(error.toFailure());
+      if (await _sessionStillLoggedIn()) {
+        return Left<Failure, LogoutResponse>(error.toFailure());
+      }
+      return Right<Failure, LogoutResponse>(remoteResult);
+    }
+  }
+
+  Future<bool> _sessionStillLoggedIn() async {
+    try {
+      final UserType visitor = await local.readVisitorState();
+      return visitor == UserType.loggedIn;
+    } on AppException {
+      return false;
     }
   }
 

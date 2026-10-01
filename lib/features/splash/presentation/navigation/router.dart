@@ -6,6 +6,7 @@ import '../../../../config/routes/app_routes.dart';
 import '../../../../core/di/feature_scope.dart';
 import '../../../../injection_container.dart';
 import '../../../auth/auth_injection.dart';
+import '../../../auth/presentation/navigation/auth_data_layer.dart';
 import '../../../auth/presentation/controller/resolve_visitor_state/resolve_visitor_state_cubit.dart';
 import '../pages/splash_screen.dart';
 
@@ -21,19 +22,19 @@ class SplashRoute extends GoRouteData with $SplashRoute {
 
   @override
   Widget build(BuildContext context, GoRouterState state) {
-    return FeatureScope(
-      scopeName: _splashScopeName,
-      registrations: const <FeatureRegistration>[
-        registerAuthDataLayer,
-        registerVisitorState,
-      ],
-      child: MultiBlocProvider(
-        providers: <BlocProvider<dynamic>>[
-          BlocProvider<ResolveVisitorStateCubit>(
-            create: (_) => ServiceLocator.instance<ResolveVisitorStateCubit>(),
-          ),
-        ],
-        child: SplashScreen(sessionExpired: sessionExpired),
+    return AuthDataLayer(
+      child: FeatureScope(
+        scopeName: _splashScopeName,
+        registrations: const <FeatureRegistration>[registerVisitorState],
+        child: MultiBlocProvider(
+          providers: <BlocProvider<dynamic>>[
+            BlocProvider<ResolveVisitorStateCubit>(
+              create: (_) =>
+                  ServiceLocator.instance<ResolveVisitorStateCubit>(),
+            ),
+          ],
+          child: SplashScreen(sessionExpired: sessionExpired),
+        ),
       ),
     );
   }
