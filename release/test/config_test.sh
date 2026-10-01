@@ -246,6 +246,35 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
   fi
 fi
 
+GATE="${RELEASE_ROOT}/scripts/lib/auth_test_gate.sh"
+lcov="${workdir}/lcov.info"
+cat >"${lcov}" <<'EOF'
+SF:lib/features/auth/a.dart
+LH:9
+LF:10
+end_of_record
+SF:lib/features/other/b.dart
+LH:0
+LF:10
+end_of_record
+EOF
+if [[ "$(bash -c "source '${GATE}'; auth_line_coverage_percent '${lcov}'")" == "90.00" ]]; then
+  pass "auth coverage ignores files outside the feature"
+else
+  fail "auth coverage percent"
+fi
+cat >"${lcov}" <<'EOF'
+SF:lib/features/auth/a.dart
+LH:8
+LF:10
+end_of_record
+EOF
+if bash -c "source '${GATE}'; enforce_auth_coverage '${lcov}' 90" >/dev/null 2>&1; then
+  fail "coverage below 90 should fail"
+else
+  pass "coverage below 90 fails"
+fi
+
 echo
 echo "${passes} passed, ${failures} failed"
 if [[ "${failures}" -ne 0 ]]; then

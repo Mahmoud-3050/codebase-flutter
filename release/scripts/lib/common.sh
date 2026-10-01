@@ -364,6 +364,10 @@ skip_ios_build_if_not_macos() {
 
 run_preflight() {
   command -v flutter >/dev/null 2>&1 || die "flutter is not on PATH"
+  # shellcheck source=auth_test_gate.sh
+  source "${RELEASE_DIR}/scripts/lib/auth_test_gate.sh"
+  echo "Running auth coverage and risk-test gate..."
+  run_auth_test_gate
   (
     cd "${ROOT_DIR}"
     if is_true "${RUN_ANALYZE:-true}"; then

@@ -35,7 +35,7 @@ bash release/scripts/deploy.sh --skip-deploy      # build AAB/IPA, skip store up
 ## How it works
 
 1. Load and validate `release/deploy.config`.
-2. `flutter analyze` and `flutter test` (toggle with `RUN_ANALYZE` / `RUN_TESTS`).
+2. Auth test gate (always): `flutter test --coverage` for auth, then fail below 90% line coverage of `lib/features/auth/` or if a name in `release/auth_risk_tests.txt` is missing. `flutter analyze` and the full `flutter test` still follow (`RUN_ANALYZE` / `RUN_TESTS`).
 3. Query Google Play and App Store Connect for the latest build numbers.
 4. Write `version: x.y.z+build` back into `pubspec.yaml`. If the App Store
    marketing version is locked (`READY_FOR_SALE`, `WAITING_FOR_REVIEW`,

@@ -1,0 +1,11 @@
+# Auth risk tests. The release gate fails if any line is missing from test/**/*_test.dart.
+FR-043 a failed session restore finishes sign-out when the token can be removed
+FR-043 logout signs out when the stored session is no longer logged in
+FR-038 reading a guest drops a leftover access token
+omits Authorization when a guest still has a stored token
+a new holder during a drop gets its own scope
+login loading does not rebuild the email field
+register loading does not rebuild the email field
+otp loading does not rebuild the code field
+otp countdown does not rebuild the code field
+complete registration loading does not rebuild the email field
