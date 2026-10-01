@@ -5,15 +5,15 @@ import 'package:screen_util/screen_util.dart';
 import '../../../../config/language/strings.dart';
 import '../../../../core/presentation/api_call_state.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
-import '../../../../shared/widgets/app_otp_field.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/field_errors_scope.dart';
-import '../../../home/presentation/navigation/router.dart';
+import '../../../../config/routes/auth_navigation.dart';
 import '../controller/otp_cooldown/otp_cooldown_cubit.dart';
 import '../controller/request_password_reset/request_password_reset_cubit.dart';
 import '../controller/reset_password/reset_password_cubit.dart';
 import '../validators/auth_validators.dart';
+import '../widgets/auth_otp_form.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({
@@ -30,8 +30,8 @@ class ResetPasswordScreen extends StatefulWidget {
 }
 
 class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
-  final TextEditingController _code = TextEditingController();
   final TextEditingController _password = TextEditingController();
+  final TextEditingController _confirmation = TextEditingController();
 
   @override
   void initState() {
@@ -46,8 +46,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   void dispose() {
-    _code.dispose();
     _password.dispose();
+    _confirmation.dispose();
     super.dispose();
   }
 
@@ -74,64 +74,82 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
             },
           ),
         ],
-        child: BlocConsumer<ResetPasswordCubit, ResetPasswordState>(
+        child: BlocListener<ResetPasswordCubit, ResetPasswordState>(
           listener: (BuildContext context, ResetPasswordState state) {
             if (state case ApiCallError(:final message)) {
               _showError(message);
             }
             if (state.isSuccess) {
-              const HomeRoute().go(context);
+              openAuthenticatedDestination(context);
             }
           },
-          builder: (BuildContext context, ResetPasswordState state) {
-            return FieldErrorsScope(
-              fieldErrors: switch (state) {
-                ApiCallError(:final fieldErrors) => fieldErrors,
-                _ => const <String, List<String>>{},
-              },
-              child: ListView(
-                padding: EdgeInsets.all(24.w),
-                children: <Widget>[
-                  AppOtpField(controller: _code),
-                  SizedBox(height: 12.h),
-                  AppTextFormField.passwordTextField(
-                    controller: _password,
-                    labelText: Strings.newPassword,
-                    validatorType: AuthValidators.password,
-                  ),
-                  SizedBox(height: 24.h),
-                  AppElevatedButton(
-                    text: Strings.confirm,
-                    isLoading: state.isLoading,
-                    onPressed: () =>
-                        context.read<ResetPasswordCubit>().fResetPassword(
-                          email: widget.email,
-                          code: _code.text,
-                          password: _password.text,
-                        ),
-                  ),
-                  SizedBox(height: 12.h),
-                  BlocBuilder<OtpCooldownCubit, OtpCooldownState>(
-                    builder: (BuildContext context, OtpCooldownState cooldown) {
-                      final bool idle = cooldown is OtpCooldownIdle;
-                      return TextButton(
-                        onPressed: idle
-                            ? () => context
-                                  .read<RequestPasswordResetCubit>()
-                                  .fRequestPasswordReset(email: widget.email)
-                            : null,
-                        child: Text(
-                          idle
-                              ? Strings.resend
-                              : '${Strings.resend} (${(cooldown as OtpCooldownCounting).secondsRemaining})',
+          child:
+              BlocSelector<
+                ResetPasswordCubit,
+                ResetPasswordState,
+                Map<String, List<String>>
+              >(
+                selector: (ResetPasswordState state) => switch (state) {
+                  ApiCallError(:final fieldErrors) => fieldErrors,
+                  _ => const <String, List<String>>{},
+                },
+                builder:
+                    (
+                      BuildContext context,
+                      Map<String, List<String>> fieldErrors,
+                    ) {
+                      return FieldErrorsScope(
+                        fieldErrors: fieldErrors,
+                        child: AuthOtpForm(
+                          extraFields: <Widget>[
+                            AppTextFormField.passwordTextField(
+                              controller: _password,
+                              labelText: Strings.newPassword,
+                              validatorType: AuthValidators.password,
+                            ),
+                            SizedBox(height: 12.h),
+                            AppTextFormField.passwordTextField(
+                              controller: _confirmation,
+                              labelText: Strings.confirmPassword,
+                              confirmPasswordController: _password,
+                              fieldName: 'password_confirmation',
+                            ),
+                          ],
+                          submitButton: (VoidCallback onPressed) {
+                            return BlocSelector<
+                              ResetPasswordCubit,
+                              ResetPasswordState,
+                              bool
+                            >(
+                              selector: (ResetPasswordState state) =>
+                                  state.isLoading,
+                              builder: (BuildContext context, bool isLoading) {
+                                return AppElevatedButton(
+                                  text: Strings.confirm,
+                                  isLoading: isLoading,
+                                  enabled: !isLoading,
+                                  onPressed: onPressed,
+                                );
+                              },
+                            );
+                          },
+                          onSubmit: (String code) {
+                            context.read<ResetPasswordCubit>().fResetPassword(
+                              email: widget.email,
+                              code: code,
+                              password: _password.text,
+                              passwordConfirmation: _confirmation.text,
+                            );
+                          },
+                          onResend: () {
+                            context
+                                .read<RequestPasswordResetCubit>()
+                                .fRequestPasswordReset(email: widget.email);
+                          },
                         ),
                       );
                     },
-                  ),
-                ],
               ),
-            );
-          },
         ),
       ),
     );

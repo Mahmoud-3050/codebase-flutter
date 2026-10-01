@@ -16,6 +16,7 @@ import 'package:codebase/features/auth/presentation/controller/otp_cooldown/otp_
 import 'package:codebase/features/auth/presentation/controller/request_email_otp/request_email_otp_cubit.dart';
 import 'package:codebase/features/auth/presentation/controller/verify_email/verify_email_cubit.dart';
 import 'package:codebase/features/auth/presentation/pages/verify_email_screen.dart';
+import 'package:codebase/features/auth/presentation/widgets/build_probe.dart';
 
 import '../../fixtures.dart';
 import '../../mocks.mocks.dart';
@@ -79,6 +80,29 @@ void main() {
     expect(find.byType(VerifyEmailScreen), findsOneWidget);
   });
 
+  testWidgets('verify email at 2x text scale does not overflow', (
+    WidgetTester tester,
+  ) async {
+    await pumpAuthWidget(
+      tester,
+      textScaler: TextScaler.linear(2),
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<VerifyEmailCubit>(
+          create: (_) => VerifyEmailCubit(MockVerifyEmailUseCase()),
+        ),
+        BlocProvider<RequestEmailOtpCubit>(
+          create: (_) => RequestEmailOtpCubit(MockRequestEmailOtpUseCase()),
+        ),
+        BlocProvider<OtpCooldownCubit>(
+          create: (_) =>
+              OtpCooldownCubit(tick: (int ticks) => const Stream<int>.empty()),
+        ),
+      ],
+      child: const VerifyEmailScreen(email: 'ada@example.com'),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('FR-011 FR-012 verify and resend dispatch', (
     WidgetTester tester,
   ) async {
@@ -106,7 +130,12 @@ void main() {
       ],
       child: const VerifyEmailScreen(email: 'ada@example.com'),
     );
-    await tester.tap(find.text(Strings.verifyCode).last);
+    await tester.enterText(find.byType(TextField).first, '1');
+    await tester.tap(find.widgetWithText(ElevatedButton, Strings.verifyCode));
+    await tester.pump();
+    verifyNever(verifyUseCase.call(any));
+    await tester.enterText(find.byType(TextField).first, kValidOtpCode);
+    await tester.tap(find.widgetWithText(ElevatedButton, Strings.verifyCode));
     await tester.pump();
     await tester.tap(find.text(Strings.resend));
     await tester.pump();
@@ -142,5 +171,77 @@ void main() {
     expect(find.text('routed:${AppRoutes.home}'), findsOneWidget);
     await cubit.close();
     await requestCubit.close();
+  });
+
+  testWidgets('otp loading does not rebuild the code field', (
+    WidgetTester tester,
+  ) async {
+    final VerifyEmailCubit cubit = VerifyEmailCubit(MockVerifyEmailUseCase());
+    await pumpAuthWidget(
+      tester,
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<VerifyEmailCubit>.value(value: cubit),
+        BlocProvider<RequestEmailOtpCubit>(
+          create: (_) => RequestEmailOtpCubit(MockRequestEmailOtpUseCase()),
+        ),
+        BlocProvider<OtpCooldownCubit>(
+          create: (_) =>
+              OtpCooldownCubit(tick: (int ticks) => const Stream<int>.empty()),
+        ),
+      ],
+      child: const VerifyEmailScreen(email: 'ada@example.com'),
+    );
+    final int codeBuilds = tester
+        .state<BuildProbeState>(find.byKey(BuildProbe.otpCode))
+        .builds;
+    final int submitBuilds = tester
+        .state<BuildProbeState>(find.byKey(BuildProbe.otpSubmit))
+        .builds;
+    cubit.emit(const ApiCallLoading<AuthSession>());
+    await tester.pump();
+    await tester.pump();
+    expect(
+      tester.state<BuildProbeState>(find.byKey(BuildProbe.otpCode)).builds,
+      codeBuilds,
+    );
+    expect(
+      tester.state<BuildProbeState>(find.byKey(BuildProbe.otpSubmit)).builds,
+      submitBuilds + 1,
+    );
+    cubit.emit(const ApiCallHolding<AuthSession>());
+    await tester.pump();
+    await cubit.close();
+  });
+
+  testWidgets('otp countdown does not rebuild the code field', (
+    WidgetTester tester,
+  ) async {
+    final OtpCooldownCubit cooldown = OtpCooldownCubit(
+      tick: (int ticks) => const Stream<int>.empty(),
+    );
+    await pumpAuthWidget(
+      tester,
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<VerifyEmailCubit>(
+          create: (_) => VerifyEmailCubit(MockVerifyEmailUseCase()),
+        ),
+        BlocProvider<RequestEmailOtpCubit>(
+          create: (_) => RequestEmailOtpCubit(MockRequestEmailOtpUseCase()),
+        ),
+        BlocProvider<OtpCooldownCubit>.value(value: cooldown),
+      ],
+      child: const VerifyEmailScreen(email: 'ada@example.com'),
+    );
+    final int codeBuilds = tester
+        .state<BuildProbeState>(find.byKey(BuildProbe.otpCode))
+        .builds;
+    cooldown.emit(const OtpCooldownCounting(secondsRemaining: 30));
+    await tester.pump();
+    await tester.pump();
+    expect(
+      tester.state<BuildProbeState>(find.byKey(BuildProbe.otpCode)).builds,
+      codeBuilds,
+    );
+    await cooldown.close();
   });
 }

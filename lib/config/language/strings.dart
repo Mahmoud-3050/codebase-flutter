@@ -643,6 +643,12 @@ abstract class Strings {
 
   static String get expiredCode => 'expired_code'.tr;
 
+  static String get codeAlreadyUsed => 'code_already_used'.tr;
+
+  static String get showPassword => 'show_password'.tr;
+
+  static String get hidePassword => 'hide_password'.tr;
+
   static String get emailTaken => 'email_taken'.tr;
 
   static String get socialFailed => 'social_failed'.tr;

@@ -25,6 +25,18 @@
     "en": "That code has expired. Request a new one.",
     "ar": "انتهت صلاحية الرمز. اطلب رمزاً جديداً."
   },
+  "show_password": {
+    "en": "Show password",
+    "ar": "إظهار كلمة المرور"
+  },
+  "hide_password": {
+    "en": "Hide password",
+    "ar": "إخفاء كلمة المرور"
+  },
+  "code_already_used": {
+    "en": "That code was already used. Request a new one.",
+    "ar": "تم استخدام هذا الرمز من قبل. اطلب رمزاً جديداً."
+  },
   "email_taken": {
     "en": "This email already has an account. Sign in instead.",
     "ar": "هذا البريد الإلكتروني مرتبط بحساب. سجّل الدخول بدلاً من ذلك."

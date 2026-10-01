@@ -13,9 +13,13 @@ import 'package:codebase/features/auth/domain/entities/auth_session.dart';
 import 'package:codebase/features/auth/domain/entities/complete_registration_response.dart';
 import 'package:codebase/features/auth/domain/entities/otp_challenge.dart';
 import 'package:codebase/features/auth/domain/entities/request_otp_response.dart';
+import 'package:codebase/features/auth/domain/usecases/complete_registration_usecase.dart';
+import 'package:codebase/features/auth/domain/usecases/request_phone_otp_usecase.dart';
 import 'package:codebase/features/auth/presentation/controller/complete_registration/complete_registration_cubit.dart';
+import 'package:codebase/features/auth/presentation/controller/verified_phone/verified_phone_cubit.dart';
 import 'package:codebase/features/auth/presentation/controller/request_phone_otp/request_phone_otp_cubit.dart';
 import 'package:codebase/features/auth/presentation/pages/complete_registration_screen.dart';
+import 'package:codebase/features/auth/presentation/widgets/build_probe.dart';
 import 'package:field_validator/field_validator.dart';
 
 import '../../fixtures.dart';
@@ -38,14 +42,17 @@ void main() {
     WidgetTester tester, {
     required Widget child,
     MockAvatarPicker? picker,
+    TextScaler? textScaler,
   }) {
     return pumpAuthWidget(
       tester,
+      textScaler: textScaler,
       providers: <BlocProvider<dynamic>>[
         BlocProvider<CompleteRegistrationCubit>(
           create: (_) =>
               CompleteRegistrationCubit(MockCompleteRegistrationUseCase()),
         ),
+        BlocProvider<VerifiedPhoneCubit>(create: (_) => VerifiedPhoneCubit()),
         BlocProvider<RequestPhoneOtpCubit>(
           create: (_) => RequestPhoneOtpCubit(MockRequestPhoneOtpUseCase()),
         ),
@@ -104,6 +111,7 @@ void main() {
         BlocProvider<CompleteRegistrationCubit>(
           create: (_) => CompleteRegistrationCubit(complete),
         ),
+        BlocProvider<VerifiedPhoneCubit>(create: (_) => VerifiedPhoneCubit()),
         BlocProvider<RequestPhoneOtpCubit>(
           create: (_) => RequestPhoneOtpCubit(MockRequestPhoneOtpUseCase()),
         ),
@@ -181,6 +189,7 @@ void main() {
           create: (_) =>
               CompleteRegistrationCubit(MockCompleteRegistrationUseCase()),
         ),
+        BlocProvider<VerifiedPhoneCubit>(create: (_) => VerifiedPhoneCubit()),
         BlocProvider<RequestPhoneOtpCubit>(
           create: (_) => RequestPhoneOtpCubit(request),
         ),
@@ -208,6 +217,7 @@ void main() {
       tester,
       providers: <BlocProvider<dynamic>>[
         BlocProvider<CompleteRegistrationCubit>.value(value: cubit),
+        BlocProvider<VerifiedPhoneCubit>(create: (_) => VerifiedPhoneCubit()),
         BlocProvider<RequestPhoneOtpCubit>(
           create: (_) => RequestPhoneOtpCubit(MockRequestPhoneOtpUseCase()),
         ),
@@ -230,6 +240,7 @@ void main() {
       tester,
       providers: <BlocProvider<dynamic>>[
         BlocProvider<CompleteRegistrationCubit>.value(value: cubit),
+        BlocProvider<VerifiedPhoneCubit>(create: (_) => VerifiedPhoneCubit()),
         BlocProvider<RequestPhoneOtpCubit>(
           create: (_) => RequestPhoneOtpCubit(MockRequestPhoneOtpUseCase()),
         ),
@@ -252,6 +263,7 @@ void main() {
       tester,
       providers: <BlocProvider<dynamic>>[
         BlocProvider<CompleteRegistrationCubit>.value(value: cubit),
+        BlocProvider<VerifiedPhoneCubit>(create: (_) => VerifiedPhoneCubit()),
         BlocProvider<RequestPhoneOtpCubit>(
           create: (_) => RequestPhoneOtpCubit(MockRequestPhoneOtpUseCase()),
         ),
@@ -282,6 +294,7 @@ void main() {
       tester,
       providers: <BlocProvider<dynamic>>[
         BlocProvider<CompleteRegistrationCubit>.value(value: cubit),
+        BlocProvider<VerifiedPhoneCubit>(create: (_) => VerifiedPhoneCubit()),
         BlocProvider<RequestPhoneOtpCubit>(
           create: (_) => RequestPhoneOtpCubit(MockRequestPhoneOtpUseCase()),
         ),
@@ -307,6 +320,7 @@ void main() {
           create: (_) =>
               CompleteRegistrationCubit(MockCompleteRegistrationUseCase()),
         ),
+        BlocProvider<VerifiedPhoneCubit>(create: (_) => VerifiedPhoneCubit()),
         BlocProvider<RequestPhoneOtpCubit>.value(value: requestCubit),
       ],
       child: const CompleteRegistrationScreen(draft: kGoogleDraft),
@@ -315,4 +329,126 @@ void main() {
     await tester.pump();
     await requestCubit.close();
   });
+
+  testWidgets(
+    'FR-033 a changed phone after OTP requests a new code before submit',
+    (WidgetTester tester) async {
+      final MockRequestPhoneOtpUseCase request = MockRequestPhoneOtpUseCase();
+      final MockCompleteRegistrationUseCase complete =
+          MockCompleteRegistrationUseCase();
+      when(request.call(any)).thenAnswer(
+        (_) async => const Right<Failure, RequestOtpResponse>(
+          RequestOtpResponse(
+            status: 'success',
+            message: 'ok',
+            data: kPhoneChallenge,
+          ),
+        ),
+      );
+      when(complete.call(any)).thenAnswer(
+        (_) async =>
+            const Left<Failure, CompleteRegistrationResponse>(ServerFailure()),
+      );
+      await pumpAuthWidget(
+        tester,
+        confirmPhoneOtp: true,
+        providers: <BlocProvider<dynamic>>[
+          BlocProvider<CompleteRegistrationCubit>(
+            create: (_) => CompleteRegistrationCubit(complete),
+          ),
+          BlocProvider<VerifiedPhoneCubit>(create: (_) => VerifiedPhoneCubit()),
+          BlocProvider<RequestPhoneOtpCubit>(
+            create: (_) => RequestPhoneOtpCubit(request),
+          ),
+        ],
+        child: const CompleteRegistrationScreen(draft: kGoogleDraft),
+      );
+      await tester.enterText(find.byType(TextField).at(2), '500000000');
+      await tester.enterText(find.byType(TextField).last, 'secret12');
+      final Finder submit = find.widgetWithText(
+        ElevatedButton,
+        Strings.completeRegistration,
+      );
+      await tester.ensureVisible(submit);
+      await tester.tap(submit);
+      await tester.pumpAndSettle();
+
+      await tester.enterText(find.byType(TextField).at(2), '511111111');
+      await tester.ensureVisible(submit);
+      await tester.tap(submit);
+      await tester.pumpAndSettle();
+
+      final List<dynamic> otpCalls = verify(request.call(captureAny)).captured;
+      final List<dynamic> completeCalls = verify(
+        complete.call(captureAny),
+      ).captured;
+      expect(otpCalls, hasLength(2));
+      expect(completeCalls, hasLength(2));
+      expect((otpCalls[0] as RequestPhoneOtpParams).phone, '500000000');
+      expect((otpCalls[1] as RequestPhoneOtpParams).phone, '511111111');
+      expect(
+        (completeCalls[0] as CompleteRegistrationParams).phone,
+        '500000000',
+      );
+      expect(
+        (completeCalls[1] as CompleteRegistrationParams).phone,
+        '511111111',
+      );
+    },
+  );
+
+  testWidgets('complete registration at 2x text scale does not overflow', (
+    WidgetTester tester,
+  ) async {
+    await pumpComplete(
+      tester,
+      textScaler: TextScaler.linear(2),
+      child: const CompleteRegistrationScreen(draft: kPhoneDraft),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets(
+    'complete registration loading does not rebuild the email field',
+    (WidgetTester tester) async {
+      final CompleteRegistrationCubit cubit = CompleteRegistrationCubit(
+        MockCompleteRegistrationUseCase(),
+      );
+      await pumpAuthWidget(
+        tester,
+        providers: <BlocProvider<dynamic>>[
+          BlocProvider<CompleteRegistrationCubit>.value(value: cubit),
+          BlocProvider<VerifiedPhoneCubit>(create: (_) => VerifiedPhoneCubit()),
+          BlocProvider<RequestPhoneOtpCubit>(
+            create: (_) => RequestPhoneOtpCubit(MockRequestPhoneOtpUseCase()),
+          ),
+        ],
+        child: const CompleteRegistrationScreen(draft: kPhoneDraft),
+      );
+      final int emailBuilds = tester
+          .state<BuildProbeState>(find.byKey(BuildProbe.completeEmail))
+          .builds;
+      final int submitBuilds = tester
+          .state<BuildProbeState>(find.byKey(BuildProbe.completeSubmit))
+          .builds;
+      cubit.emit(const ApiCallLoading<AuthSession>());
+      await tester.pump();
+      await tester.pump();
+      expect(
+        tester
+            .state<BuildProbeState>(find.byKey(BuildProbe.completeEmail))
+            .builds,
+        emailBuilds,
+      );
+      expect(
+        tester
+            .state<BuildProbeState>(find.byKey(BuildProbe.completeSubmit))
+            .builds,
+        submitBuilds + 1,
+      );
+      cubit.emit(const ApiCallHolding<AuthSession>());
+      await tester.pump();
+      await cubit.close();
+    },
+  );
 }

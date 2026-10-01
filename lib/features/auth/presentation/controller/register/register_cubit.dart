@@ -26,6 +26,9 @@ class RegisterCubit extends Cubit<RegisterState>
     required String password,
     String? avatarPath,
   }) async {
+    if (state.isLoading) {
+      return;
+    }
     emit(const ApiCallLoading<OtpChallenge>());
     final Either<Failure, RegisterResponse> result = await registerUseCase(
       RegisterParams(

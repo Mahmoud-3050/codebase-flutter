@@ -13,6 +13,7 @@ import 'package:codebase/features/auth/domain/entities/login_outcome.dart';
 import 'package:codebase/features/auth/domain/entities/login_response.dart';
 import 'package:codebase/features/auth/presentation/controller/login/login_cubit.dart';
 import 'package:codebase/features/auth/presentation/pages/login_screen.dart';
+import 'package:codebase/features/auth/presentation/widgets/build_probe.dart';
 
 import '../../fixtures.dart';
 import '../../mocks.mocks.dart';
@@ -116,4 +117,69 @@ void main() {
     expect(find.text('routed:${AppRoutes.home}'), findsOneWidget);
     await cubit.close();
   });
+
+  testWidgets('login at 2x text scale does not overflow', (
+    WidgetTester tester,
+  ) async {
+    final LoginCubit cubit = LoginCubit(MockLoginUseCase());
+    await pumpAuthWidget(
+      tester,
+      textScaler: TextScaler.linear(2),
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<LoginCubit>.value(value: cubit),
+      ],
+      child: const LoginScreen(),
+    );
+    expect(tester.takeException(), isNull);
+    await cubit.close();
+  });
+
+  testWidgets('login loading does not rebuild the email field', (
+    WidgetTester tester,
+  ) async {
+    final LoginCubit cubit = LoginCubit(MockLoginUseCase());
+    await pumpAuthWidget(
+      tester,
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<LoginCubit>.value(value: cubit),
+      ],
+      child: const LoginScreen(),
+    );
+    final int emailBuilds = _probeBuilds(tester, BuildProbe.loginEmail);
+    final int submitBuilds = _probeBuilds(tester, BuildProbe.loginSubmit);
+    cubit.emit(const ApiCallLoading<LoginOutcome>());
+    await tester.pump();
+    await tester.pump();
+    expect(_probeBuilds(tester, BuildProbe.loginEmail), emailBuilds);
+    expect(_probeBuilds(tester, BuildProbe.loginSubmit), submitBuilds + 1);
+    cubit.emit(const ApiCallHolding<LoginOutcome>());
+    await tester.pump();
+    await cubit.close();
+  });
+
+  testWidgets('login offers retry when the device is offline', (
+    WidgetTester tester,
+  ) async {
+    final LoginCubit cubit = LoginCubit(MockLoginUseCase());
+    await pumpAuthWidget(
+      tester,
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<LoginCubit>.value(value: cubit),
+      ],
+      child: const LoginScreen(),
+    );
+    cubit.emit(
+      ApiCallError<LoginOutcome>(message: Strings.noInternetConnection),
+    );
+    await tester.pump();
+    await tester.pump();
+    expect(find.text(Strings.refresh), findsOneWidget);
+    cubit.emit(const ApiCallHolding<LoginOutcome>());
+    await tester.pump();
+    await cubit.close();
+  });
+}
+
+int _probeBuilds(WidgetTester tester, Key key) {
+  return tester.state<BuildProbeState>(find.byKey(key)).builds;
 }

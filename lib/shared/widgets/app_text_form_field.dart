@@ -25,6 +25,7 @@ class AppTextFormField extends StatefulWidget {
   final Widget Function(bool hasFocus)? suffix;
   final Widget Function(bool hasFocus)? prefix;
   final IconData? suffixIcon;
+  final String? suffixSemanticLabel;
   final VoidCallback? onSuffixIconPressed, onPrefixIconPressed;
   final ValueChanged<String>? onFieldSubmitted;
   final TextInputAction? textInputAction;
@@ -66,6 +67,7 @@ class AppTextFormField extends StatefulWidget {
     this.suffix,
     this.prefix,
     this.suffixIcon,
+    this.suffixSemanticLabel,
     this.onSuffixIconPressed,
     this.onPrefixIconPressed,
     this.onFieldSubmitted,
@@ -206,7 +208,9 @@ class AppTextFormField extends StatefulWidget {
       onFieldSubmitted: onFieldSubmitted,
       onChanged: onChanged,
       suffix: suffix,
-      validatorType: isValidate ? (validatorType ?? FieldValidator.email()) : null,
+      validatorType: isValidate
+          ? (validatorType ?? FieldValidator.email())
+          : null,
       backgroundColor: backgroundColor,
       prefixIconColor: prefixIconColor,
       cursorColor: cursorColor,
@@ -376,6 +380,9 @@ class AppTextFormField extends StatefulWidget {
           suffixIcon: isSecureText
               ? Icons.visibility_outlined
               : Icons.visibility_off_outlined,
+          suffixSemanticLabel: isSecureText
+              ? Strings.showPassword
+              : Strings.hidePassword,
           onSuffixIconPressed: () {
             setState(() => isSecureText = !isSecureText);
           },
@@ -579,7 +586,12 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       textDirection: widget.textDirection,
       textAlign: widget.textAlign,
       buildCounter:
-          (BuildContext context, {int? currentLength, int? maxLength, bool? isFocused}) {
+          (
+            BuildContext context, {
+            int? currentLength,
+            int? maxLength,
+            bool? isFocused,
+          }) {
             if (maxLength == null) {
               return null;
             }
@@ -587,7 +599,8 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
               '$currentLength/$maxLength',
               style: TextStyles.of(
                 size: 10,
-                color: widget.maxLengthTextColor ?? context.colors.textSecondary,
+                color:
+                    widget.maxLengthTextColor ?? context.colors.textSecondary,
               ),
             );
           },
@@ -621,26 +634,37 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
       contentPadding: _padding,
       errorText: _visibleError,
       errorMaxLines: 2,
-      fillColor: widget.backgroundColor ?? colors.primary.withValues(alpha: 0.05),
+      fillColor:
+          widget.backgroundColor ?? colors.primary.withValues(alpha: 0.05),
       filled: true,
       focusColor: colors.primary,
-      border: _createBorder(widget.borderColor ?? colors.primary.withValues(alpha: 0.05)),
+      border: _createBorder(
+        widget.borderColor ?? colors.primary.withValues(alpha: 0.05),
+      ),
       enabledBorder: _createBorder(widget.borderColor ?? colors.hint),
       focusedBorder: _createBorder(widget.focusBorderColor ?? colors.primary),
       focusedErrorBorder: _createBorder(colors.primary),
       errorBorder: _createBorder(colors.error),
       errorStyle: TextStyles.of(size: 12, color: colors.error),
       hintStyle:
-          widget.hintTextStyle ?? TextStyles.of(size: 12, color: colors.textSecondary),
+          widget.hintTextStyle ??
+          TextStyles.of(size: 12, color: colors.textSecondary),
       labelStyle:
-          widget.labelTextStyle ?? TextStyles.of(size: 12, color: colors.textSecondary),
+          widget.labelTextStyle ??
+          TextStyles.of(size: 12, color: colors.textSecondary),
       prefixIcon: _prefixIcon(context),
-      prefixIconColor: _iconStateColor(context, fallback: widget.prefixIconColor),
+      prefixIconColor: _iconStateColor(
+        context,
+        fallback: widget.prefixIconColor,
+      ),
       prefixIconConstraints: widget.prefix == null
           ? null
           : BoxConstraints(minHeight: 48.h),
       suffixIcon: _suffixIcon(context),
-      suffixIconColor: _iconStateColor(context, fallback: widget.suffixIconColor),
+      suffixIconColor: _iconStateColor(
+        context,
+        fallback: widget.suffixIconColor,
+      ),
       suffixIconConstraints: BoxConstraints(maxHeight: 32.r, maxWidth: 48.r),
     );
   }
@@ -678,11 +702,17 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
 
   EdgeInsetsGeometry get _padding =>
       widget.contentPadding ??
-      .symmetric(horizontal: 16.w, vertical: 16.h * widget.paddingVerticalFactory);
+      .symmetric(
+        horizontal: 16.w,
+        vertical: 16.h * widget.paddingVerticalFactory,
+      );
 
   Widget? _prefixIcon(BuildContext context) {
     if (widget.prefixIcon != null) {
-      return _boxedIcon(icon: widget.prefixIcon, onTap: widget.onPrefixIconPressed);
+      return _boxedIcon(
+        icon: widget.prefixIcon,
+        onTap: widget.onPrefixIconPressed,
+      );
     }
     if (widget.prefix != null) {
       return _focusAwareSlot(builder: widget.prefix!);
@@ -694,7 +724,11 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
     if (widget.suffixIcon != null) {
       return Padding(
         padding: EdgeInsetsDirectional.only(end: 10.w),
-        child: _boxedIcon(icon: widget.suffixIcon, onTap: widget.onSuffixIconPressed),
+        child: _boxedIcon(
+          icon: widget.suffixIcon,
+          onTap: widget.onSuffixIconPressed,
+          semanticLabel: widget.suffixSemanticLabel,
+        ),
       );
     }
     if (widget.suffix != null) {
@@ -706,11 +740,19 @@ class _AppTextFormFieldState extends State<AppTextFormField> {
     return null;
   }
 
-  Widget _boxedIcon({required IconData? icon, VoidCallback? onTap}) {
-    final Widget child = Icon(icon, size: 20.r);
+  Widget _boxedIcon({
+    required IconData? icon,
+    VoidCallback? onTap,
+    String? semanticLabel,
+  }) {
+    final Widget child = Icon(icon, size: 20.r, semanticLabel: semanticLabel);
     final Widget interactive = onTap == null
         ? child
-        : InkWell(onTap: onTap, overlayColor: _transparentOverlay, child: child);
+        : InkWell(
+            onTap: onTap,
+            overlayColor: _transparentOverlay,
+            child: child,
+          );
     return Center(child: interactive);
   }
 

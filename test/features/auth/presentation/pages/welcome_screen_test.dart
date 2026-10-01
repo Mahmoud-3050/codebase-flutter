@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:either/either.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -136,6 +138,33 @@ void main() {
     await tester.pump();
     await tester.tap(find.text(Strings.continueAsGuest));
     await tester.pump();
+  });
+
+  testWidgets('loading Google button keeps its spoken label', (
+    WidgetTester tester,
+  ) async {
+    final MockSocialSignInUseCase social = MockSocialSignInUseCase();
+    final Completer<Either<Failure, SocialSignInResponse>> pending =
+        Completer<Either<Failure, SocialSignInResponse>>();
+    when(social.call(any)).thenAnswer((_) => pending.future);
+    await pumpAuthWidget(
+      tester,
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<GuestModeCubit>(
+          create: (_) => GuestModeCubit(MockContinueAsGuestUseCase()),
+        ),
+        BlocProvider<SocialSignInCubit>(
+          create: (_) => SocialSignInCubit(social),
+        ),
+        draftProvider(),
+      ],
+      child: const WelcomeScreen(),
+    );
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    await tester.tap(find.text(Strings.signInWithGoogle));
+    await tester.pump();
+    expect(find.bySemanticsLabel(Strings.signInWithGoogle), findsOneWidget);
+    semantics.dispose();
   });
 
   testWidgets('FR-029 Apple hidden on Android', (WidgetTester tester) async {

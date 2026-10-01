@@ -24,12 +24,14 @@ class ResetPasswordParams extends Params {
     required this.email,
     required this.code,
     required this.password,
+    required this.passwordConfirmation,
     this.cancellation,
   });
 
   final String email;
   final String code;
   final String password;
+  final String passwordConfirmation;
 
   @override
   final Object? cancellation;
@@ -40,10 +42,16 @@ class ResetPasswordParams extends Params {
       'email': email,
       'code': code,
       'password': password,
-      'password_confirmation': password,
+      'password_confirmation': passwordConfirmation,
     };
   }
 
   @override
-  List<Object?> get props => <Object?>[email, code, password, cancellation];
+  List<Object?> get props => <Object?>[
+    email,
+    code,
+    password,
+    passwordConfirmation,
+    cancellation,
+  ];
 }

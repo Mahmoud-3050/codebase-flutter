@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../config/language/strings.dart';
 import '../navigation/router.dart';
+import 'auth_tap_target.dart';
 
 Future<void> showGuestGateDialog(BuildContext context) {
   return showDialog<void>(
@@ -12,6 +13,7 @@ Future<void> showGuestGateDialog(BuildContext context) {
         content: Text(Strings.accountRequiredMessage),
         actions: <Widget>[
           TextButton(
+            style: authTextButtonStyle(),
             onPressed: () {
               Navigator.of(dialogContext).pop();
               const LoginRoute().go(context);
@@ -19,6 +21,7 @@ Future<void> showGuestGateDialog(BuildContext context) {
             child: Text(Strings.signIn),
           ),
           TextButton(
+            style: authTextButtonStyle(),
             onPressed: () {
               Navigator.of(dialogContext).pop();
               const RegisterRoute().go(context);

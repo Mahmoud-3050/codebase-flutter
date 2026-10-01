@@ -147,7 +147,12 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
             child: KeyedSubtree(
               key: ValueKey<bool>(widget.isLoading),
               child: widget.isLoading
-                  ? _loadingIndicator(colors)
+                  ? Semantics(
+                      label: widget.text,
+                      button: true,
+                      excludeSemantics: true,
+                      child: _loadingIndicator(colors),
+                    )
                   : _buttonContent(colors),
             ),
           ),

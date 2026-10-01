@@ -10,7 +10,6 @@ import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../controller/request_phone_otp/request_phone_otp_cubit.dart';
 import '../navigation/router.dart';
-import '../validators/auth_validators.dart';
 
 class PhoneSignInScreen extends StatefulWidget {
   const PhoneSignInScreen({super.key});
@@ -54,7 +53,7 @@ class _PhoneSignInScreenState extends State<PhoneSignInScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(Strings.signInWithPhone)),
-      body: BlocConsumer<RequestPhoneOtpCubit, RequestPhoneOtpState>(
+      body: BlocListener<RequestPhoneOtpCubit, RequestPhoneOtpState>(
         listener: (BuildContext context, RequestPhoneOtpState state) {
           if (state case ApiCallError(:final message)) {
             showAppSnackBar(
@@ -65,35 +64,40 @@ class _PhoneSignInScreenState extends State<PhoneSignInScreen> {
           }
           if (state case ApiCallSuccess(:final data)) {
             PhoneOtpRoute(
-              dialingCode: _submittedDialingCode,
-              phone: _submittedPhone,
-              resendAvailableInSeconds: data.resendAvailableInSeconds,
+              $extra: PhoneOtpArgs(
+                dialingCode: _submittedDialingCode,
+                phone: _submittedPhone,
+                resendAvailableInSeconds: data.resendAvailableInSeconds,
+              ),
             ).go(context);
           }
         },
-        builder: (BuildContext context, RequestPhoneOtpState state) {
-          return Padding(
-            padding: EdgeInsets.all(24.w),
-            child: Column(
-              children: <Widget>[
-                AppTextFormField.phoneWithCountryCode(
-                  controller: _phone,
-                  dialingCode: _dialingCode,
-                  onDialingCodeChanged: (String code) =>
-                      setState(() => _dialingCode = code),
-                  labelText: Strings.phoneNumber,
-                  validatorType: AuthValidators.fullName,
-                ),
-                SizedBox(height: 24.h),
-                AppElevatedButton(
-                  text: Strings.send,
-                  isLoading: state.isLoading,
-                  onPressed: _submit,
-                ),
-              ],
-            ),
-          );
-        },
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Column(
+            children: <Widget>[
+              AppTextFormField.phoneWithCountryCode(
+                controller: _phone,
+                dialingCode: _dialingCode,
+                onDialingCodeChanged: (String code) =>
+                    setState(() => _dialingCode = code),
+                labelText: Strings.phoneNumber,
+              ),
+              SizedBox(height: 24.h),
+              BlocSelector<RequestPhoneOtpCubit, RequestPhoneOtpState, bool>(
+                selector: (RequestPhoneOtpState state) => state.isLoading,
+                builder: (BuildContext context, bool isLoading) {
+                  return AppElevatedButton(
+                    text: Strings.send,
+                    isLoading: isLoading,
+                    enabled: !isLoading,
+                    onPressed: _submit,
+                  );
+                },
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

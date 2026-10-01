@@ -18,6 +18,9 @@ class LoginCubit extends Cubit<LoginState>
   final LoginUseCase loginUseCase;
 
   Future<void> fLogin({required String email, required String password}) async {
+    if (state.isLoading) {
+      return;
+    }
     emit(const ApiCallLoading<LoginOutcome>());
     final Either<Failure, LoginResponse> result = await loginUseCase(
       LoginParams(

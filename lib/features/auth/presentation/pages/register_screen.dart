@@ -13,6 +13,7 @@ import '../../domain/avatar_picker.dart';
 import '../controller/register/register_cubit.dart';
 import '../navigation/router.dart';
 import '../validators/auth_validators.dart';
+import '../widgets/build_probe.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -29,7 +30,6 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController _password = TextEditingController();
   String _dialingCode = '+966';
   String? _avatarPath;
-  bool _submitted = false;
 
   @override
   void dispose() {
@@ -62,15 +62,11 @@ class _RegisterScreenState extends State<RegisterScreen> {
   }
 
   void _submit() {
-    if (_submitted) {
-      return;
-    }
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
     final PhoneValidationResult parsed = PhoneValidationService()
         .validatePhoneNumber(phoneNumber: _phone.text, phoneCode: _dialingCode);
-    setState(() => _submitted = true);
     context.read<RegisterCubit>().fRegister(
       fullName: _name.text.trim(),
       email: _email.text.trim(),
@@ -85,10 +81,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(Strings.createAccount)),
-      body: BlocConsumer<RegisterCubit, RegisterState>(
+      body: BlocListener<RegisterCubit, RegisterState>(
         listener: (BuildContext context, RegisterState state) {
           if (state case ApiCallError(:final message, :final hasFieldErrors)) {
-            setState(() => _submitted = false);
             if (!hasFieldErrors) {
               showAppSnackBar(
                 context: context,
@@ -102,67 +97,93 @@ class _RegisterScreenState extends State<RegisterScreen> {
           }
           if (state case ApiCallSuccess(:final data)) {
             VerifyEmailRoute(
-              email: _email.text.trim(),
-              resendAvailableInSeconds: data.resendAvailableInSeconds,
+              $extra: VerifyEmailArgs(
+                email: _email.text.trim(),
+                resendAvailableInSeconds: data.resendAvailableInSeconds,
+              ),
             ).go(context);
           }
         },
-        builder: (BuildContext context, RegisterState state) {
-          return FieldErrorsScope(
-            fieldErrors: switch (state) {
-              ApiCallError(:final fieldErrors) => fieldErrors,
-              _ => const <String, List<String>>{},
-            },
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                padding: EdgeInsets.all(24.w),
-                children: <Widget>[
-                  AppElevatedButton(
-                    text: _avatarPath == null
-                        ? Strings.addPhoto
-                        : Strings.skipPhoto,
-                    onPressed: _pickAvatar,
-                  ),
-                  SizedBox(height: 16.h),
-                  AppTextFormField.nameTextField(
-                    controller: _name,
-                    labelText: Strings.name,
-                    validatorType: AuthValidators.fullName,
-                    fieldName: 'full_name',
-                  ),
-                  SizedBox(height: 12.h),
-                  AppTextFormField.emailTextField(
-                    controller: _email,
-                    labelText: Strings.email,
-                    validatorType: AuthValidators.email,
-                  ),
-                  SizedBox(height: 12.h),
-                  AppTextFormField.phoneWithCountryCode(
-                    controller: _phone,
-                    dialingCode: _dialingCode,
-                    onDialingCodeChanged: (String code) =>
-                        setState(() => _dialingCode = code),
-                    labelText: Strings.phoneNumber,
-                  ),
-                  SizedBox(height: 12.h),
-                  AppTextFormField.passwordTextField(
-                    controller: _password,
-                    labelText: Strings.password,
-                    validatorType: AuthValidators.password,
-                  ),
-                  SizedBox(height: 24.h),
-                  AppElevatedButton(
-                    text: Strings.createAccount,
-                    isLoading: state.isLoading,
-                    enabled: !state.isLoading,
-                    onPressed: _submit,
-                  ),
-                ],
-              ),
+        child:
+            BlocSelector<
+              RegisterCubit,
+              RegisterState,
+              Map<String, List<String>>
+            >(
+              selector: (RegisterState state) => switch (state) {
+                ApiCallError(:final fieldErrors) => fieldErrors,
+                _ => const <String, List<String>>{},
+              },
+              builder:
+                  (
+                    BuildContext context,
+                    Map<String, List<String>> fieldErrors,
+                  ) {
+                    return FieldErrorsScope(
+                      fieldErrors: fieldErrors,
+                      child: Form(
+                        key: _formKey,
+                        child: ListView(
+                          padding: EdgeInsets.all(24.w),
+                          children: <Widget>[
+                            AppElevatedButton(
+                              text: _avatarPath == null
+                                  ? Strings.addPhoto
+                                  : Strings.skipPhoto,
+                              onPressed: _pickAvatar,
+                            ),
+                            SizedBox(height: 16.h),
+                            AppTextFormField.nameTextField(
+                              controller: _name,
+                              labelText: Strings.name,
+                              validatorType: AuthValidators.fullName,
+                              fieldName: 'full_name',
+                            ),
+                            SizedBox(height: 12.h),
+                            BuildProbe(
+                              key: BuildProbe.registerEmail,
+                              child: AppTextFormField.emailTextField(
+                                controller: _email,
+                                labelText: Strings.email,
+                                validatorType: AuthValidators.email,
+                              ),
+                            ),
+                            SizedBox(height: 12.h),
+                            AppTextFormField.phoneWithCountryCode(
+                              controller: _phone,
+                              dialingCode: _dialingCode,
+                              onDialingCodeChanged: (String code) =>
+                                  setState(() => _dialingCode = code),
+                              labelText: Strings.phoneNumber,
+                            ),
+                            SizedBox(height: 12.h),
+                            AppTextFormField.passwordTextField(
+                              controller: _password,
+                              labelText: Strings.password,
+                              validatorType: AuthValidators.password,
+                            ),
+                            SizedBox(height: 24.h),
+                            BlocSelector<RegisterCubit, RegisterState, bool>(
+                              selector: (RegisterState state) =>
+                                  state.isLoading,
+                              builder: (BuildContext context, bool isLoading) {
+                                return BuildProbe(
+                                  key: BuildProbe.registerSubmit,
+                                  child: AppElevatedButton(
+                                    text: Strings.createAccount,
+                                    isLoading: isLoading,
+                                    enabled: !isLoading,
+                                    onPressed: _submit,
+                                  ),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
             ),
-          );
-        },
       ),
     );
   }

@@ -39,6 +39,7 @@ void main() {
       email: 'a@b.c',
       code: kValidOtpCode,
       password: 'secret12',
+      passwordConfirmation: 'secret12',
     ),
     expect: () => <ResetPasswordState>[
       const ApiCallLoading<AuthSession>(),
@@ -65,6 +66,7 @@ void main() {
       email: 'a@b.c',
       code: kValidOtpCode,
       password: 'secret12',
+      passwordConfirmation: 'secret12',
     ),
     expect: () => <ResetPasswordState>[
       const ApiCallLoading<AuthSession>(),

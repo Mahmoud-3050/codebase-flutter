@@ -6,7 +6,7 @@ import '../../../../config/language/strings.dart';
 import '../../../../core/presentation/api_call_state.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
-import '../../../home/presentation/navigation/router.dart';
+import '../../../../config/routes/auth_navigation.dart';
 import '../../domain/entities/auth_outcome.dart';
 import '../../domain/entities/registration_draft.dart';
 import '../../domain/enums/social_provider.dart';
@@ -71,7 +71,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                   if (state case ApiCallSuccess<AuthOutcome>(:final data)) {
                     switch (data) {
                       case AuthSessionEstablished():
-                        const HomeRoute().go(context);
+                        openAuthenticatedDestination(context);
                       case AuthRegistrationRequired(:final draft):
                         CompleteRegistrationRoute($extra: draft).go(context);
                     }
@@ -79,65 +79,136 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
                 },
               ),
             ],
-            child: Column(
+            child: const Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                const Spacer(),
-                AppElevatedButton(
-                  text: Strings.createAccount,
-                  onPressed: () => const RegisterRoute().go(context),
-                ),
-                SizedBox(height: 12.h),
-                AppElevatedButton(
-                  text: Strings.signIn,
-                  onPressed: () => const LoginRoute().go(context),
-                ),
-                SizedBox(height: 12.h),
-                AppElevatedButton(
-                  text: Strings.signInWithPhone,
-                  onPressed: () => const PhoneSignInRoute().go(context),
-                ),
-                SizedBox(height: 12.h),
-                AppElevatedButton(
-                  text: Strings.signInWithGoogle,
-                  onPressed: () => context
-                      .read<SocialSignInCubit>()
-                      .fSocialSignIn(SocialProvider.google),
-                ),
-                if (SocialProviderAvailability.isOffered(
-                  SocialProvider.apple,
-                  platform: Theme.of(context).platform,
-                )) ...<Widget>[
-                  SizedBox(height: 12.h),
-                  AppElevatedButton(
-                    text: Strings.signInWithApple,
-                    onPressed: () => context
-                        .read<SocialSignInCubit>()
-                        .fSocialSignIn(SocialProvider.apple),
-                  ),
-                ],
-                SizedBox(height: 12.h),
-                BlocConsumer<GuestModeCubit, GuestModeState>(
-                  listener: (BuildContext context, GuestModeState state) {
-                    if (state.isSuccess) {
-                      const HomeRoute().go(context);
-                    }
-                  },
-                  builder: (BuildContext context, GuestModeState state) {
-                    return AppElevatedButton(
-                      text: Strings.continueAsGuest,
-                      isLoading: state.isLoading,
-                      onPressed: () =>
-                          context.read<GuestModeCubit>().fContinueAsGuest(),
-                    );
-                  },
-                ),
-                const Spacer(),
+                Spacer(),
+                _WelcomeEntryActions(),
+                _SocialAndGuestActions(),
+                Spacer(),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+}
+
+class _WelcomeEntryActions extends StatelessWidget {
+  const _WelcomeEntryActions();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        AppElevatedButton(
+          text: Strings.createAccount,
+          onPressed: () => const RegisterRoute().go(context),
+        ),
+        SizedBox(height: 12.h),
+        AppElevatedButton(
+          text: Strings.signIn,
+          onPressed: () => const LoginRoute().go(context),
+        ),
+        SizedBox(height: 12.h),
+        AppElevatedButton(
+          text: Strings.signInWithPhone,
+          onPressed: () => const PhoneSignInRoute().go(context),
+        ),
+        SizedBox(height: 12.h),
+      ],
+    );
+  }
+}
+
+class _SocialAndGuestActions extends StatelessWidget {
+  const _SocialAndGuestActions();
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocListener<GuestModeCubit, GuestModeState>(
+      listener: (BuildContext context, GuestModeState state) {
+        if (state case ApiCallError(:final message)) {
+          showAppSnackBar(
+            context: context,
+            message: message,
+            type: ToastType.error,
+          );
+        }
+        if (state.isSuccess) {
+          openGuestDestination(context);
+        }
+      },
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          _BusyAuthButton(
+            text: Strings.signInWithGoogle,
+            showSocialSpinner: true,
+            onPressed: (BuildContext context) => context
+                .read<SocialSignInCubit>()
+                .fSocialSignIn(SocialProvider.google),
+          ),
+          if (SocialProviderAvailability.isOffered(
+            SocialProvider.apple,
+            platform: Theme.of(context).platform,
+          )) ...<Widget>[
+            SizedBox(height: 12.h),
+            _BusyAuthButton(
+              text: Strings.signInWithApple,
+              onPressed: (BuildContext context) => context
+                  .read<SocialSignInCubit>()
+                  .fSocialSignIn(SocialProvider.apple),
+            ),
+          ],
+          SizedBox(height: 12.h),
+          _BusyAuthButton(
+            text: Strings.continueAsGuest,
+            showGuestSpinner: true,
+            onPressed: (BuildContext context) =>
+                context.read<GuestModeCubit>().fContinueAsGuest(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BusyAuthButton extends StatelessWidget {
+  const _BusyAuthButton({
+    required this.text,
+    required this.onPressed,
+    this.showSocialSpinner = false,
+    this.showGuestSpinner = false,
+  });
+
+  final String text;
+  final void Function(BuildContext context) onPressed;
+  final bool showSocialSpinner;
+  final bool showGuestSpinner;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocSelector<SocialSignInCubit, SocialSignInState, bool>(
+      selector: (SocialSignInState state) => state.isLoading,
+      builder: (BuildContext context, bool socialLoading) {
+        return BlocSelector<GuestModeCubit, GuestModeState, bool>(
+          selector: (GuestModeState state) => state.isLoading,
+          builder: (BuildContext context, bool guestLoading) {
+            final bool busy = socialLoading || guestLoading;
+            return AppElevatedButton(
+              text: text,
+              enabled: !busy,
+              isLoading:
+                  (showSocialSpinner && socialLoading) ||
+                  (showGuestSpinner && guestLoading),
+              onPressed: () => onPressed(context),
+            );
+          },
+        );
+      },
     );
   }
 }

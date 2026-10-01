@@ -8,11 +8,14 @@ import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../../../../shared/widgets/field_errors_scope.dart';
-import '../../../home/presentation/navigation/router.dart';
+import '../../../../config/routes/auth_navigation.dart';
 import '../../domain/entities/login_outcome.dart';
 import '../controller/login/login_cubit.dart';
 import '../navigation/router.dart';
+import '../auth_field_errors.dart';
 import '../validators/auth_validators.dart';
+import '../widgets/auth_tap_target.dart';
+import '../widgets/build_probe.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -25,7 +28,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _email = TextEditingController();
   final TextEditingController _password = TextEditingController();
-  bool _submitted = false;
 
   @override
   void dispose() {
@@ -38,79 +40,107 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(Strings.signIn)),
-      body: BlocConsumer<LoginCubit, LoginState>(
+      body: BlocListener<LoginCubit, LoginState>(
         listener: (BuildContext context, LoginState state) {
           if (state case ApiCallError(:final message, :final hasFieldErrors)) {
-            setState(() => _submitted = false);
             if (!hasFieldErrors) {
+              final bool offline = message == Strings.noInternetConnection;
               showAppSnackBar(
                 context: context,
                 message: message,
                 type: ToastType.error,
+                actionLabel: offline ? Strings.refresh : null,
+                onAction: offline
+                    ? () => context.read<LoginCubit>().fLogin(
+                        email: _email.text.trim(),
+                        password: _password.text,
+                      )
+                    : null,
               );
             }
           }
           if (state case ApiCallSuccess<LoginOutcome>(:final data)) {
             switch (data) {
               case LoginSucceeded():
-                const HomeRoute().go(context);
+                openAuthenticatedDestination(context);
               case LoginNeedsEmailVerification(:final challenge):
                 VerifyEmailRoute(
-                  email: _email.text.trim(),
-                  resendAvailableInSeconds: challenge.resendAvailableInSeconds,
+                  $extra: VerifyEmailArgs(
+                    email: _email.text.trim(),
+                    resendAvailableInSeconds:
+                        challenge.resendAvailableInSeconds,
+                  ),
                 ).go(context);
             }
           }
         },
-        builder: (BuildContext context, LoginState state) {
-          return FieldErrorsScope(
-            fieldErrors: switch (state) {
-              ApiCallError(:final fieldErrors) => fieldErrors,
-              _ => const <String, List<String>>{},
-            },
-            child: Form(
-              key: _formKey,
-              child: ListView(
-                padding: EdgeInsets.all(24.w),
-                children: <Widget>[
-                  AppTextFormField.emailTextField(
-                    controller: _email,
-                    labelText: Strings.email,
-                    validatorType: AuthValidators.email,
-                  ),
-                  SizedBox(height: 12.h),
-                  AppTextFormField.passwordTextField(
-                    controller: _password,
-                    labelText: Strings.password,
-                  ),
-                  Align(
-                    alignment: AlignmentDirectional.centerEnd,
-                    child: TextButton(
-                      onPressed: () => const ForgotPasswordRoute().go(context),
-                      child: Text(Strings.forgotPassword),
+        child: BlocSelector<LoginCubit, LoginState, Map<String, List<String>>>(
+          selector: _loginFieldErrors,
+          builder:
+              (BuildContext context, Map<String, List<String>> fieldErrors) {
+                return FieldErrorsScope(
+                  fieldErrors: fieldErrors,
+                  child: Form(
+                    key: _formKey,
+                    child: ListView(
+                      padding: EdgeInsets.all(24.w),
+                      children: <Widget>[
+                        BuildProbe(
+                          key: BuildProbe.loginEmail,
+                          child: AppTextFormField.emailTextField(
+                            controller: _email,
+                            labelText: Strings.email,
+                            validatorType: AuthValidators.email,
+                          ),
+                        ),
+                        SizedBox(height: 12.h),
+                        AppTextFormField.passwordTextField(
+                          controller: _password,
+                          labelText: Strings.password,
+                        ),
+                        Align(
+                          alignment: AlignmentDirectional.centerEnd,
+                          child: TextButton(
+                            style: authTextButtonStyle(),
+                            onPressed: () =>
+                                const ForgotPasswordRoute().go(context),
+                            child: Text(Strings.forgotPassword),
+                          ),
+                        ),
+                        BlocSelector<LoginCubit, LoginState, bool>(
+                          selector: (LoginState state) => state.isLoading,
+                          builder: (BuildContext context, bool isLoading) {
+                            return BuildProbe(
+                              key: BuildProbe.loginSubmit,
+                              child: AppElevatedButton(
+                                text: Strings.signIn,
+                                isLoading: isLoading,
+                                enabled: !isLoading,
+                                onPressed: () {
+                                  if (!(_formKey.currentState?.validate() ??
+                                      false)) {
+                                    return;
+                                  }
+                                  context.read<LoginCubit>().fLogin(
+                                    email: _email.text.trim(),
+                                    password: _password.text,
+                                  );
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ],
                     ),
                   ),
-                  AppElevatedButton(
-                    text: Strings.signIn,
-                    isLoading: state.isLoading,
-                    enabled: !state.isLoading && !_submitted,
-                    onPressed: () {
-                      if (!(_formKey.currentState?.validate() ?? false)) {
-                        return;
-                      }
-                      setState(() => _submitted = true);
-                      context.read<LoginCubit>().fLogin(
-                        email: _email.text.trim(),
-                        password: _password.text,
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
+                );
+              },
+        ),
       ),
     );
   }
+}
+
+Map<String, List<String>> _loginFieldErrors(LoginState state) {
+  return authFieldErrors(state);
 }

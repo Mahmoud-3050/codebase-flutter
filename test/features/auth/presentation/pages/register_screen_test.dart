@@ -14,6 +14,7 @@ import 'package:codebase/features/auth/domain/entities/otp_challenge.dart';
 import 'package:codebase/features/auth/domain/entities/register_response.dart';
 import 'package:codebase/features/auth/presentation/controller/register/register_cubit.dart';
 import 'package:codebase/features/auth/presentation/pages/register_screen.dart';
+import 'package:codebase/features/auth/presentation/widgets/build_probe.dart';
 
 import '../../fixtures.dart';
 import '../../mocks.mocks.dart';
@@ -174,5 +175,54 @@ void main() {
     cubit.emit(ApiCallError<OtpChallenge>(message: Strings.emailTaken));
     await tester.pumpAndSettle();
     expect(find.text('routed:${AppRoutes.login}'), findsOneWidget);
+  });
+
+  testWidgets('register at 2x text scale does not overflow', (
+    WidgetTester tester,
+  ) async {
+    await pumpAuthWidget(
+      tester,
+      textScaler: TextScaler.linear(2),
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<RegisterCubit>.value(value: cubit),
+      ],
+      child: const RegisterScreen(),
+    );
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('register loading does not rebuild the email field', (
+    WidgetTester tester,
+  ) async {
+    await pumpAuthWidget(
+      tester,
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<RegisterCubit>.value(value: cubit),
+      ],
+      child: const RegisterScreen(),
+    );
+    final int emailBuilds = tester
+        .state<BuildProbeState>(find.byKey(BuildProbe.registerEmail))
+        .builds;
+    final int submitBuilds = tester
+        .state<BuildProbeState>(find.byKey(BuildProbe.registerSubmit))
+        .builds;
+    cubit.emit(const ApiCallLoading<OtpChallenge>());
+    await tester.pump();
+    await tester.pump();
+    expect(
+      tester
+          .state<BuildProbeState>(find.byKey(BuildProbe.registerEmail))
+          .builds,
+      emailBuilds,
+    );
+    expect(
+      tester
+          .state<BuildProbeState>(find.byKey(BuildProbe.registerSubmit))
+          .builds,
+      submitBuilds + 1,
+    );
+    cubit.emit(const ApiCallHolding<OtpChallenge>());
+    await tester.pump();
   });
 }

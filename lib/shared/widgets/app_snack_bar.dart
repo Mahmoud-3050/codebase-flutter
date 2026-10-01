@@ -10,6 +10,8 @@ void showAppSnackBar({
   required ToastType type,
   SnackBarBehavior? behavior = .floating,
   Duration duration = const Duration(milliseconds: 5000),
+  String? actionLabel,
+  VoidCallback? onAction,
 }) {
   ScaffoldMessenger.of(context).showSnackBar(
     _buildAppSnackBar(
@@ -18,6 +20,8 @@ void showAppSnackBar({
       type: type,
       behavior: behavior,
       duration: duration,
+      actionLabel: actionLabel,
+      onAction: onAction,
     ),
   );
 }
@@ -28,9 +32,15 @@ SnackBar _buildAppSnackBar({
   required ToastType type,
   required SnackBarBehavior? behavior,
   required Duration duration,
+  String? actionLabel,
+  VoidCallback? onAction,
 }) {
+  final String? label = actionLabel;
   return SnackBar(
     content: _buildContent(context, message, type),
+    action: label == null || onAction == null
+        ? null
+        : SnackBarAction(label: label, onPressed: onAction),
     dismissDirection: .horizontal,
     padding: _padding,
     margin: _getMargin(context, behavior),

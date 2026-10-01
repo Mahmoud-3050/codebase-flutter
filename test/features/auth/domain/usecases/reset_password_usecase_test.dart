@@ -9,6 +9,7 @@ void main() {
         email: 'ada@example.com',
         code: '123456',
         password: 'secret12',
+        passwordConfirmation: 'secret12',
       ).toJson(),
       <String, dynamic>{
         'email': 'ada@example.com',

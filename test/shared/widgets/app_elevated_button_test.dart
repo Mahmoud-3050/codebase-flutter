@@ -69,6 +69,9 @@ void main() {
 
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Save'), findsNothing);
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    expect(find.bySemanticsLabel('Save'), findsOneWidget);
+    semantics.dispose();
 
     await tester.tap(find.byType(ElevatedButton));
     await tester.pump();

@@ -19,6 +19,7 @@ class ForgotPasswordScreen extends StatefulWidget {
 }
 
 class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
   final TextEditingController _email = TextEditingController();
 
   @override
@@ -31,7 +32,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text(Strings.forgotPassword)),
-      body: BlocConsumer<RequestPasswordResetCubit, RequestPasswordResetState>(
+      body: BlocListener<RequestPasswordResetCubit, RequestPasswordResetState>(
         listener: (BuildContext context, RequestPasswordResetState state) {
           if (state case ApiCallError(:final message)) {
             showAppSnackBar(
@@ -42,14 +43,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           }
           if (state case ApiCallSuccess(:final data)) {
             ResetPasswordRoute(
-              email: _email.text.trim(),
-              resendAvailableInSeconds: data.resendAvailableInSeconds,
+              $extra: ResetPasswordArgs(
+                email: _email.text.trim(),
+                resendAvailableInSeconds: data.resendAvailableInSeconds,
+              ),
             ).go(context);
           }
         },
-        builder: (BuildContext context, RequestPasswordResetState state) {
-          return Padding(
-            padding: EdgeInsets.all(24.w),
+        child: Padding(
+          padding: EdgeInsets.all(24.w),
+          child: Form(
+            key: _formKey,
             child: Column(
               children: <Widget>[
                 AppTextFormField.emailTextField(
@@ -58,17 +62,33 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
                   validatorType: AuthValidators.email,
                 ),
                 SizedBox(height: 24.h),
-                AppElevatedButton(
-                  text: Strings.send,
-                  isLoading: state.isLoading,
-                  onPressed: () => context
-                      .read<RequestPasswordResetCubit>()
-                      .fRequestPasswordReset(email: _email.text.trim()),
+                BlocSelector<
+                  RequestPasswordResetCubit,
+                  RequestPasswordResetState,
+                  bool
+                >(
+                  selector: (RequestPasswordResetState state) =>
+                      state.isLoading,
+                  builder: (BuildContext context, bool isLoading) {
+                    return AppElevatedButton(
+                      text: Strings.send,
+                      isLoading: isLoading,
+                      enabled: !isLoading,
+                      onPressed: () {
+                        if (!(_formKey.currentState?.validate() ?? false)) {
+                          return;
+                        }
+                        context
+                            .read<RequestPasswordResetCubit>()
+                            .fRequestPasswordReset(email: _email.text.trim());
+                      },
+                    );
+                  },
                 ),
               ],
             ),
-          );
-        },
+          ),
+        ),
       ),
     );
   }

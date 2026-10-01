@@ -77,4 +77,20 @@ void main() {
     expect(find.textContaining('routed:${AppRoutes.phoneOtp}'), findsOneWidget);
     await cubit.close();
   });
+
+  testWidgets('phone sign-in at 2x text scale does not overflow', (
+    WidgetTester tester,
+  ) async {
+    await pumpAuthWidget(
+      tester,
+      textScaler: TextScaler.linear(2),
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<RequestPhoneOtpCubit>(
+          create: (_) => RequestPhoneOtpCubit(MockRequestPhoneOtpUseCase()),
+        ),
+      ],
+      child: const PhoneSignInScreen(),
+    );
+    expect(tester.takeException(), isNull);
+  });
 }

@@ -22,6 +22,7 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState>
     required String email,
     required String code,
     required String password,
+    required String passwordConfirmation,
   }) async {
     emit(const ApiCallLoading<AuthSession>());
     final Either<Failure, ResetPasswordResponse> result =
@@ -30,6 +31,7 @@ class ResetPasswordCubit extends Cubit<ResetPasswordState>
             email: email,
             code: code,
             password: password,
+            passwordConfirmation: passwordConfirmation,
             cancellation: nextRequestCancelToken(),
           ),
         );
