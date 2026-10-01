@@ -111,18 +111,24 @@ class ValidationException extends AppException {
   @override
   final String? message;
   final Map<String, List<String>> fieldErrors;
+  final int? statusCode;
 
   const ValidationException({
     this.message,
     this.fieldErrors = const <String, List<String>>{},
+    this.statusCode,
   });
 
   @override
-  List<Object?> get props => <Object?>[message, fieldErrors];
+  List<Object?> get props => <Object?>[message, fieldErrors, statusCode];
 
   @override
   Failure toFailure() {
-    return ValidationFailure(message: message, fieldErrors: fieldErrors);
+    return ValidationFailure(
+      message: message,
+      fieldErrors: fieldErrors,
+      statusCode: statusCode,
+    );
   }
 }
 

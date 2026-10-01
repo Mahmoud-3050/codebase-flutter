@@ -244,6 +244,7 @@ void main() {
         email: 'a@b.c',
         code: '123456',
         password: 'secret12',
+        passwordConfirmation: 'secret12',
       ),
     );
     await remote.logout(params: const NoParams());

@@ -12,9 +12,12 @@ enum RegistrationSource {
   bool get locksEmail =>
       this == RegistrationSource.google || this == RegistrationSource.apple;
 
-  static RegistrationSource fromWireName(String value) =>
-      RegistrationSource.values.firstWhere(
-        (RegistrationSource source) => source.wireName == value,
-        orElse: () => RegistrationSource.phone,
-      );
+  static RegistrationSource fromWireName(String value) {
+    for (final RegistrationSource source in RegistrationSource.values) {
+      if (source.wireName == value) {
+        return source;
+      }
+    }
+    throw FormatException('Unknown registration source: $value');
+  }
 }

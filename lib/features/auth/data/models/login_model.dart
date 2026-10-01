@@ -15,7 +15,7 @@ class LoginModel extends LoginResponse {
         ? json['data'] as Map<String, dynamic>
         : json;
     final String outcome = (payload['outcome'] as Object?).toStringOrEmpty();
-    if (outcome == 'email_verification_required') {
+    if (outcome == emailVerificationOutcome) {
       return LoginModel(
         status: envelopeStatus(json),
         message: envelopeMessage(json),
@@ -25,7 +25,7 @@ class LoginModel extends LoginResponse {
     return LoginModel(
       status: envelopeStatus(json),
       message: envelopeMessage(json),
-      data: LoginSucceeded(parseAuthSession(json)),
+      data: LoginSucceeded(parseEstablishedSession(json)),
     );
   }
 }

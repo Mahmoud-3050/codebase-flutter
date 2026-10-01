@@ -66,14 +66,16 @@ class ValidationFailure extends Failure {
   @override
   final String? message;
   final Map<String, List<String>> fieldErrors;
+  final int? statusCode;
 
   const ValidationFailure({
     this.message,
     this.fieldErrors = const <String, List<String>>{},
+    this.statusCode,
   });
 
   @override
-  List<Object?> get props => <Object?>[message, fieldErrors];
+  List<Object?> get props => <Object?>[message, fieldErrors, statusCode];
 }
 
 extension FailureFieldErrors on Failure {

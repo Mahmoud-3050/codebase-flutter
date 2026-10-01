@@ -9,6 +9,10 @@ abstract final class AuthErrorCopy {
     'token',
   };
 
+  /// 422 is both a wrong code and an expired code. The contract says the
+  /// expired case explains that the user must request a new one.
+  static const List<String> _expiredMarkers = <String>['expir', 'gone'];
+
   static String of(
     Failure failure, {
     bool draftConflict = false,
@@ -58,16 +62,45 @@ abstract final class AuthErrorCopy {
     if (!_isOtpCodeFailure(failure)) {
       return failure.message ?? Strings.pleaseTryAgainLater;
     }
-    if (failure is ServerFailure && failure.statusCode == StatusCode.gone) {
+    if (_isExpiredOtp(failure)) {
       return Strings.expiredCode;
     }
-    if (failure is ServerFailure && failure.statusCode == StatusCode.conflict) {
-      return Strings.expiredCode;
-    }
-    if (_looksExpired(failure.message) || _codeFieldLooksExpired(failure)) {
-      return Strings.expiredCode;
+    if (_statusCode(failure) == StatusCode.conflict) {
+      return Strings.codeAlreadyUsed;
     }
     return Strings.invalidCode;
+  }
+
+  static int? _statusCode(Failure failure) {
+    return switch (failure) {
+      ServerFailure(:final statusCode) => statusCode,
+      ValidationFailure(:final statusCode) => statusCode,
+      _ => null,
+    };
+  }
+
+  static bool _isExpiredOtp(Failure failure) {
+    final int? status = _statusCode(failure);
+    if (status == StatusCode.gone) {
+      return true;
+    }
+    if (status != StatusCode.unProcessableContent) {
+      return false;
+    }
+    if (_mentionsExpiry(failure.message)) {
+      return true;
+    }
+    final List<String> codeMessages =
+        failure.fieldErrors[_codeField] ?? const <String>[];
+    return codeMessages.any(_mentionsExpiry);
+  }
+
+  static bool _mentionsExpiry(String? text) {
+    if (text == null || text.isEmpty) {
+      return false;
+    }
+    final String lower = text.toLowerCase();
+    return _expiredMarkers.any(lower.contains);
   }
 
   static bool _isDraftExpiredFailure(Failure failure) {
@@ -99,20 +132,5 @@ abstract final class AuthErrorCopy {
       return true;
     }
     return failure.fieldErrors.containsKey(_codeField);
-  }
-
-  static bool _codeFieldLooksExpired(Failure failure) {
-    if (failure is! ValidationFailure) {
-      return false;
-    }
-    return failure.fieldErrors[_codeField]?.any(_looksExpired) ?? false;
-  }
-
-  static bool _looksExpired(String? text) {
-    if (text == null || text.isEmpty) {
-      return false;
-    }
-    final String lower = text.toLowerCase();
-    return lower.contains('expir') || lower.contains('gone');
   }
 }

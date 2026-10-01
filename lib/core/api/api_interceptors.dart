@@ -4,6 +4,7 @@ import 'package:get_it/get_it.dart';
 import 'package:language/language.dart';
 
 import '../error/exceptions.dart';
+import '../utils/enums.dart';
 import 'api_constants.dart';
 import 'dio_exception_mapper.dart';
 import 'redirect_interceptor.dart';
@@ -115,6 +116,12 @@ final class ApiInterceptor extends Interceptor {
     if (ApiConstants.isPublicAuthPath(options.path) ||
         options.extra[SafeRedirectInterceptor.omitAuthorizationExtraKey] ==
             true) {
+      options.headers.remove(ApiHeaders.authorization);
+      return;
+    }
+
+    final String? visitorType = await refreshTokenHelper.userTypeStorage.read();
+    if (visitorType != UserType.loggedIn.name) {
       options.headers.remove(ApiHeaders.authorization);
       return;
     }

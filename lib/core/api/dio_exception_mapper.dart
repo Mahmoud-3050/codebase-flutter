@@ -58,6 +58,7 @@ final class DioExceptionMapper {
       return ValidationException(
         message: message,
         fieldErrors: extractFieldErrors(data),
+        statusCode: statusCode,
       );
     }
 

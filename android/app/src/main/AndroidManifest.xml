@@ -24,6 +24,7 @@
         android:label="Base"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="false"
         android:allowBackup="false"
         android:fullBackupOnly="false"
         android:enableOnBackInvokedCallback="true">

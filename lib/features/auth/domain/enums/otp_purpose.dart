@@ -8,8 +8,12 @@ enum OtpPurpose {
 
   final String wireName;
 
-  static OtpPurpose fromWireName(String value) => OtpPurpose.values.firstWhere(
-    (OtpPurpose purpose) => purpose.wireName == value,
-    orElse: () => OtpPurpose.verifyEmail,
-  );
+  static OtpPurpose fromWireName(String value) {
+    for (final OtpPurpose purpose in OtpPurpose.values) {
+      if (purpose.wireName == value) {
+        return purpose;
+      }
+    }
+    throw FormatException('Unknown OTP purpose: $value');
+  }
 }

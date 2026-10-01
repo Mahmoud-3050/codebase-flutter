@@ -15,7 +15,7 @@ class SocialSignInModel extends SocialSignInResponse {
         ? json['data'] as Map<String, dynamic>
         : json;
     final String outcome = (payload['outcome'] as Object?).toStringOrEmpty();
-    if (outcome == 'registration_required') {
+    if (outcome == registrationRequiredOutcome) {
       return SocialSignInModel(
         status: envelopeStatus(json),
         message: envelopeMessage(json),
@@ -25,7 +25,7 @@ class SocialSignInModel extends SocialSignInResponse {
     return SocialSignInModel(
       status: envelopeStatus(json),
       message: envelopeMessage(json),
-      data: AuthSessionEstablished(parseAuthSession(json)),
+      data: AuthSessionEstablished(parseEstablishedSession(json)),
     );
   }
 }

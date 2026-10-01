@@ -1,3 +1,4 @@
+import '../../../../core/error/exceptions.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../domain/entities/auth_session.dart';
 import '../../domain/entities/otp_challenge.dart';
@@ -65,6 +66,30 @@ RegistrationDraft parseRegistrationDraft(Map<String, dynamic> json) {
     verifiedPhone: _optionalString(payload['verified_phone']),
     suggestedFullName: _optionalString(payload['suggested_full_name']),
   );
+}
+
+const String sessionOutcome = 'session';
+const String emailVerificationOutcome = 'email_verification_required';
+const String registrationRequiredOutcome = 'registration_required';
+
+/// Session branch for login and social responses.
+///
+/// A missing `outcome` with a real access token is a session. Any other
+/// outcome, or a session with an empty token, is a server error so the
+/// client does not persist a signed-in user.
+AuthSession parseEstablishedSession(Map<String, dynamic> json) {
+  final Map<String, dynamic> payload = json['data'] is Map<String, dynamic>
+      ? json['data'] as Map<String, dynamic>
+      : json;
+  final String outcome = (payload['outcome'] as Object?).toStringOrEmpty();
+  if (outcome.isNotEmpty && outcome != sessionOutcome) {
+    throw const ServerException();
+  }
+  final AuthSession session = parseAuthSession(json);
+  if (session.accessToken.isEmpty) {
+    throw const ServerException();
+  }
+  return session;
 }
 
 String envelopeStatus(Map<String, dynamic> json) =>

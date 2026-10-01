@@ -5,13 +5,29 @@ import '../../../../core/error/exceptions.dart';
 import '../../domain/enums/social_provider.dart';
 import 'social_auth_service.dart';
 
+typedef AppleCredentialLoader =
+    Future<AuthorizationCredentialAppleID> Function(
+      List<AppleIDAuthorizationScopes> scopes,
+    );
+
 class SocialAuthServiceImpl implements SocialAuthService {
-  SocialAuthServiceImpl({this.googleServerClientId, GoogleSignIn? googleSignIn})
-    : _googleSignIn = googleSignIn;
+  SocialAuthServiceImpl({
+    this.googleServerClientId,
+    GoogleSignIn? googleSignIn,
+    AppleCredentialLoader? loadAppleCredential,
+  }) : _googleSignIn = googleSignIn,
+       _loadAppleCredential = loadAppleCredential ?? _defaultAppleCredential;
 
   final String? googleServerClientId;
   final GoogleSignIn? _googleSignIn;
+  final AppleCredentialLoader _loadAppleCredential;
   bool _googleInitialized = false;
+
+  static Future<AuthorizationCredentialAppleID> _defaultAppleCredential(
+    List<AppleIDAuthorizationScopes> scopes,
+  ) {
+    return SignInWithApple.getAppleIDCredential(scopes: scopes);
+  }
 
   @override
   Future<SocialCredential> authorize(SocialProvider provider) {
@@ -22,10 +38,14 @@ class SocialAuthServiceImpl implements SocialAuthService {
   }
 
   Future<SocialCredential> _authorizeGoogle() async {
+    final String? serverClientId = googleServerClientId?.trim();
+    if (serverClientId == null || serverClientId.isEmpty) {
+      throw const ServerException();
+    }
     try {
       final GoogleSignIn google = _googleSignIn ?? GoogleSignIn.instance;
       if (!_googleInitialized) {
-        await google.initialize(serverClientId: googleServerClientId);
+        await google.initialize(serverClientId: serverClientId);
         _googleInitialized = true;
       }
       final GoogleSignInAccount account = await google.authenticate();
@@ -50,12 +70,10 @@ class SocialAuthServiceImpl implements SocialAuthService {
   Future<SocialCredential> _authorizeApple() async {
     try {
       final AuthorizationCredentialAppleID credential =
-          await SignInWithApple.getAppleIDCredential(
-            scopes: <AppleIDAuthorizationScopes>[
-              AppleIDAuthorizationScopes.email,
-              AppleIDAuthorizationScopes.fullName,
-            ],
-          );
+          await _loadAppleCredential(<AppleIDAuthorizationScopes>[
+            AppleIDAuthorizationScopes.email,
+            AppleIDAuthorizationScopes.fullName,
+          ]);
       final String? idToken = credential.identityToken;
       if (idToken == null || idToken.isEmpty) {
         throw const ServerException();

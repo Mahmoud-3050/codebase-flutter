@@ -6,9 +6,12 @@ enum SocialProvider {
 
   final String wireName;
 
-  static SocialProvider fromWireName(String value) =>
-      SocialProvider.values.firstWhere(
-        (SocialProvider provider) => provider.wireName == value,
-        orElse: () => SocialProvider.google,
-      );
+  static SocialProvider fromWireName(String value) {
+    for (final SocialProvider provider in SocialProvider.values) {
+      if (provider.wireName == value) {
+        return provider;
+      }
+    }
+    throw FormatException('Unknown social provider: $value');
+  }
 }

@@ -72,6 +72,17 @@ void main() {
       expect(data['status'], 'success');
     });
 
+    test('omits Authorization when a guest still has a stored token', () async {
+      userTypeStorage.value = 'guest';
+      storage.token = 'leftover';
+      mainAdapter.handler = (RequestOptions options) {
+        expect(options.headers.containsKey(ApiHeaders.authorization), isFalse);
+        return jsonBody(StatusCode.ok, <String, dynamic>{'ok': true});
+      };
+
+      await consumer.get('/profile');
+    });
+
     test('omits Authorization when no access token is stored', () async {
       mainAdapter.handler = (RequestOptions options) {
         expect(options.headers.containsKey(ApiHeaders.authorization), isFalse);
