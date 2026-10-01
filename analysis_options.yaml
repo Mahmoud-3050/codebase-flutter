@@ -14,3 +14,8 @@ linter:
     prefer_const_constructors: true
     prefer_const_literals_to_create_immutables: true
     avoid_redundant_argument_values: true
+analyzer:
+  exclude:
+    - build/**
+    - android/**
+    - ios/**

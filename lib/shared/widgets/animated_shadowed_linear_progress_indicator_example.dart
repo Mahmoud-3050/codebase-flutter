@@ -101,12 +101,31 @@ Widget wrapAnimatedShadowedProgressPreview(Widget child) {
   );
 }
 
+final class _ProgressPreviewThemeData extends PreviewThemeData {
+  const _ProgressPreviewThemeData({
+    required this.materialLight,
+    required this.materialDark,
+  });
+
+  final ThemeData materialLight;
+  final ThemeData materialDark;
+
+  @override
+  Widget apply(BuildContext context, Widget child) {
+    final Brightness brightness = MediaQuery.platformBrightnessOf(context);
+    return Theme(
+      data: brightness == Brightness.dark ? materialDark : materialLight,
+      child: child,
+    );
+  }
+}
+
 /// Minimal [ThemeData] so the previewer does not lerp [AppBarTheme] / button
 /// styles (that interpolation throws `true is not a subtype of double?` on web).
 PreviewThemeData animatedShadowedProgressPreviewTheme() {
-  return PreviewThemeData(
-    materialLight: _previewTheme(ColorsPalettes.config.light, .light),
-    materialDark: _previewTheme(ColorsPalettes.config.dark, .dark),
+  return _ProgressPreviewThemeData(
+    materialLight: _previewTheme(ColorsPalettes.config.light, Brightness.light),
+    materialDark: _previewTheme(ColorsPalettes.config.dark, Brightness.dark),
   );
 }
 
