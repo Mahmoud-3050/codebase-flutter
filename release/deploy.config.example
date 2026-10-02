@@ -64,3 +64,12 @@ DRY_RUN="false"
 PRE_BUILD_SCRIPT=""
 ANDROID_PRE_BUILD_SCRIPT=""
 IOS_PRE_BUILD_SCRIPT=""
+
+# ── CI / Build Guards ─────────────────────────────────────────────────────
+# Fail validation/build if GOOGLE_SERVER_CLIENT_ID is empty.
+# When enabled (true), guards against shipping builds where Google Sign-In
+# fails at runtime due to missing OAuth credentials.
+# Default: false (not enabled).
+ENFORCE_GOOGLE_SERVER_CLIENT_ID="false"
+GOOGLE_SERVER_CLIENT_ID=""
+

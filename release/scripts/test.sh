@@ -12,6 +12,7 @@ echo "== bash syntax =="
 bash -n "${RELEASE_DIR}/scripts/deploy.sh"
 bash -n "${RELEASE_DIR}/scripts/lib/common.sh"
 bash -n "${RELEASE_DIR}/scripts/hooks/pre_build.example.sh"
+bash -n "${RELEASE_DIR}/scripts/check_google_client_id.sh"
 bash -n "${RELEASE_DIR}/test/config_test.sh"
 echo "  PASS  bash -n"
 

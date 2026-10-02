@@ -98,6 +98,8 @@ SKIP_DEPLOY="false"
 PRE_BUILD_SCRIPT=""
 ANDROID_PRE_BUILD_SCRIPT=""
 IOS_PRE_BUILD_SCRIPT=""
+ENFORCE_GOOGLE_SERVER_CLIENT_ID="false"
+GOOGLE_SERVER_CLIENT_ID=""
 DRY_RUN="false"
 EOF
   printf '{}' >"${dir}/secrets/play.json"
@@ -178,6 +180,18 @@ make_fixture "${fixture}"
 set_config_key "${fixture}/deploy.config" DEPLOY_TARGET windows
 expect_error "rejects invalid DEPLOY_TARGET" "must be google, ios, or both" \
   run_in_fixture "${fixture}" apply_deploy_target
+make_fixture "${fixture}"
+
+set_config_key "${fixture}/deploy.config" ENFORCE_GOOGLE_SERVER_CLIENT_ID "true"
+set_config_key "${fixture}/deploy.config" GOOGLE_SERVER_CLIENT_ID ""
+expect_error "enforce google client id rejects empty key" "GOOGLE_SERVER_CLIENT_ID is required" \
+  run_in_fixture "${fixture}" validate_config
+make_fixture "${fixture}"
+
+set_config_key "${fixture}/deploy.config" ENFORCE_GOOGLE_SERVER_CLIENT_ID "true"
+set_config_key "${fixture}/deploy.config" GOOGLE_SERVER_CLIENT_ID "test-oauth-client-id"
+expect_ok "enforce google client id passes with valid key" \
+  run_in_fixture "${fixture}" validate_config
 make_fixture "${fixture}"
 
 mkdir -p "${fixture}/../build/app/outputs/bundle/liveRelease"

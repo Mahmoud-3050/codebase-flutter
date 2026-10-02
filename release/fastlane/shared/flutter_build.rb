@@ -106,11 +106,17 @@ module FlutterBuild
     ENV.fetch('ENTRYPOINT', 'lib/main.dart')
   end
 
+  def self.google_server_client_id
+    ENV.fetch('GOOGLE_SERVER_CLIENT_ID', '').strip
+  end
+
   def self.build_arg_list
     args = []
     flavor_name = flavor
     args += ['--flavor', flavor_name] if flavor_name
     args += ['-t', entrypoint]
+    client_id = google_server_client_id
+    args += ["--dart-define=GOOGLE_SERVER_CLIENT_ID=#{client_id}"] unless client_id.empty?
     args
   end
 

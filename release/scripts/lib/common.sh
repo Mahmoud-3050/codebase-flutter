@@ -60,10 +60,14 @@ load_deploy_config() {
   if [[ ! -f "${config}" ]]; then
     die "Missing ${config}. Copy release/deploy.config.example to release/deploy.config and fill in values."
   fi
+  local env_google_client_id="${GOOGLE_SERVER_CLIENT_ID:-}"
   set -a
   # shellcheck disable=SC1090
   source "${config}"
   set +a
+  if [[ -n "${env_google_client_id}" && -z "${GOOGLE_SERVER_CLIENT_ID:-}" ]]; then
+    GOOGLE_SERVER_CLIENT_ID="${env_google_client_id}"
+  fi
 }
 
 ensure_ruby() {
@@ -239,6 +243,8 @@ export_cli_overrides() {
   export CLI_DEPLOY_TARGET="${DEPLOY_TARGET:-both}"
   export SKIP_BUILD_IF_EXISTS="${SKIP_BUILD_IF_EXISTS:-false}"
   export SKIP_DEPLOY="${SKIP_DEPLOY:-false}"
+  export ENFORCE_GOOGLE_SERVER_CLIENT_ID="${ENFORCE_GOOGLE_SERVER_CLIENT_ID:-false}"
+  export GOOGLE_SERVER_CLIENT_ID="${GOOGLE_SERVER_CLIENT_ID:-}"
 }
 
 android_aab_path() {
@@ -347,6 +353,24 @@ validate_config() {
       require_keys IOS_SCHEME IOS_CONFIGURATION
     fi
     require_hook_script IOS_PRE_BUILD_SCRIPT
+  fi
+
+  guard_google_server_client_id
+}
+
+google_guard_enabled() {
+  is_true "${ENFORCE_GOOGLE_SERVER_CLIENT_ID:-false}" || \
+  is_true "${CHECK_GOOGLE_SERVER_CLIENT_ID:-false}" || \
+  is_true "${GUARD_GOOGLE_SERVER_CLIENT_ID:-false}" || \
+  is_true "${ENABLE_GOOGLE_SERVER_CLIENT_ID_GUARD:-false}"
+}
+
+guard_google_server_client_id() {
+  if ! google_guard_enabled; then
+    return 0
+  fi
+  if [[ -z "${GOOGLE_SERVER_CLIENT_ID:-}" ]]; then
+    die "deploy.config: GOOGLE_SERVER_CLIENT_ID is required but empty (ENFORCE_GOOGLE_SERVER_CLIENT_ID is enabled)"
   fi
 }
 

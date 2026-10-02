@@ -23,12 +23,28 @@ module DeployConfig
     end
     Dotenv.overload(path)
     apply_cli_overrides!
+    validate_google_client_id!
   end
 
   # deploy.sh exports CLI_* so flags like `--skip-build` survive Dotenv.overload.
   CLI_OVERRIDE_KEYS = %w[
     SKIP_ANDROID SKIP_IOS SKIP_IOS_BUILD SKIP_BUILD_IF_EXISTS SKIP_DEPLOY DEPLOY_TARGET
+    ENFORCE_GOOGLE_SERVER_CLIENT_ID GOOGLE_SERVER_CLIENT_ID
   ].freeze
+
+  def self.google_guard_enabled?
+    truthy?('ENFORCE_GOOGLE_SERVER_CLIENT_ID') ||
+      truthy?('CHECK_GOOGLE_SERVER_CLIENT_ID') ||
+      truthy?('GUARD_GOOGLE_SERVER_CLIENT_ID') ||
+      truthy?('ENABLE_GOOGLE_SERVER_CLIENT_ID_GUARD')
+  end
+
+  def self.validate_google_client_id!
+    return unless google_guard_enabled?
+
+    client_id = ENV.fetch('GOOGLE_SERVER_CLIENT_ID', '').strip
+    fail!('GOOGLE_SERVER_CLIENT_ID is required when ENFORCE_GOOGLE_SERVER_CLIENT_ID is enabled') if client_id.empty?
+  end
 
   def self.apply_cli_overrides!
     CLI_OVERRIDE_KEYS.each do |key|
