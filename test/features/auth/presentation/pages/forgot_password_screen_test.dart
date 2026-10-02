@@ -73,4 +73,23 @@ void main() {
     );
     await cubit.close();
   });
+
+  testWidgets('forgot password at 2x text scale does not overflow', (
+    WidgetTester tester,
+  ) async {
+    final RequestPasswordResetCubit cubit = RequestPasswordResetCubit(
+      MockRequestPasswordResetUseCase(),
+    );
+    await pumpAuthWidget(
+      tester,
+      textScaler: const TextScaler.linear(2),
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<RequestPasswordResetCubit>.value(value: cubit),
+      ],
+      child: const ForgotPasswordScreen(),
+    );
+    expect(tester.takeException(), isNull);
+    await cubit.close();
+  });
 }
+

@@ -197,14 +197,17 @@ class _BusyAuthButton extends StatelessWidget {
         return BlocSelector<GuestModeCubit, GuestModeState, bool>(
           selector: (GuestModeState state) => state.isLoading,
           builder: (BuildContext context, bool guestLoading) {
-            final bool busy = socialLoading || guestLoading;
-            return AppElevatedButton(
-              text: text,
-              enabled: !busy,
-              isLoading:
-                  (showSocialSpinner && socialLoading) ||
-                  (showGuestSpinner && guestLoading),
-              onPressed: () => onPressed(context),
+            final bool isLoading =
+                (showSocialSpinner && socialLoading) ||
+                (showGuestSpinner && guestLoading);
+            return Semantics(
+              liveRegion: true,
+              child: AppElevatedButton(
+                text: text,
+                enabled: !busy,
+                isLoading: isLoading,
+                onPressed: () => onPressed(context),
+              ),
             );
           },
         );

@@ -54,7 +54,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
           padding: EdgeInsets.all(24.w),
           child: Form(
             key: _formKey,
-            child: Column(
+            child: ListView(
               children: <Widget>[
                 AppTextFormField.emailTextField(
                   controller: _email,

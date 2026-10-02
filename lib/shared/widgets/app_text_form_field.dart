@@ -259,6 +259,7 @@ class AppTextFormField extends StatefulWidget {
       maxLines: 1,
       keyboardType: .phone,
       textInputAction: textInputAction,
+      autofillHints: const <String>[AutofillHints.telephoneNumberNational],
       prefixIcon: prefix == null ? prefixIcon : null,
       prefix: prefix,
       validatorType: validatorType ?? FieldValidator.phone(),
@@ -404,6 +405,9 @@ class AppTextFormField extends StatefulWidget {
           borderColor: borderColor,
           focusBorderColor: focusBorderColor,
           readOnly: readOnly,
+          autofillHints: confirmPasswordController != null
+              ? const <String>[AutofillHints.newPassword]
+              : const <String>[AutofillHints.password],
           fieldName: fieldName,
           fieldErrors: fieldErrors,
         );
