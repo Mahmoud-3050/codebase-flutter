@@ -4,7 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
 import 'package:go_router/go_router.dart';
-import 'package:screen_util/screen_util.dart';
+import 'package:screen_util/screen_util.dart' hide DeviceType;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:themes/testing.dart';
 import 'package:themes/themes.dart';
@@ -34,7 +34,7 @@ class FakeDioConsumer implements DioConsumer {
 
   final Future<dynamic> Function(String path, dynamic body)? postHandler;
   final Future<dynamic> Function(String path, dynamic queryParameters)?
-      getHandler;
+  getHandler;
 
   @override
   Future<dynamic> delete(
@@ -129,7 +129,9 @@ class IntegrationRouterHarness {
     sl.registerLazySingleton<AuthDataScopeLease>(() => AuthDataScopeLease(sl));
     sl.registerLazySingleton<VisitorRedirect>(VisitorRedirect.new);
     sl.registerLazySingleton<SessionWriteGuard>(CountingSessionWriteGuard.new);
-    sl.registerLazySingleton<DioConsumer>(() => dioConsumer ?? FakeDioConsumer());
+    sl.registerLazySingleton<DioConsumer>(
+      () => dioConsumer ?? FakeDioConsumer(),
+    );
     sl.registerLazySingleton<DeviceType>(
       () => DeviceType.android,
       instanceName: 'deviceType',

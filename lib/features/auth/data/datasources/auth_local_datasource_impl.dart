@@ -1,3 +1,4 @@
+import '../../../../config/language/strings.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/local_storage/interfaces/local_storage_interface.dart';
 import '../../../../core/services/session_write_guard.dart';

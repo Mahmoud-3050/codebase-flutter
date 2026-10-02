@@ -7,8 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:codebase/config/language/strings.dart';
 import 'package:codebase/config/routes/app_routes.dart';
-import 'package:codebase/core/services/local_storage/impl/access_token_storage.dart';
-import 'package:codebase/core/services/local_storage/impl/user_type_storage.dart';
+import 'package:codebase/config/routes/visitor_redirect.dart';
 import 'package:codebase/core/utils/enums.dart';
 import 'package:codebase/injection_container.dart';
 
@@ -70,6 +69,6 @@ void main() {
     await tester.pumpAndSettle();
 
     // Verify navigation reached Phone OTP screen
-    expect(find.text(Strings.enterCode), findsWidgets);
+    expect(find.text(Strings.verifyCode), findsWidgets);
   });
 }

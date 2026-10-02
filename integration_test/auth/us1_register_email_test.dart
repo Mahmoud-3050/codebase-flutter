@@ -5,7 +5,6 @@ import 'package:integration_test/integration_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:codebase/config/language/strings.dart';
-import 'package:codebase/config/routes/app_routes.dart';
 import 'package:codebase/core/services/local_storage/impl/access_token_storage.dart';
 import 'package:codebase/core/services/local_storage/impl/user_type_storage.dart';
 import 'package:codebase/core/utils/enums.dart';
@@ -35,7 +34,7 @@ void main() {
     WidgetTester tester,
   ) async {
     // No token, no user-type stored → firstOpen visitor state
-    await IntegrationRouterHarness.pump(tester, initialLocation: AppRoutes.splash);
+    await IntegrationRouterHarness.pump(tester);
     await tester.pumpAndSettle();
 
     expect(find.text(Strings.continueAsGuest), findsOneWidget);
@@ -48,7 +47,7 @@ void main() {
     final GetIt sl = ServiceLocator.instance;
     await sl<UserTypeStorage>().save(value: UserType.guest.name);
 
-    await IntegrationRouterHarness.pump(tester, initialLocation: AppRoutes.splash);
+    await IntegrationRouterHarness.pump(tester);
     await tester.pumpAndSettle();
 
     // Guest relaunches straight into home per FR-038
@@ -63,7 +62,7 @@ void main() {
     await sl<AccessTokenStorage>().save(value: 'valid-token-abc');
     await sl<UserTypeStorage>().save(value: UserType.loggedIn.name);
 
-    await IntegrationRouterHarness.pump(tester, initialLocation: AppRoutes.splash);
+    await IntegrationRouterHarness.pump(tester);
     await tester.pumpAndSettle();
 
     // Should arrive at home, not welcome
@@ -79,7 +78,7 @@ void main() {
     final GetIt sl = ServiceLocator.instance;
     await sl<AccessTokenStorage>().save(value: 'token-no-type');
 
-    await IntegrationRouterHarness.pump(tester, initialLocation: AppRoutes.splash);
+    await IntegrationRouterHarness.pump(tester);
     await tester.pumpAndSettle();
 
     expect(find.text(Strings.continueAsGuest), findsOneWidget);

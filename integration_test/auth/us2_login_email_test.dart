@@ -1,3 +1,4 @@
+import 'package:codebase/config/routes/visitor_redirect.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -45,7 +46,10 @@ void main() {
     final GetIt sl = ServiceLocator.instance;
     sl<VisitorRedirect>().publish(UserType.firstOpen);
 
-    await IntegrationRouterHarness.pump(tester, initialLocation: AppRoutes.login);
+    await IntegrationRouterHarness.pump(
+      tester,
+      initialLocation: AppRoutes.login,
+    );
     await tester.pumpAndSettle();
 
     expect(find.text(Strings.signIn), findsWidgets);

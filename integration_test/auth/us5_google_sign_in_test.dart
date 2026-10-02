@@ -1,3 +1,4 @@
+import 'package:codebase/config/routes/visitor_redirect.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
@@ -33,37 +34,38 @@ void main() {
 
   tearDown(() => ServiceLocator.instance.reset());
 
-  testWidgets('FR-001 FR-030 welcome renders Google button and navigates to login/register', (
-    WidgetTester tester,
-  ) async {
-    final GetIt sl = ServiceLocator.instance;
-    sl<VisitorRedirect>().publish(UserType.firstOpen);
+  testWidgets(
+    'FR-001 FR-030 welcome renders Google button and navigates to login/register',
+    (WidgetTester tester) async {
+      final GetIt sl = ServiceLocator.instance;
+      sl<VisitorRedirect>().publish(UserType.firstOpen);
 
-    await IntegrationRouterHarness.pump(
-      tester,
-      initialLocation: AppRoutes.welcome,
-    );
-    await tester.pumpAndSettle();
+      await IntegrationRouterHarness.pump(
+        tester,
+        initialLocation: AppRoutes.welcome,
+      );
+      await tester.pumpAndSettle();
 
-    // Verify all primary entry points exist on Welcome screen
-    expect(find.text(Strings.signInWithGoogle), findsOneWidget);
-    expect(find.text(Strings.signInWithEmail), findsOneWidget);
-    expect(find.text(Strings.register), findsWidgets);
-    expect(find.text(Strings.continueAsGuest), findsOneWidget);
+      // Verify all primary entry points exist on Welcome screen
+      expect(find.text(Strings.signInWithGoogle), findsOneWidget);
+      expect(find.text(Strings.signIn), findsWidgets);
+      expect(find.text(Strings.createAccount), findsWidgets);
+      expect(find.text(Strings.continueAsGuest), findsOneWidget);
 
-    // Tap "Sign In with Email" and verify cross-screen navigation
-    await tester.tap(find.text(Strings.signInWithEmail));
-    await tester.pumpAndSettle();
-    expect(find.byType(LoginScreen), findsOneWidget);
+      // Tap "Sign In" and verify cross-screen navigation
+      await tester.tap(find.text(Strings.signIn).first);
+      await tester.pumpAndSettle();
+      expect(find.byType(LoginScreen), findsOneWidget);
 
-    // Navigate back to welcome and tap "Register"
-    final router = await IntegrationRouterHarness.pump(
-      tester,
-      initialLocation: AppRoutes.welcome,
-    );
-    await tester.pumpAndSettle();
-    await tester.tap(find.text(Strings.register).first);
-    await tester.pumpAndSettle();
-    expect(find.byType(RegisterScreen), findsOneWidget);
-  });
+      // Navigate back to welcome and tap "Create Account"
+      await IntegrationRouterHarness.pump(
+        tester,
+        initialLocation: AppRoutes.welcome,
+      );
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(Strings.createAccount).first);
+      await tester.pumpAndSettle();
+      expect(find.byType(RegisterScreen), findsOneWidget);
+    },
+  );
 }

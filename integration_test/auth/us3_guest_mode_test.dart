@@ -34,33 +34,37 @@ void main() {
 
   tearDown(() => ServiceLocator.instance.reset());
 
-  testWidgets('FR-037 FR-038 SC-003 guest tap persists guest state and reaches home', (
-    WidgetTester tester,
-  ) async {
-    final GetIt sl = ServiceLocator.instance;
+  testWidgets(
+    'FR-037 FR-038 SC-003 guest tap persists guest state and reaches home',
+    (WidgetTester tester) async {
+      final GetIt sl = ServiceLocator.instance;
 
-    await IntegrationRouterHarness.pump(tester, initialLocation: AppRoutes.welcome);
-    await tester.pumpAndSettle();
+      await IntegrationRouterHarness.pump(
+        tester,
+        initialLocation: AppRoutes.welcome,
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text(Strings.continueAsGuest), findsOneWidget);
+      expect(find.text(Strings.continueAsGuest), findsOneWidget);
 
-    // Tap "Continue as Guest"
-    await tester.tap(find.text(Strings.continueAsGuest));
-    await tester.pumpAndSettle();
+      // Tap "Continue as Guest"
+      await tester.tap(find.text(Strings.continueAsGuest));
+      await tester.pumpAndSettle();
 
-    // Verify guest state persisted in storage
-    expect(await sl<UserTypeStorage>().read(), UserType.guest.name);
-    expect(await sl<AccessTokenStorage>().read(), isNull);
+      // Verify guest state persisted in storage
+      expect(await sl<UserTypeStorage>().read(), UserType.guest.name);
+      expect(await sl<AccessTokenStorage>().read(), isNull);
 
-    // Verify reached home screen
-    expect(find.text(Strings.home), findsOneWidget);
+      // Verify reached home screen
+      expect(find.text(Strings.home), findsOneWidget);
 
-    // Verify guest gate triggers on protected action (FR-039)
-    await tester.tap(find.text(Strings.accountRequired));
-    await tester.pumpAndSettle();
+      // Verify guest gate triggers on protected action (FR-039)
+      await tester.tap(find.text(Strings.accountRequired));
+      await tester.pumpAndSettle();
 
-    // Guest gate dialog shows options
-    expect(find.text(Strings.signIn), findsWidgets);
-    expect(find.text(Strings.register), findsWidgets);
-  });
+      // Guest gate dialog shows options
+      expect(find.text(Strings.signIn), findsWidgets);
+      expect(find.text(Strings.createAccount), findsWidgets);
+    },
+  );
 }

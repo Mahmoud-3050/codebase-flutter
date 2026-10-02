@@ -197,6 +197,7 @@ class _BusyAuthButton extends StatelessWidget {
         return BlocSelector<GuestModeCubit, GuestModeState, bool>(
           selector: (GuestModeState state) => state.isLoading,
           builder: (BuildContext context, bool guestLoading) {
+            final bool busy = socialLoading || guestLoading;
             final bool isLoading =
                 (showSocialSpinner && socialLoading) ||
                 (showGuestSpinner && guestLoading);

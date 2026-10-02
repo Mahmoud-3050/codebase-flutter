@@ -1,3 +1,4 @@
+import 'package:codebase/config/routes/visitor_redirect.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -33,28 +34,29 @@ void main() {
     return ServiceLocator.instance.reset();
   });
 
-  testWidgets('FR-029 FR-034a Apple button visibility is platform-aware on welcome screen', (
-    WidgetTester tester,
-  ) async {
-    final GetIt sl = ServiceLocator.instance;
-    sl<VisitorRedirect>().publish(UserType.firstOpen);
+  testWidgets(
+    'FR-029 FR-034a Apple button visibility is platform-aware on welcome screen',
+    (WidgetTester tester) async {
+      final GetIt sl = ServiceLocator.instance;
+      sl<VisitorRedirect>().publish(UserType.firstOpen);
 
-    // 1. On Android: Apple sign-in must be hidden
-    debugDefaultTargetPlatformOverride = TargetPlatform.android;
-    await IntegrationRouterHarness.pump(
-      tester,
-      initialLocation: AppRoutes.welcome,
-    );
-    await tester.pumpAndSettle();
-    expect(find.text(Strings.signInWithApple), findsNothing);
+      // 1. On Android: Apple sign-in must be hidden
+      debugDefaultTargetPlatformOverride = TargetPlatform.android;
+      await IntegrationRouterHarness.pump(
+        tester,
+        initialLocation: AppRoutes.welcome,
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(Strings.signInWithApple), findsNothing);
 
-    // 2. On iOS: Apple sign-in must be displayed
-    debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
-    await IntegrationRouterHarness.pump(
-      tester,
-      initialLocation: AppRoutes.welcome,
-    );
-    await tester.pumpAndSettle();
-    expect(find.text(Strings.signInWithApple), findsOneWidget);
-  });
+      // 2. On iOS: Apple sign-in must be displayed
+      debugDefaultTargetPlatformOverride = TargetPlatform.iOS;
+      await IntegrationRouterHarness.pump(
+        tester,
+        initialLocation: AppRoutes.welcome,
+      );
+      await tester.pumpAndSettle();
+      expect(find.text(Strings.signInWithApple), findsOneWidget);
+    },
+  );
 }

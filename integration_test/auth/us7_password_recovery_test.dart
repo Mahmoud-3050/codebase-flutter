@@ -1,3 +1,4 @@
+import 'package:codebase/config/routes/visitor_redirect.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -40,31 +41,32 @@ void main() {
 
   tearDown(() => ServiceLocator.instance.reset());
 
-  testWidgets('FR-046 forgot password requests reset OTP and navigates to reset password screen', (
-    WidgetTester tester,
-  ) async {
-    final GetIt sl = ServiceLocator.instance;
-    sl<VisitorRedirect>().publish(UserType.firstOpen);
+  testWidgets(
+    'FR-046 forgot password requests reset OTP and navigates to reset password screen',
+    (WidgetTester tester) async {
+      final GetIt sl = ServiceLocator.instance;
+      sl<VisitorRedirect>().publish(UserType.firstOpen);
 
-    await IntegrationRouterHarness.pump(
-      tester,
-      initialLocation: AppRoutes.forgotPassword,
-    );
-    await tester.pumpAndSettle();
+      await IntegrationRouterHarness.pump(
+        tester,
+        initialLocation: AppRoutes.forgotPassword,
+      );
+      await tester.pumpAndSettle();
 
-    expect(find.text(Strings.forgotPassword), findsWidgets);
-    expect(find.text(Strings.email), findsWidgets);
+      expect(find.text(Strings.forgotPassword), findsWidgets);
+      expect(find.text(Strings.email), findsWidgets);
 
-    // Enter email
-    await tester.enterText(find.byType(TextField).first, 'ada@example.com');
-    await tester.pump();
+      // Enter email
+      await tester.enterText(find.byType(TextField).first, 'ada@example.com');
+      await tester.pump();
 
-    // Tap Send button
-    await tester.tap(find.widgetWithText(ElevatedButton, Strings.send).first);
-    await tester.pumpAndSettle();
+      // Tap Send button
+      await tester.tap(find.widgetWithText(ElevatedButton, Strings.send).first);
+      await tester.pumpAndSettle();
 
-    // Verify cross-screen navigation reached ResetPasswordScreen
-    expect(find.byType(ResetPasswordScreen), findsOneWidget);
-    expect(find.text(Strings.resetPassword), findsWidgets);
-  });
+      // Verify cross-screen navigation reached ResetPasswordScreen
+      expect(find.byType(ResetPasswordScreen), findsOneWidget);
+      expect(find.text(Strings.resetPassword), findsWidgets);
+    },
+  );
 }
