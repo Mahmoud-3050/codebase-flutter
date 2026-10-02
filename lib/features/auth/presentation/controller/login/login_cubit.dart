@@ -31,7 +31,7 @@ class LoginCubit extends Cubit<LoginState>
     );
     result.fold(
       (Failure failure) {
-        if (shouldIgnoreFailure(failure)) {
+        if (shouldIgnoreFailure(failure) || isClosed) {
           return;
         }
         emit(

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:themes/themes.dart';
 
 import '../../../../config/language/strings.dart';
 import '../../../../config/routes/auth_navigation.dart';
 import '../../../../core/presentation/api_call_state.dart';
+import '../../../../core/utils/values/text_styles.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/field_errors_scope.dart';
@@ -11,6 +13,7 @@ import '../controller/otp_cooldown/otp_cooldown_cubit.dart';
 import '../controller/request_email_otp/request_email_otp_cubit.dart';
 import '../controller/verify_email/verify_email_cubit.dart';
 import '../widgets/auth_otp_form.dart';
+import '../widgets/auth_scaffold.dart';
 import '../widgets/build_probe.dart';
 
 class VerifyEmailScreen extends StatefulWidget {
@@ -45,8 +48,8 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(Strings.emailActivation)),
+    return AuthScaffold(
+      title: Strings.emailActivation,
       body: MultiBlocListener(
         listeners: <BlocListener<dynamic, dynamic>>[
           BlocListener<RequestEmailOtpCubit, RequestEmailOtpState>(
@@ -86,7 +89,14 @@ class _VerifyEmailScreenState extends State<VerifyEmailScreen> {
                       return FieldErrorsScope(
                         fieldErrors: fieldErrors,
                         child: AuthOtpForm(
-                          header: Text(Strings.otpSentToYourInbox),
+                          header: Text(
+                            Strings.otpSentToYourInbox,
+                            style: TextStyles.of(
+                              size: 16,
+                              color: context.colors.textSecondary,
+                              height: AuthLayout.bodyLineHeight,
+                            ),
+                          ),
                           submitButton: (VoidCallback onPressed) {
                             return BlocSelector<
                               VerifyEmailCubit,

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:either/either.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:mockito/mockito.dart';
@@ -163,8 +164,78 @@ void main() {
     final SemanticsHandle semantics = tester.ensureSemantics();
     await tester.tap(find.text(Strings.signInWithGoogle));
     await tester.pump();
-    expect(find.bySemanticsLabel(Strings.signInWithGoogle), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(Strings.buttonLoading(Strings.signInWithGoogle)),
+      findsOneWidget,
+    );
     semantics.dispose();
+  });
+
+  testWidgets('welcome shows loading until the draft read finishes', (
+    WidgetTester tester,
+  ) async {
+    final Completer<Either<Failure, RegistrationDraft?>> pending =
+        Completer<Either<Failure, RegistrationDraft?>>();
+    final MockReadRegistrationDraftUseCase useCase =
+        MockReadRegistrationDraftUseCase();
+    when(useCase.call(any)).thenAnswer((_) => pending.future);
+    await pumpAuthWidget(
+      tester,
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<GuestModeCubit>(
+          create: (_) => GuestModeCubit(MockContinueAsGuestUseCase()),
+        ),
+        BlocProvider<SocialSignInCubit>(
+          create: (_) => SocialSignInCubit(MockSocialSignInUseCase()),
+        ),
+        BlocProvider<ReadRegistrationDraftCubit>(
+          create: (_) => ReadRegistrationDraftCubit(useCase),
+        ),
+      ],
+      child: const WelcomeScreen(),
+    );
+    expect(find.byKey(const Key('welcome-draft-loading')), findsOneWidget);
+    expect(find.text(Strings.createAccount), findsNothing);
+    pending.complete(const Right<Failure, RegistrationDraft?>(null));
+    await tester.pump();
+    expect(find.byKey(const Key('welcome-draft-loading')), findsNothing);
+    expect(find.text(Strings.createAccount), findsOneWidget);
+  });
+
+  testWidgets('welcome shows the app name as a heading with a subtitle', (
+    WidgetTester tester,
+  ) async {
+    await pumpWelcome(tester);
+    expect(find.text(Strings.appName), findsOneWidget);
+    expect(find.text(Strings.welcomeSubtitle), findsOneWidget);
+    expect(find.text(Strings.orContinueWith), findsOneWidget);
+    final SemanticsHandle semantics = tester.ensureSemantics();
+    expect(
+      tester.getSemantics(find.text(Strings.appName)),
+      matchesSemantics(label: Strings.appName, isHeader: true),
+    );
+    semantics.dispose();
+  });
+
+  testWidgets('welcome at 2x text scale scrolls without overflow', (
+    WidgetTester tester,
+  ) async {
+    final MockContinueAsGuestUseCase guest = MockContinueAsGuestUseCase();
+    final MockSocialSignInUseCase social = MockSocialSignInUseCase();
+    await pumpAuthWidget(
+      tester,
+      textScaler: TextScaler.linear(2),
+      providers: <BlocProvider<dynamic>>[
+        BlocProvider<GuestModeCubit>(create: (_) => GuestModeCubit(guest)),
+        BlocProvider<SocialSignInCubit>(
+          create: (_) => SocialSignInCubit(social),
+        ),
+        draftProvider(),
+      ],
+      child: const WelcomeScreen(),
+    );
+    expect(tester.takeException(), isNull);
+    expect(find.byType(SingleChildScrollView), findsOneWidget);
   });
 
   testWidgets('FR-029 Apple hidden on Android', (WidgetTester tester) async {

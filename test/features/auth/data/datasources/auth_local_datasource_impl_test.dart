@@ -107,14 +107,14 @@ void main() {
     expect(tokens.value, isNull);
   });
 
-  test('FR-038 a failed leftover-token delete throws', () async {
+  test('FR-038 a failed leftover-token delete stays non-fatal', () async {
     final MemoryStorage tokens = MemoryStorage(kAccessToken)..failRemove = true;
     final AuthLocalDataSourceImpl local = AuthLocalDataSourceImpl(
       accessTokenStorage: tokens,
       userTypeStorage: MemoryStorage(UserType.guest.name),
       registrationDraftStorage: MemoryStorage(),
     );
-    await expectLater(local.readVisitorState(), throwsA(isA<CacheException>()));
+    expect(await local.readVisitorState(), UserType.guest);
     expect(tokens.value, kAccessToken);
   });
 

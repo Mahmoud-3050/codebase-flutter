@@ -35,17 +35,20 @@ void main() {
     expect(AuthValidators.password.validate('Abcdef12'), isNull);
   });
 
-  test('FR-007 AuthValidators.phoneValidator validates phone with dynamic dialing code', () {
-    String currentCode = '+966';
-    final validator = AuthValidators.phoneValidator(() => currentCode);
+  test(
+    'FR-007 AuthValidators.phoneValidator validates phone with dynamic dialing code',
+    () {
+      String currentCode = '+966';
+      final validator = AuthValidators.phoneValidator(() => currentCode);
 
-    expect(validator.validate(''), Strings.errorValidPhoneNumber);
-    expect(validator.validate(null), Strings.errorValidPhoneNumber);
-    expect(validator.validate('12'), Strings.errorValidPhoneNumber);
-    expect(validator.validate('500000000'), isNull);
+      expect(validator.validate(''), Strings.errorValidPhoneNumber);
+      expect(validator.validate(null), Strings.errorValidPhoneNumber);
+      expect(validator.validate('12'), Strings.errorValidPhoneNumber);
+      expect(validator.validate('500000000'), isNull);
 
-    // Dynamic update of dialingCode
-    currentCode = '+1';
-    expect(validator.validate('2025550123'), isNull);
-  });
+      // Dynamic update of dialingCode
+      currentCode = '+1';
+      expect(validator.validate('2025550123'), isNull);
+    },
+  );
 }

@@ -342,6 +342,12 @@
   "account_required": "An account is required for this action",
   "account_required_message": "Sign in or create an account to continue.",
   "add_photo": "Add photo",
-  "skip_photo": "Skip photo"
+  "change_photo": "Change photo",
+  "selected_photo": "Selected profile photo",
+  "welcome_subtitle": "Sign in or create an account to get started.",
+  "or_continue_with": "Or continue with",
+  "resend_available_in": "Resend available in {seconds}s",
+  "loading": "Loading",
+  "button_loading": "{action}, loading"
 
 }

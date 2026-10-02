@@ -20,6 +20,8 @@ import '../controller/request_phone_otp/request_phone_otp_cubit.dart';
 import '../controller/verified_phone/verified_phone_cubit.dart';
 import '../navigation/router.dart';
 import '../validators/auth_validators.dart';
+import '../widgets/auth_avatar_picker.dart';
+import '../widgets/auth_scaffold.dart';
 import '../widgets/build_probe.dart';
 
 class CompleteRegistrationScreen extends StatefulWidget {
@@ -103,13 +105,20 @@ class _CompleteRegistrationScreenState
         );
   }
 
+  /// Social drafts lock the email, so the phone is verified before complete:
+  ///
+  /// 1. Submit with an unverified phone requests an OTP and stops.
+  /// 2. The OTP screen confirms that same number, then complete runs.
+  /// 3. Editing the phone while OTP is open drops the result.
+  /// 4. A later submit with the verified number completes registration.
+  ///
+  /// Phone-locked drafts skip this and complete immediately.
   Future<void> _submit() async {
     if (!(_formKey.currentState?.validate() ?? false)) {
       return;
     }
-    if (widget.draft.source.locksEmail &&
-        !_matchesVerifiedPhone(_parsedPhone())) {
-      final PhoneValidationResult parsed = _parsedPhone();
+    final PhoneValidationResult parsed = _parsedPhone();
+    if (widget.draft.source.locksEmail && !_matchesVerifiedPhone(parsed)) {
       if (!parsed.isValidPhone) {
         showAppSnackBar(
           context: context,
@@ -208,8 +217,8 @@ class _CompleteRegistrationScreenState
   @override
   Widget build(BuildContext context) {
     final RegistrationDraft draft = widget.draft;
-    return Scaffold(
-      appBar: AppBar(title: Text(Strings.completeRegistration)),
+    return AuthScaffold(
+      title: Strings.completeRegistration,
       body: MultiBlocListener(
         listeners: <BlocListener<dynamic, dynamic>>[
           BlocListener<CompleteRegistrationCubit, CompleteRegistrationState>(
@@ -351,10 +360,7 @@ class _CompleteRegistrationForm extends StatelessWidget {
       child: ListView(
         padding: EdgeInsets.all(24.w),
         children: <Widget>[
-          AppElevatedButton(
-            text: avatarPath == null ? Strings.addPhoto : Strings.skipPhoto,
-            onPressed: onPickAvatar,
-          ),
+          AuthAvatarPicker(avatarPath: avatarPath, onPick: onPickAvatar),
           SizedBox(height: 16.h),
           AppTextFormField.nameTextField(
             controller: name,

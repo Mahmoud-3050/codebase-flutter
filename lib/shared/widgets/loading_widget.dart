@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:screen_util/screen_util.dart';
 
+import '../../config/language/strings.dart';
 import '../../core/utils/extensions.dart';
 
 class LoadingWidget extends StatelessWidget {
@@ -9,11 +10,15 @@ class LoadingWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox.square(
-      dimension: size.r,
-      child: Center(
-      child: const CircularProgressIndicator().appLoading,
-    ),
+    return Semantics(
+      label: Strings.loading,
+      liveRegion: true,
+      child: ExcludeSemantics(
+        child: SizedBox.square(
+          dimension: size.r,
+          child: Center(child: const CircularProgressIndicator().appLoading),
+        ),
+      ),
     );
   }
 }

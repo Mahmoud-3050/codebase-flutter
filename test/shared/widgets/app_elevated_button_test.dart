@@ -6,6 +6,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:themes/testing.dart';
 import 'package:themes/themes.dart';
 
+import 'package:codebase/config/language/strings.dart';
 import 'package:codebase/config/themes/app_theme.dart';
 import 'package:codebase/config/themes/colors_palettes.dart';
 import 'package:codebase/shared/widgets/app_elevated_button.dart';
@@ -70,7 +71,10 @@ void main() {
     expect(find.byType(CircularProgressIndicator), findsOneWidget);
     expect(find.text('Save'), findsNothing);
     final SemanticsHandle semantics = tester.ensureSemantics();
-    expect(find.bySemanticsLabel('Save'), findsOneWidget);
+    expect(
+      find.bySemanticsLabel(Strings.buttonLoading('Save')),
+      findsOneWidget,
+    );
     semantics.dispose();
 
     await tester.tap(find.byType(ElevatedButton));

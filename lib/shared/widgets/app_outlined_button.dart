@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:screen_util/screen_util.dart';
 import 'package:themes/themes.dart';
 
+import '../../config/language/strings.dart';
 import '../../config/themes/extra_colors.dart';
 import '../../core/utils/extensions.dart';
 import '../../core/utils/values/text_styles.dart';
@@ -89,39 +90,48 @@ class _AppOutlinedButtonState extends State<AppOutlinedButton> {
     final accentColor =
         widget.textColor ?? widget.borderColor ?? colors.primary;
 
-    return AnimatedContainer(
-      duration: _stateAnimationDuration,
-      width: widget.width,
-      height: widget.height,
-      margin: widget.margin ?? EdgeInsets.zero,
-      decoration: BoxDecoration(borderRadius: .circular(radius)),
-      child: OutlinedButton(
-        onPressed: _blocksPress ? null : _handlePressed,
-        clipBehavior: .antiAliasWithSaveLayer,
-        style: OutlinedButton.styleFrom(
-          backgroundColor: backgroundColor,
-          disabledBackgroundColor: backgroundColor,
-          disabledForegroundColor: colors.grey400,
-          side: BorderSide(
-            color: _isVisuallyDisabled
-                ? colors.grey400
-                : widget.borderColor ?? colors.primary,
+    return Semantics(
+      label: widget.isLoading
+          ? Strings.buttonLoading(widget.text)
+          : widget.text,
+      button: true,
+      enabled: !_isVisuallyDisabled,
+      liveRegion: widget.isLoading,
+      excludeSemantics: true,
+      child: AnimatedContainer(
+        duration: _stateAnimationDuration,
+        width: widget.width,
+        height: widget.height,
+        margin: widget.margin ?? EdgeInsets.zero,
+        decoration: BoxDecoration(borderRadius: .circular(radius)),
+        child: OutlinedButton(
+          onPressed: _blocksPress ? null : _handlePressed,
+          clipBehavior: .antiAliasWithSaveLayer,
+          style: OutlinedButton.styleFrom(
+            backgroundColor: backgroundColor,
+            disabledBackgroundColor: backgroundColor,
+            disabledForegroundColor: colors.grey400,
+            side: BorderSide(
+              color: _isVisuallyDisabled
+                  ? colors.grey400
+                  : widget.borderColor ?? colors.primary,
+            ),
+            padding:
+                widget.padding ?? .symmetric(horizontal: 16.w, vertical: 12.h),
+            shape: RoundedRectangleBorder(borderRadius: .circular(radius)),
+            minimumSize: widget.minimumSize,
+            maximumSize: widget.maximumSize,
+            foregroundColor: colors.foreground,
           ),
-          padding:
-              widget.padding ?? .symmetric(horizontal: 16.w, vertical: 12.h),
-          shape: RoundedRectangleBorder(borderRadius: .circular(radius)),
-          minimumSize: widget.minimumSize,
-          maximumSize: widget.maximumSize,
-          foregroundColor: colors.foreground,
-        ),
-        child: Center(
-          child: AnimatedSwitcher(
-            duration: _stateAnimationDuration,
-            child: KeyedSubtree(
-              key: ValueKey<bool>(widget.isLoading),
-              child: widget.isLoading
-                  ? _loadingIndicator(accentColor)
-                  : _buttonContent(colors, accentColor),
+          child: Center(
+            child: AnimatedSwitcher(
+              duration: _stateAnimationDuration,
+              child: KeyedSubtree(
+                key: ValueKey<bool>(widget.isLoading),
+                child: widget.isLoading
+                    ? _loadingIndicator(accentColor)
+                    : _buttonContent(colors, accentColor),
+              ),
             ),
           ),
         ),
@@ -145,13 +155,10 @@ class _AppOutlinedButtonState extends State<AppOutlinedButton> {
   }
 
   Widget _loadingIndicator(Color accentColor) {
-    return Semantics(
-      label: widget.text,
-      child: ExcludeSemantics(
-        child: SizedBox.square(
-          dimension: _loaderSize.r,
-          child: CircularProgressIndicator(color: accentColor).appLoading,
-        ),
+    return ExcludeSemantics(
+      child: SizedBox.square(
+        dimension: _loaderSize.r,
+        child: CircularProgressIndicator(color: accentColor).appLoading,
       ),
     );
   }

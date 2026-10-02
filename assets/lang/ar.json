@@ -342,6 +342,12 @@
   "account_required": "يلزم حساب لإتمام هذا الإجراء",
   "account_required_message": "سجّل الدخول أو أنشئ حساباً للمتابعة.",
   "add_photo": "إضافة صورة",
-  "skip_photo": "تخطي الصورة"
+  "change_photo": "تغيير الصورة",
+  "selected_photo": "الصورة الشخصية المحددة",
+  "welcome_subtitle": "سجّل الدخول أو أنشئ حساباً للبدء.",
+  "or_continue_with": "أو تابع باستخدام",
+  "resend_available_in": "إعادة الإرسال متاحة خلال {seconds} ث",
+  "loading": "جارٍ التحميل",
+  "button_loading": "{action}، جارٍ التحميل"
 
 }

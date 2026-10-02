@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:screen_util/screen_util.dart';
+import 'package:themes/themes.dart';
 
 import '../../../../config/language/strings.dart';
 import '../../../../core/presentation/api_call_state.dart';
+import '../../../../core/utils/values/text_styles.dart';
 import '../../../../shared/widgets/app_elevated_button.dart';
 import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
@@ -14,6 +16,7 @@ import '../controller/login/login_cubit.dart';
 import '../navigation/router.dart';
 import '../auth_field_errors.dart';
 import '../validators/auth_validators.dart';
+import '../widgets/auth_scaffold.dart';
 import '../widgets/auth_tap_target.dart';
 import '../widgets/build_probe.dart';
 
@@ -38,8 +41,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(Strings.signIn)),
+    return AuthScaffold(
+      title: Strings.signIn,
       body: BlocListener<LoginCubit, LoginState>(
         listener: (BuildContext context, LoginState state) {
           if (state case ApiCallError(:final message, :final hasFieldErrors)) {
@@ -104,7 +107,14 @@ class _LoginScreenState extends State<LoginScreen> {
                             style: authTextButtonStyle(),
                             onPressed: () =>
                                 const ForgotPasswordRoute().go(context),
-                            child: Text(Strings.forgotPassword),
+                            child: Text(
+                              Strings.forgotPassword,
+                              style: TextStyles.of(
+                                size: 14,
+                                color: context.colors.primary,
+                                height: AuthLayout.bodyLineHeight,
+                              ),
+                            ),
                           ),
                         ),
                         BlocSelector<LoginCubit, LoginState, bool>(

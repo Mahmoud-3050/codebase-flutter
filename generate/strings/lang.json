@@ -109,8 +109,32 @@
     "en": "Add photo",
     "ar": "إضافة صورة"
   },
-  "skip_photo": {
-    "en": "Skip photo",
-    "ar": "تخطي الصورة"
+  "change_photo": {
+    "en": "Change photo",
+    "ar": "تغيير الصورة"
+  },
+  "selected_photo": {
+    "en": "Selected profile photo",
+    "ar": "الصورة الشخصية المحددة"
+  },
+  "welcome_subtitle": {
+    "en": "Sign in or create an account to get started.",
+    "ar": "سجّل الدخول أو أنشئ حساباً للبدء."
+  },
+  "or_continue_with": {
+    "en": "Or continue with",
+    "ar": "أو تابع باستخدام"
+  },
+  "resend_available_in": {
+    "en": "Resend available in {seconds}s",
+    "ar": "إعادة الإرسال متاحة خلال {seconds} ث"
+  },
+  "loading": {
+    "en": "Loading",
+    "ar": "جارٍ التحميل"
+  },
+  "button_loading": {
+    "en": "{action}, loading",
+    "ar": "{action}، جارٍ التحميل"
   }
 }

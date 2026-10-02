@@ -14,6 +14,7 @@ import '../controller/request_phone_otp/request_phone_otp_cubit.dart';
 import '../controller/verify_phone_otp/verify_phone_otp_cubit.dart';
 import '../navigation/router.dart';
 import '../widgets/auth_otp_form.dart';
+import '../widgets/auth_scaffold.dart';
 
 class PhoneOtpScreen extends StatefulWidget {
   const PhoneOtpScreen({
@@ -51,8 +52,8 @@ class _PhoneOtpScreenState extends State<PhoneOtpScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(Strings.verifyCode)),
+    return AuthScaffold(
+      title: Strings.verifyCode,
       body: MultiBlocListener(
         listeners: <BlocListener<dynamic, dynamic>>[
           BlocListener<RequestPhoneOtpCubit, RequestPhoneOtpState>(

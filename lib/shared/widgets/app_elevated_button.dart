@@ -5,6 +5,7 @@ import 'package:screen_util/screen_util.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:themes/themes.dart';
 
+import '../../config/language/strings.dart';
 import '../../config/themes/extra_colors.dart';
 import '../../core/utils/extensions.dart';
 import '../../core/utils/values/text_styles.dart';
@@ -34,6 +35,7 @@ class AppElevatedButton extends StatefulWidget {
   final EdgeInsetsGeometry? margin;
   final bool isLoading;
   final bool enabled;
+  final int maxLines;
 
   const AppElevatedButton({
     required this.text,
@@ -60,6 +62,7 @@ class AppElevatedButton extends StatefulWidget {
     this.elevation,
     this.isLoading = false,
     this.enabled = true,
+    this.maxLines = 1,
   });
 
   static Widget shimmer({
@@ -106,54 +109,59 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
     final radius = widget.borderRadius ?? _defaultRadius.r;
     final backgroundColor = widget.buttonColor ?? colors.primary;
 
-    return AnimatedContainer(
-      duration: _stateAnimationDuration,
-      width: widget.width,
-      height: widget.height,
-      margin: widget.margin ?? .symmetric(horizontal: widget.sidePadding ?? 0),
-      decoration: BoxDecoration(
-        borderRadius: .circular(radius),
-        boxShadow: _isVisuallyDisabled
-            ? const []
-            : [
-                BoxShadow(
-                  color: widget.shadowColor ?? colors.secondary,
-                  blurRadius:
-                      widget.elevation ?? (context.isDarkTheme ? 16.r : 4.r),
-                ),
-              ],
-      ),
-      child: ElevatedButton(
-        onPressed: _blocksPress ? null : _handlePressed,
-        clipBehavior: .antiAliasWithSaveLayer,
-        style: ElevatedButton.styleFrom(
-          padding:
-              widget.padding ?? .symmetric(horizontal: 16.w, vertical: 12.h),
-          foregroundColor: colors.foreground,
-          backgroundColor: backgroundColor,
-          disabledBackgroundColor: colors.grey400,
-          disabledForegroundColor: colors.white.withValues(
-            alpha: _disabledTextOpacity,
-          ),
-          elevation: 0,
-          side: _buttonSide(),
-          shape: RoundedRectangleBorder(borderRadius: .circular(radius)),
-          minimumSize: widget.minimumSize,
-          maximumSize: widget.maximumSize,
+    return Semantics(
+      label: widget.isLoading
+          ? Strings.buttonLoading(widget.text)
+          : widget.text,
+      button: true,
+      enabled: !_isVisuallyDisabled,
+      liveRegion: widget.isLoading,
+      excludeSemantics: true,
+      child: AnimatedContainer(
+        duration: _stateAnimationDuration,
+        width: widget.width,
+        height: widget.height,
+        margin:
+            widget.margin ?? .symmetric(horizontal: widget.sidePadding ?? 0),
+        decoration: BoxDecoration(
+          borderRadius: .circular(radius),
+          boxShadow: _isVisuallyDisabled
+              ? const []
+              : [
+                  BoxShadow(
+                    color: widget.shadowColor ?? colors.secondary,
+                    blurRadius:
+                        widget.elevation ?? (context.isDarkTheme ? 16.r : 4.r),
+                  ),
+                ],
         ),
-        child: Center(
-          child: AnimatedSwitcher(
-            duration: _stateAnimationDuration,
-            child: KeyedSubtree(
-              key: ValueKey<bool>(widget.isLoading),
-              child: widget.isLoading
-                  ? Semantics(
-                      label: widget.text,
-                      button: true,
-                      excludeSemantics: true,
-                      child: _loadingIndicator(colors),
-                    )
-                  : _buttonContent(colors),
+        child: ElevatedButton(
+          onPressed: _blocksPress ? null : _handlePressed,
+          clipBehavior: .antiAliasWithSaveLayer,
+          style: ElevatedButton.styleFrom(
+            padding:
+                widget.padding ?? .symmetric(horizontal: 16.w, vertical: 12.h),
+            foregroundColor: colors.foreground,
+            backgroundColor: backgroundColor,
+            disabledBackgroundColor: colors.grey400,
+            disabledForegroundColor: colors.white.withValues(
+              alpha: _disabledTextOpacity,
+            ),
+            elevation: 0,
+            side: _buttonSide(),
+            shape: RoundedRectangleBorder(borderRadius: .circular(radius)),
+            minimumSize: widget.minimumSize,
+            maximumSize: widget.maximumSize,
+          ),
+          child: Center(
+            child: AnimatedSwitcher(
+              duration: _stateAnimationDuration,
+              child: KeyedSubtree(
+                key: ValueKey<bool>(widget.isLoading),
+                child: widget.isLoading
+                    ? _loadingIndicator(colors)
+                    : _buttonContent(colors),
+              ),
             ),
           ),
         ),
@@ -186,15 +194,12 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
   }
 
   Widget _loadingIndicator(ThemeColors colors) {
-    return Semantics(
-      label: widget.text,
-      child: ExcludeSemantics(
-        child: SizedBox.square(
-          dimension: _loaderSize.r,
-          child: CircularProgressIndicator(
-            color: widget.textColor ?? colors.white,
-          ).appLoading,
-        ),
+    return ExcludeSemantics(
+      child: SizedBox.square(
+        dimension: _loaderSize.r,
+        child: CircularProgressIndicator(
+          color: widget.textColor ?? colors.white,
+        ).appLoading,
       ),
     );
   }
@@ -256,7 +261,7 @@ class _AppElevatedButtonState extends State<AppElevatedButton> {
                     : colors.white),
           ),
       textAlign: .center,
-      maxLines: 1,
+      maxLines: widget.maxLines,
     );
   }
 }

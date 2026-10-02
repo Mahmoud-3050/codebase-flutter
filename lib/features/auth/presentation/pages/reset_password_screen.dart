@@ -14,6 +14,7 @@ import '../controller/request_password_reset/request_password_reset_cubit.dart';
 import '../controller/reset_password/reset_password_cubit.dart';
 import '../validators/auth_validators.dart';
 import '../widgets/auth_otp_form.dart';
+import '../widgets/auth_scaffold.dart';
 
 class ResetPasswordScreen extends StatefulWidget {
   const ResetPasswordScreen({
@@ -57,8 +58,8 @@ class _ResetPasswordScreenState extends State<ResetPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(Strings.resetPassword)),
+    return AuthScaffold(
+      title: Strings.resetPassword,
       body: MultiBlocListener(
         listeners: <BlocListener<dynamic, dynamic>>[
           BlocListener<RequestPasswordResetCubit, RequestPasswordResetState>(

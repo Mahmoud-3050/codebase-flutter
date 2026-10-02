@@ -13,6 +13,8 @@ import '../../domain/avatar_picker.dart';
 import '../controller/register/register_cubit.dart';
 import '../navigation/router.dart';
 import '../validators/auth_validators.dart';
+import '../widgets/auth_avatar_picker.dart';
+import '../widgets/auth_scaffold.dart';
 import '../widgets/build_probe.dart';
 
 class RegisterScreen extends StatefulWidget {
@@ -79,8 +81,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(Strings.createAccount)),
+    return AuthScaffold(
+      title: Strings.createAccount,
       body: BlocListener<RegisterCubit, RegisterState>(
         listener: (BuildContext context, RegisterState state) {
           if (state case ApiCallError(:final message, :final hasFieldErrors)) {
@@ -127,11 +129,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                         child: ListView(
                           padding: EdgeInsets.all(24.w),
                           children: <Widget>[
-                            AppElevatedButton(
-                              text: _avatarPath == null
-                                  ? Strings.addPhoto
-                                  : Strings.skipPhoto,
-                              onPressed: _pickAvatar,
+                            AuthAvatarPicker(
+                              avatarPath: _avatarPath,
+                              onPick: _pickAvatar,
                             ),
                             SizedBox(height: 16.h),
                             AppTextFormField.nameTextField(
@@ -156,8 +156,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               onDialingCodeChanged: (String code) =>
                                   setState(() => _dialingCode = code),
                               labelText: Strings.phoneNumber,
-                              validatorType:
-                                  AuthValidators.phoneValidator(() => _dialingCode),
+                              validatorType: AuthValidators.phoneValidator(
+                                () => _dialingCode,
+                              ),
                             ),
                             SizedBox(height: 12.h),
                             AppTextFormField.passwordTextField(

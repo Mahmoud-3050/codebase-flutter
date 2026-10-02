@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
@@ -78,6 +80,60 @@ void main() {
       ).authorize(SocialProvider.apple),
       throwsA(isA<ServerException>()),
     );
+  });
+
+  const SocialCredential googleCredential = SocialCredential(
+    provider: SocialProvider.google,
+    idToken: 'google-id-token',
+  );
+
+  test('concurrent Google authorize initializes the client once', () async {
+    var starts = 0;
+    final Completer<void> gate = Completer<void>();
+    final SocialAuthServiceImpl service = SocialAuthServiceImpl(
+      googleServerClientId: 'client-id',
+      initializeGoogle: (String serverClientId) {
+        expect(serverClientId, 'client-id');
+        starts++;
+        return gate.future;
+      },
+      authenticateGoogle: () async => googleCredential,
+    );
+    final Future<SocialCredential> first = service.authorize(
+      SocialProvider.google,
+    );
+    final Future<SocialCredential> second = service.authorize(
+      SocialProvider.google,
+    );
+    expect(starts, 1);
+    gate.complete();
+    final List<SocialCredential> credentials = await Future.wait(
+      <Future<SocialCredential>>[first, second],
+    );
+    expect(credentials, <SocialCredential>[googleCredential, googleCredential]);
+  });
+
+  test('Google initialize retries after a failure', () async {
+    var starts = 0;
+    final SocialAuthServiceImpl service = SocialAuthServiceImpl(
+      googleServerClientId: 'client-id',
+      initializeGoogle: (String _) async {
+        starts++;
+        if (starts == 1) {
+          throw Exception('init failed');
+        }
+      },
+      authenticateGoogle: () async => googleCredential,
+    );
+    await expectLater(
+      service.authorize(SocialProvider.google),
+      throwsA(isA<Exception>()),
+    );
+    final SocialCredential credential = await service.authorize(
+      SocialProvider.google,
+    );
+    expect(starts, 2);
+    expect(credential.idToken, 'google-id-token');
   });
 
   test('FR-035 Apple cancel is not a failed sign-in', () {

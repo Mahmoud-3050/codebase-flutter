@@ -1,7 +1,6 @@
 import 'package:either/either.dart';
 
 import '../../../../config/language/strings.dart';
-import '../../../../core/api/status_code.dart';
 import '../../../../core/data/repository_guard.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/error/failures.dart';
@@ -135,7 +134,7 @@ class AuthRepositoryImpl with RepositoryGuard implements AuthRepository {
             statusCode: error is ServerException ? error.statusCode : null,
           ),
         );
-      } on Object {
+      } on Exception {
         return Left<Failure, SocialSignInResponse>(
           ServerFailure(message: Strings.socialFailed),
         );
@@ -250,15 +249,4 @@ class AuthRepositoryImpl with RepositoryGuard implements AuthRepository {
   }) {
     return guard(local.readRegistrationDraft, 'readRegistrationDraft');
   }
-}
-
-Failure mapTooManyRequests(Failure failure) {
-  if (failure is ServerFailure &&
-      failure.statusCode == StatusCode.tooManyRequests) {
-    return ServerFailure(
-      message: Strings.tooManyAttempts,
-      statusCode: failure.statusCode,
-    );
-  }
-  return failure;
 }

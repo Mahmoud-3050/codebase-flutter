@@ -235,9 +235,13 @@ void main() {
     final int codeBuilds = tester
         .state<BuildProbeState>(find.byKey(BuildProbe.otpCode))
         .builds;
-    cooldown.emit(const OtpCooldownCounting(secondsRemaining: 30));
+    cooldown.emit(
+      const OtpCooldownCounting(secondsRemaining: 30, totalSeconds: 45),
+    );
     await tester.pump();
     await tester.pump();
+    expect(find.text(Strings.resendAvailableIn(30)), findsOneWidget);
+    expect(find.byType(LinearProgressIndicator), findsOneWidget);
     expect(
       tester.state<BuildProbeState>(find.byKey(BuildProbe.otpCode)).builds,
       codeBuilds,

@@ -10,6 +10,7 @@ import '../../../../shared/widgets/app_snack_bar.dart';
 import '../../../../shared/widgets/app_text_form_field.dart';
 import '../controller/request_phone_otp/request_phone_otp_cubit.dart';
 import '../navigation/router.dart';
+import '../widgets/auth_scaffold.dart';
 
 class PhoneSignInScreen extends StatefulWidget {
   const PhoneSignInScreen({super.key});
@@ -51,8 +52,8 @@ class _PhoneSignInScreenState extends State<PhoneSignInScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(Strings.signInWithPhone)),
+    return AuthScaffold(
+      title: Strings.signInWithPhone,
       body: BlocListener<RequestPhoneOtpCubit, RequestPhoneOtpState>(
         listener: (BuildContext context, RequestPhoneOtpState state) {
           if (state case ApiCallError(:final message)) {

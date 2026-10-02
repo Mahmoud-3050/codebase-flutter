@@ -83,4 +83,17 @@ void main() {
       ApiCallError<LoginOutcome>(message: Strings.invalidCredentials),
     ],
   );
+
+  blocTest<LoginCubit, LoginState>(
+    'FR-015 cancel does not emit error',
+    build: () {
+      final MockLoginUseCase useCase = MockLoginUseCase();
+      when(useCase.call(any)).thenAnswer(
+        (_) async => const Left<Failure, LoginResponse>(CancelledFailure()),
+      );
+      return LoginCubit(useCase);
+    },
+    act: (LoginCubit cubit) => cubit.fLogin(email: 'a@b.c', password: 'wrong'),
+    expect: () => <LoginState>[const ApiCallLoading<LoginOutcome>()],
+  );
 }

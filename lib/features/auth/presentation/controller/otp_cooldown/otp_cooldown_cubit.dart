@@ -19,7 +19,7 @@ class OtpCooldownCubit extends Cubit<OtpCooldownState> {
       emit(const OtpCooldownIdle());
       return;
     }
-    emit(OtpCooldownCounting(secondsRemaining: seconds));
+    emit(OtpCooldownCounting(secondsRemaining: seconds, totalSeconds: seconds));
     _subscription = tick(seconds).listen((int remaining) {
       if (isClosed) {
         return;
@@ -27,7 +27,12 @@ class OtpCooldownCubit extends Cubit<OtpCooldownState> {
       if (remaining <= 0) {
         emit(const OtpCooldownIdle());
       } else {
-        emit(OtpCooldownCounting(secondsRemaining: remaining));
+        emit(
+          OtpCooldownCounting(
+            secondsRemaining: remaining,
+            totalSeconds: seconds,
+          ),
+        );
       }
     });
   }

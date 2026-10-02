@@ -13,9 +13,9 @@ void main() {
     ),
     act: (OtpCooldownCubit cubit) => cubit.fStart(3),
     expect: () => <OtpCooldownState>[
-      const OtpCooldownCounting(secondsRemaining: 3),
-      const OtpCooldownCounting(secondsRemaining: 2),
-      const OtpCooldownCounting(secondsRemaining: 1),
+      const OtpCooldownCounting(secondsRemaining: 3, totalSeconds: 3),
+      const OtpCooldownCounting(secondsRemaining: 2, totalSeconds: 3),
+      const OtpCooldownCounting(secondsRemaining: 1, totalSeconds: 3),
       const OtpCooldownIdle(),
     ],
   );

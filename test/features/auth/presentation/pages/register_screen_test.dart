@@ -126,7 +126,7 @@ void main() {
     expect(find.text(Strings.avatarTooLarge), findsOneWidget);
   });
 
-  testWidgets('FR-006c register skip photo after pick', (
+  testWidgets('FR-006c register shows change photo and a preview after pick', (
     WidgetTester tester,
   ) async {
     final MockAvatarPicker picker = MockAvatarPicker();
@@ -141,10 +141,13 @@ void main() {
       ],
       child: const RegisterScreen(),
     );
+    expect(find.byKey(const Key('auth-avatar-preview')), findsNothing);
     await tester.tap(find.text(Strings.addPhoto));
     await tester.pump();
     await tester.pump();
-    expect(find.text(Strings.skipPhoto), findsOneWidget);
+    expect(find.text(Strings.changePhoto), findsOneWidget);
+    expect(find.text(Strings.addPhoto), findsNothing);
+    expect(find.byKey(const Key('auth-avatar-preview')), findsOneWidget);
   });
 
   testWidgets('FR-008 register submit and email_taken routes to login', (

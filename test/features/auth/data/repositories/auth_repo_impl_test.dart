@@ -220,7 +220,7 @@ void main() {
     () async {
       when(
         social.authorize(SocialProvider.apple),
-      ).thenThrow(StateError('apple unavailable'));
+      ).thenThrow(Exception('apple unavailable'));
       final result = await repository.socialSignIn(
         params: const SocialSignInParams(provider: SocialProvider.apple),
       );
@@ -358,14 +358,6 @@ void main() {
     await repository.verifyPhoneOtp(params: const NoParams());
     verifyNever(local.persistSession(any));
     verifyNever(local.saveRegistrationDraft(any));
-  });
-
-  test('FR-018a mapTooManyRequests copies throttle message', () {
-    final Failure mapped = mapTooManyRequests(
-      const ServerFailure(statusCode: StatusCode.tooManyRequests),
-    );
-    expect(mapped.message, Strings.tooManyAttempts);
-    expect(mapTooManyRequests(const ServerFailure()), isA<ServerFailure>());
   });
 
   test('FR-038 continueAsGuest maps local failure', () async {

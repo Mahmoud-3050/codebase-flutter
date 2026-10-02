@@ -10,6 +10,7 @@ import '../../../../shared/widgets/app_text_form_field.dart';
 import '../controller/request_password_reset/request_password_reset_cubit.dart';
 import '../navigation/router.dart';
 import '../validators/auth_validators.dart';
+import '../widgets/auth_scaffold.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -30,8 +31,8 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text(Strings.forgotPassword)),
+    return AuthScaffold(
+      title: Strings.forgotPassword,
       body: BlocListener<RequestPasswordResetCubit, RequestPasswordResetState>(
         listener: (BuildContext context, RequestPasswordResetState state) {
           if (state case ApiCallError(:final message)) {

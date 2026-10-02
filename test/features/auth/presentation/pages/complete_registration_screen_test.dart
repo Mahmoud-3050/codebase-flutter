@@ -159,7 +159,7 @@ void main() {
     expect(find.text(Strings.avatarUnsupportedType), findsOneWidget);
   });
 
-  testWidgets('FR-006c picked avatar switches CTA to skip photo', (
+  testWidgets('FR-006c picked avatar switches CTA to change photo', (
     WidgetTester tester,
   ) async {
     final MockAvatarPicker picker = MockAvatarPicker();
@@ -172,7 +172,8 @@ void main() {
     await tester.tap(find.text(Strings.addPhoto));
     await tester.pump();
     await tester.pump();
-    expect(find.text(Strings.skipPhoto), findsOneWidget);
+    expect(find.text(Strings.changePhoto), findsOneWidget);
+    expect(find.byKey(const Key('auth-avatar-preview')), findsOneWidget);
   });
 
   testWidgets('FR-033 social completion requests phone OTP', (

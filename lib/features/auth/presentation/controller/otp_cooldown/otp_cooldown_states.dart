@@ -12,10 +12,14 @@ final class OtpCooldownIdle extends OtpCooldownState {
 }
 
 final class OtpCooldownCounting extends OtpCooldownState {
-  const OtpCooldownCounting({required this.secondsRemaining});
+  const OtpCooldownCounting({
+    required this.secondsRemaining,
+    required this.totalSeconds,
+  });
 
   final int secondsRemaining;
+  final int totalSeconds;
 
   @override
-  List<Object?> get props => <Object?>[secondsRemaining];
+  List<Object?> get props => <Object?>[secondsRemaining, totalSeconds];
 }
