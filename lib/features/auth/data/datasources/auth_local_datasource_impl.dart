@@ -1,4 +1,3 @@
-import '../../../../config/language/strings.dart';
 import '../../../../core/error/exceptions.dart';
 import '../../../../core/services/local_storage/interfaces/local_storage_interface.dart';
 import '../../../../core/services/session_write_guard.dart';
@@ -133,10 +132,11 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
         token.isEmpty) {
       return;
     }
-    final bool removed = await accessTokenStorage.remove();
-    if (!removed) {
-      throw CacheException(message: Strings.pleaseTryAgainLater);
-    }
+    // Failure to remove a leftover token here is non-fatal: this method is
+    // called inside the read-only readVisitorState(). Throwing would block
+    // the app from resolving visitor state on startup. The stale token will
+    // be cleared on the next sign-out or markGuest call.
+    await accessTokenStorage.remove();
   }
 
   @override

@@ -7,7 +7,6 @@ import '../../../../core/api/api_response.dart';
 import '../../../../core/api/dio_consumer.dart';
 import '../../../../core/api/request_cancel_token.dart';
 import '../../../../core/usecases/usecase.dart';
-import '../../../../injection_container.dart';
 import '../../domain/usecases/complete_registration_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
 import '../models/complete_registration_model.dart';
@@ -23,11 +22,11 @@ import '../models/verify_phone_otp_model.dart';
 import 'auth_remote_datasource.dart';
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
-  AuthRemoteDataSourceImpl({DioConsumer? client}) : _client = client;
+  AuthRemoteDataSourceImpl({required this.client});
 
-  final DioConsumer? _client;
+  final DioConsumer client;
 
-  DioConsumer get _http => _client ?? dioConsumer;
+  DioConsumer get _http => client;
 
   Future<Map<String, dynamic>> _post({
     required String path,

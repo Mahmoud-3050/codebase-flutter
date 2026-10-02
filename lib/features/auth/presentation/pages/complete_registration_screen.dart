@@ -185,6 +185,17 @@ class _CompleteRegistrationScreenState
     if (!current.isValidPhone ||
         '+${current.phoneCode}' != dialingCode ||
         current.phoneNumber != phone) {
+      // The phone number was changed while the OTP screen was open.
+      // The server accepted the OTP for the original number, but the
+      // client now shows a different number — discard the result and
+      // inform the user so they can verify the updated number.
+      if (mounted) {
+        showAppSnackBar(
+          context: context,
+          message: Strings.errorValidPhoneNumber,
+          type: ToastType.error,
+        );
+      }
       return;
     }
     context.read<VerifiedPhoneCubit>().fMarkVerified(
@@ -368,6 +379,11 @@ class _CompleteRegistrationForm extends StatelessWidget {
             onDialingCodeChanged: onDialingCodeChanged,
             labelText: Strings.phoneNumber,
             readOnly: locksPhone,
+            // Only validate when the field is editable; locked fields are
+            // pre-verified by the server so no client-side check is needed.
+            validatorType: locksPhone
+                ? null
+                : AuthValidators.phoneValidator(() => dialingCode),
           ),
           SizedBox(height: 12.h),
           AppTextFormField.passwordTextField(

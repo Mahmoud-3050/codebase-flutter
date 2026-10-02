@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 
+import '../../core/api/dio_consumer.dart';
 import '../../core/services/local_storage/impl/access_token_storage.dart';
 import '../../core/services/session_write_guard.dart';
 import '../../core/services/local_storage/impl/registration_draft_storage.dart';
@@ -51,7 +52,9 @@ void registerAuthDataLayer(GetIt sl) {
   sl.registerLazySingleton<RegistrationDraftStorage>(
     () => RegistrationDraftStorage(secureStorage: secureStorage),
   );
-  sl.registerLazySingleton<AuthRemoteDataSource>(AuthRemoteDataSourceImpl.new);
+  sl.registerLazySingleton<AuthRemoteDataSource>(
+    () => AuthRemoteDataSourceImpl(client: sl<DioConsumer>()),
+  );
   sl.registerLazySingleton<AuthLocalDataSource>(
     () => AuthLocalDataSourceImpl(
       accessTokenStorage: sl<AccessTokenStorage>(),

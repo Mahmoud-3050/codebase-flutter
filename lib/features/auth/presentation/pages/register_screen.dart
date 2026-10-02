@@ -84,15 +84,16 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: BlocListener<RegisterCubit, RegisterState>(
         listener: (BuildContext context, RegisterState state) {
           if (state case ApiCallError(:final message, :final hasFieldErrors)) {
-            if (!hasFieldErrors) {
+            if (message == Strings.emailTaken) {
+              // Email already registered: redirect to login instead of
+              // showing a field error or generic toast.
+              const LoginRoute().go(context);
+            } else if (!hasFieldErrors) {
               showAppSnackBar(
                 context: context,
                 message: message,
                 type: ToastType.error,
               );
-            }
-            if (message == Strings.emailTaken) {
-              const LoginRoute().go(context);
             }
           }
           if (state case ApiCallSuccess(:final data)) {
@@ -155,6 +156,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
                               onDialingCodeChanged: (String code) =>
                                   setState(() => _dialingCode = code),
                               labelText: Strings.phoneNumber,
+                              validatorType:
+                                  AuthValidators.phoneValidator(() => _dialingCode),
                             ),
                             SizedBox(height: 12.h),
                             AppTextFormField.passwordTextField(
